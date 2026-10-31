@@ -1,0 +1,59 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fikstür | SPORIX</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<header class="header"><div class="header-inner">
+  <a href="/" class="logo"><img src="/images/logo.jpeg" alt="SPORIX"><span>SPOR<span>IX</span></span></a>
+  <button class="menu-btn" id="menuBtn">☰</button>
+  <nav class="nav" id="mainNav">
+    <a href="/">Ana Sayfa</a><a href="/maclar/">Canlı Skorlar</a>
+    <a href="/haberler/">Haberler</a><a href="/puan-durumu/">Puan Durumu</a>
+    <a class="active" href="/fikstur/">Fikstür</a>
+  </nav>
+</div></header>
+
+<main class="container">
+  <div class="page-title">
+    <h1>Fikstür</h1>
+    <p>Takımların gelecek karşılaşmalarını ve maç takvimini incele.</p>
+  </div>
+
+  <div class="content-panel">
+    <div class="match-toolbar">
+      <div class="toolbar-title"><strong>Maç takvimi</strong><span>Lig ve karşılaşma programı</span></div>
+      <select class="league-select" id="fixtureLeague">
+        <option value="super-lig">Türkiye Süper Lig</option>
+        <option value="premier-league">Premier League</option>
+        <option value="la-liga">La Liga</option>
+        <option value="serie-a">Serie A</option>
+        <option value="bundesliga">Bundesliga</option>
+      </select>
+    </div>
+
+    <div class="empty-state">
+      <strong>Fikstür bağlantısı bekleniyor</strong>
+      <p>Gelecek maçların programı henüz ayrı bir fikstür veri kaynağına bağlanmadı. Gerçek maç takvimi bağlandığında burada listelenecek.</p>
+      <div class="inner-links"><a href="/maclar/">Günün maçlarına git</a></div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer"><div class="footer-inner">
+  <a href="/" class="footer-logo">SPOR<span>IX</span></a>
+  <div class="footer-links"><a href="/">Ana Sayfa</a><a href="/maclar/">Canlı Skorlar</a><a href="/haberler/">Haberler</a><a href="/puan-durumu/">Puan Durumu</a></div>
+  <small>© 2026 SPORIX</small>
+</div></footer>
+
+<script>
+  document.getElementById("menuBtn")?.addEventListener("click", () => {
+    document.getElementById("mainNav")?.classList.toggle("open");
+  });
+</script>
+</body>
+</html>
