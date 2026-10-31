@@ -3,95 +3,493 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SPORIX | Sporun Yeni Adresi</title>
-  <meta name="description" content="SPORIX spor haberleri, maçlar ve ligler.">
-  <link rel="stylesheet" href="/assets/style.css">
+  <meta name="description" content="SPORIX — Sporun yeni adresi. Maç merkezi, ligler, puan durumları ve spor haberleri.">
+  <title>SPORIX — Sporun Yeni Adresi</title>
+  <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
+<div id="app">
+  <div class="topline">
+    <div class="shell topline-inner">
+      <span>SPORIX · Sporun yeni adresi</span>
+      <div class="toplinks">
+        <a href="#haberler">Haberler</a>
+        <a href="#ligler">Ligler</a>
+        <a href="#sporlar">Spor dalları</a>
+      </div>
+      <span>31 Ekim 2026 · Cumartesi</span>
+    </div>
+  </div>
 
-<div class="top">
-  <div class="container">SPORIX · Sporun yeni adresi</div>
+  <header class="header">
+    <div class="shell header-main">
+      <a class="logo" href="#top" aria-label="SPORIX ana sayfa">
+        <img class="logo-image" src="images/logo.jpeg" alt="SPORIX logosu">
+        <span class="logo-word">SPOR<span>IX</span></span>
+      </a>
+
+      <nav class="nav" id="mainNav">
+        <a class="active" href="/">Ana Sayfa</a>
+        <a href="/maclar">Canlı Skor</a>
+        <a href="/haberler">Haberler</a>
+        <a href="/puan-durumu">Puan Durumu</a>
+        <a href="/sporlar">Sporlar</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input class="search-box" id="searchInput" type="search" placeholder="Takım veya haber ara...">
+        </div>
+        <button class="icon-btn" id="searchToggle" aria-label="Arama" title="Arama">⌕</button>
+        <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Menüyü aç">☰</button>
+      </div>
+    </div>
+
+    <div class="subnav">
+      <div class="shell subnav-inner">
+        <a class="pill active" href="/sporlar">Tümü</a>
+        <a class="pill" href="/futbol">⚽ Futbol</a>
+        <a class="pill" href="/basketbol">🏀 Basketbol</a>
+        <a class="pill" href="/voleybol">🏐 Voleybol</a>
+        <a class="pill" href="/tenis">🎾 Tenis</a>
+        <a class="pill" href="/motor-sporlari">🏁 Motor Sporları</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell" id="top">
+    <section class="hero">
+      <div class="hero-main">
+        <div>
+          <span class="eyebrow"><span class="dot"></span> SPORUN MERKEZİ</span>
+          <h1>Oyunun heyecanı,<br>tek bir yerde.</h1>
+          <p>En sevdiğin takımlar, günün maçları ve spor dünyasından öne çıkan gelişmeler. SPORIX ile hiçbir anı kaçırma.</p>
+        </div>
+        <div class="hero-bottom">
+          <button class="primary-btn" onclick="document.querySelector('#maclar').scrollIntoView({behavior:'smooth'})">Maç merkezine git ↗</button>
+          <button class="text-btn" onclick="document.querySelector('#haberler').scrollIntoView({behavior:'smooth'})">Haberleri keşfet</button>
+        </div>
+      </div>
+
+      <div class="hero-side">
+        <article class="side-card">
+          <div>
+            <span class="eyebrow">✦ BUGÜNÜN GÜNDEMİ</span>
+            <h3>Spor dünyasından öne çıkanlar</h3>
+            <p>Günün önemli gelişmelerini tek ekranda takip et.</p>
+          </div>
+          <div class="side-foot">
+            <span>Güncel haber akışı</span>
+            <span class="arrow">↗</span>
+          </div>
+        </article>
+
+        <article class="side-card">
+          <div>
+            <span class="eyebrow">◷ MAÇ TAKVİMİ</span>
+            <h3>Maç programını kaçırma</h3>
+            <p>Takvimini takip et, yaklaşan karşılaşmalara göz at.</p>
+          </div>
+          <div class="side-foot">
+            <span>Fikstür ve sonuçlar</span>
+            <span class="arrow">↗</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="maclar">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Maç merkezi</div>
+          <h2 class="section-title">Günün karşılaşmaları</h2>
+        </div>
+        <span class="live-label"><span class="dot"></span> ÖRNEK VERİ</span>
+      </div>
+
+      <div class="sport-tabs" id="matchTabs">
+        <button class="tab active" data-filter="Tümü">Tüm maçlar</button>
+        <button class="tab" data-filter="Futbol">⚽ Futbol</button>
+        <button class="tab" data-filter="Basketbol">🏀 Basketbol</button>
+        <button class="tab" data-filter="Voleybol">🏐 Voleybol</button>
+      </div>
+
+      <div class="matches" id="matchList">
+        <article class="match-card" data-category="Futbol" data-search="galatasaray fenerbahçe süper lig">
+          <div class="match-meta">
+            <span>🇹🇷 Süper Lig</span>
+            <span class="match-state">20:00 · Program</span>
+          </div>
+          <div class="teams">
+            <div class="team"><span class="crest">🦁</span><span class="team-name">Galatasaray</span></div>
+            <span class="score">– : –</span>
+            <div class="team"><span class="crest">🟡</span><span class="team-name">Fenerbahçe</span></div>
+          </div>
+          <div class="match-bottom">
+            <span>31 Ekim · Örnek fikstür</span>
+            <button onclick="toast('Maç detayları API bağlantısından sonra açılacak.')">Maç detayı ↗</button>
+          </div>
+        </article>
+
+        <article class="match-card" data-category="Futbol" data-search="real madrid barcelona la liga">
+          <div class="match-meta">
+            <span>🇪🇸 La Liga</span>
+            <span class="match-state">22:00 · Program</span>
+          </div>
+          <div class="teams">
+            <div class="team"><span class="crest">⚪</span><span class="team-name">Real Madrid</span></div>
+            <span class="score">– : –</span>
+            <div class="team"><span class="crest">🔵🔴</span><span class="team-name">Barcelona</span></div>
+          </div>
+          <div class="match-bottom">
+            <span>31 Ekim · Örnek fikstür</span>
+            <button onclick="toast('Maç detayları API bağlantısından sonra açılacak.')">Maç detayı ↗</button>
+          </div>
+        </article>
+
+        <article class="match-card" data-category="Basketbol" data-search="lakers warriors nba">
+          <div class="match-meta">
+            <span>🇺🇸 NBA</span>
+            <span class="match-state">03:30 · Program</span>
+          </div>
+          <div class="teams">
+            <div class="team"><span class="crest">🏀</span><span class="team-name">Lakers</span></div>
+            <span class="score">– : –</span>
+            <div class="team"><span class="crest">🌉</span><span class="team-name">Warriors</span></div>
+          </div>
+          <div class="match-bottom">
+            <span>1 Kasım · Örnek fikstür</span>
+            <button onclick="toast('Maç detayları API bağlantısından sonra açılacak.')">Maç detayı ↗</button>
+          </div>
+        </article>
+      </div>
+
+      <div class="empty" id="matchEmpty">Bu filtrede maç bulunamadı.</div>
+      <div class="notice">
+        Bu önizlemede maç kartları tasarım örneğidir; gerçek fikstür veya canlı skor değildir. Gerçek zamanlı veriler için lisanslı bir spor veri API'si bağlanmalıdır.
+      </div>
+    </section>
+
+    <section class="section content-grid" id="haberler">
+      <div>
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">Spor gündemi</div>
+            <h2 class="section-title">Son haberler</h2>
+          </div>
+          <button class="section-link" onclick="toast('Tüm haberler sayfası sonraki aşamada hazırlanacak.')">Tüm haberler ↗</button>
+        </div>
+
+        <div class="news-list" id="newsList">
+          <article class="news-card" data-search="futbol genç yetenekler gelişim altyapı">
+            <div class="news-art">⚽</div>
+            <div>
+              <span class="news-tag">Futbol</span>
+              <h3>Genç yeteneklerin gelişiminde altyapının önemi</h3>
+              <p>Modern futbolda kulüplerin altyapı yatırımları her geçen gün daha fazla öne çıkıyor.</p>
+              <div class="news-date">SPORIX Editör · Örnek içerik</div>
+            </div>
+          </article>
+
+          <article class="news-card" data-search="basketbol avrupa takımlar turnuva">
+            <div class="news-art">🏀</div>
+            <div>
+              <span class="news-tag">Basketbol</span>
+              <h3>Avrupa basketbolunda yeni sezon heyecanı</h3>
+              <p>Takımlar, yoğun fikstür öncesinde hazırlıklarını sürdürüyor.</p>
+              <div class="news-date">SPORIX Editör · Örnek içerik</div>
+            </div>
+          </article>
+
+          <article class="news-card" data-search="voleybol milli takım turnuva hazırlık">
+            <div class="news-art">🏐</div>
+            <div>
+              <span class="news-tag">Voleybol</span>
+              <h3>Voleybolda sezon öncesi hazırlıklar hız kazandı</h3>
+              <p>Kulüpler ve sporcular yeni sezon hedefleri için çalışmalarına devam ediyor.</p>
+              <div class="news-date">SPORIX Editör · Örnek içerik</div>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <aside id="ligler">
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">Lig merkezi</div>
+            <h2 class="section-title">Puan durumu</h2>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Süper Lig</h3>
+            <select class="select" id="leagueSelect" aria-label="Lig seç">
+              <option>Süper Lig</option>
+              <option>Premier Lig</option>
+              <option>La Liga</option>
+            </select>
+          </div>
+
+          <table class="table">
+            <thead>
+              <tr><th>Takım</th><th>O</th><th>AV</th><th>P</th></tr>
+            </thead>
+            <tbody id="standingsBody">
+              <tr><td><span class="rank">1</span><span class="club">Galatasaray</span></td><td>0</td><td>0</td><td>0</td></tr>
+              <tr><td><span class="rank">2</span><span class="club">Fenerbahçe</span></td><td>0</td><td>0</td><td>0</td></tr>
+              <tr><td><span class="rank">3</span><span class="club">Beşiktaş</span></td><td>0</td><td>0</td><td>0</td></tr>
+              <tr><td><span class="rank">4</span><span class="club">Trabzonspor</span></td><td>0</td><td>0</td><td>0</td></tr>
+              <tr><td><span class="rank">5</span><span class="club">Başakşehir</span></td><td>0</td><td>0</td><td>0</td></tr>
+            </tbody>
+          </table>
+
+          <div class="notice">Puan tablosu örnek görünümüdür; resmî lig sıralaması değildir.</div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section" id="sporlar">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Keşfet</div>
+          <h2 class="section-title">Spor dalları</h2>
+        </div>
+      </div>
+
+      <div class="sports-grid">
+        <button class="sport-card" onclick="setSport('Futbol')">
+          <span class="sport-icon">⚽</span>
+          <span><strong>Futbol</strong><small>Ligler · Takımlar · Oyuncular</small></span>
+        </button>
+        <button class="sport-card" onclick="setSport('Basketbol')">
+          <span class="sport-icon">🏀</span>
+          <span><strong>Basketbol</strong><small>NBA · Avrupa · Türkiye</small></span>
+        </button>
+        <button class="sport-card" onclick="setSport('Voleybol')">
+          <span class="sport-icon">🏐</span>
+          <span><strong>Voleybol</strong><small>Ligler · Maçlar · Haberler</small></span>
+        </button>
+        <button class="sport-card" onclick="setSport('Tenis')">
+          <span class="sport-icon">🎾</span>
+          <span><strong>Tenis</strong><small>Turnuvalar · Sıralamalar</small></span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="shell footer-inner">
+      <div>
+        <a class="logo" href="/">
+          <img class="logo-image" src="images/logo.jpeg" alt="SPORIX logosu">
+          <span class="logo-word">SPOR<span>IX</span></span>
+        </a>
+        <div style="margin-top:10px">© 2026 SPORIX · Sporun yeni adresi.</div>
+      </div>
+      <div class="footer-links">
+        <a href="/">Ana Sayfa</a>
+        <a href="/haberler">Haberler</a>
+        <a href="/maclar">Maç Merkezi</a>
+        <a href="/sporlar">Spor Dalları</a>
+      </div>
+    </div>
+  </footer>
 </div>
 
-<header>
-  <div class="container header">
-    <a href="/" class="logo">SPOR<span>IX</span></a>
+<div class="toast" id="toast" role="status"></div>
 
-    <nav>
-      <a class="active" href="/">Ana Sayfa</a>
-      <a href="/maclar/">Maç Merkezi</a>
-      <a href="/haberler/">Haberler</a>
-      <a href="/puan-durumu/">Puan Durumu</a>
-      <a href="/sporlar/">Sporlar</a>
-    </nav>
-  </div>
-</header>
+<script>
+const toastEl = document.getElementById('toast');
+let toastTimer;
 
-<div class="sports-menu">
-  <div class="container">
-    <a class="pill" href="/futbol/">⚽ Futbol</a>
-    <a class="pill" href="/basketbol/">🏀 Basketbol</a>
-    <a class="pill" href="/voleybol/">🏐 Voleybol</a>
-    <a class="pill" href="/tenis/">🎾 Tenis</a>
-    <a class="pill" href="/motor-sporlari/">🏁 Motor Sporları</a>
-  </div>
-</div>
+function toast(message) {
+  toastEl.textContent = message;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600);
+}
 
-<main class="container">
+const routeSections = {
+  '/': ['.hero', '#maclar', '.content-grid', '#sporlar'],
+  '/maclar': ['#maclar'],
+  '/haberler': ['#haberler'],
+  '/puan-durumu': ['#ligler'],
+  '/sporlar': ['#sporlar'],
+  '/futbol': ['#maclar', '#haberler'],
+  '/basketbol': ['#maclar', '#haberler'],
+  '/voleybol': ['#maclar', '#haberler'],
+  '/tenis': ['#sporlar'],
+  '/motor-sporlari': ['#sporlar']
+};
 
-  <section class="hero">
-    <small>SPORUN MERKEZİ</small>
-    <h1>Oyunun heyecanı,<br>tek bir yerde.</h1>
-    <p>
-      En sevdiğin takımlar, maç programları ve spor
-      dünyasından gelişmeler SPORIX'te.
-    </p>
-  </section>
+function navigate(path, addHistory = true) {
+  const route = routeSections[path] ? path : '/';
 
-  <section class="section">
-    <h2>SPORIX'te Neler Var?</h2>
+  if (addHistory) history.pushState({}, '', route);
 
-    <div class="grid">
-      <a href="/maclar/" class="card">
-        <small>MAÇ MERKEZİ</small>
-        <h3>Maçlar ve sonuçlar</h3>
-        <p>Karşılaşma programlarını ve maç sonuçlarını takip et.</p>
-      </a>
+  const visible = routeSections[route];
 
-      <a href="/haberler/" class="card">
-        <small>SPOR GÜNDEMİ</small>
-        <h3>Son spor haberleri</h3>
-        <p>Spor dünyasındaki gelişmeleri keşfet.</p>
-      </a>
+  document.querySelectorAll('main > section').forEach(section => {
+    section.style.display = visible.some(selector =>
+      section.matches(selector) || section.querySelector(selector)
+    ) ? '' : 'none';
+  });
 
-      <a href="/puan-durumu/" class="card">
-        <small>LİG MERKEZİ</small>
-        <h3>Puan durumları</h3>
-        <p>Lig sıralamalarını ve takım performanslarını incele.</p>
-      </a>
-    </div>
-  </section>
+  document.querySelectorAll('.nav a').forEach(link => {
+    link.classList.toggle('active', link.getAttribute('href') === route);
+  });
 
-  <section class="section">
-    <h2>Spor Dalları</h2>
+  document.querySelector('.header').classList.toggle('show-sports', route === '/sporlar');
 
-    <div class="grid">
-      <a href="/futbol/" class="card"><h3>⚽ Futbol</h3><p>Futbol haberleri ve gelişmeleri.</p></a>
-      <a href="/basketbol/" class="card"><h3>🏀 Basketbol</h3><p>NBA ve Avrupa basketbolu.</p></a>
-      <a href="/voleybol/" class="card"><h3>🏐 Voleybol</h3><p>Voleybol dünyasından haberler.</p></a>
-      <a href="/tenis/" class="card"><h3>🎾 Tenis</h3><p>Turnuvalar ve tenis gündemi.</p></a>
-      <a href="/motor-sporlari/" class="card"><h3>🏁 Motor Sporları</h3><p>Motor sporları gelişmeleri.</p></a>
-    </div>
-  </section>
+  document.querySelectorAll('.subnav a').forEach(link => {
+    link.classList.toggle(
+      'active',
+      link.getAttribute('href') === route ||
+      (route === '/' && link.getAttribute('href') === '/sporlar')
+    );
+  });
 
-</main>
+  document.getElementById('mainNav').classList.remove('open');
+  window.scrollTo({top: 0, behavior: 'smooth'});
 
-<footer>
-  <div class="container">
-    <strong>SPORIX · Sporun Yeni Adresi</strong>
-    <span>© 2026 SPORIX</span>
-  </div>
-</footer>
+  const titles = {
+    '/': 'SPORIX',
+    '/maclar': 'Maç Merkezi',
+    '/haberler': 'Spor Haberleri',
+    '/puan-durumu': 'Puan Durumu',
+    '/sporlar': 'Spor Dalları',
+    '/futbol': 'Futbol',
+    '/basketbol': 'Basketbol',
+    '/voleybol': 'Voleybol',
+    '/tenis': 'Tenis',
+    '/motor-sporlari': 'Motor Sporları'
+  };
 
+  document.title = titles[route] + ' | SPORIX';
+}
+
+document.addEventListener('click', event => {
+  const link = event.target.closest('a[href^="/"]');
+
+  if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+
+  event.preventDefault();
+  navigate(link.getAttribute('href'));
+});
+
+window.addEventListener('popstate', () => {
+  const path = location.pathname.replace(/\/$/, '') || '/';
+  navigate(path, false);
+});
+
+navigate(location.pathname.replace(/\/$/, '') || '/', false);
+
+function filterMatches(category) {
+  let visible = 0;
+
+  document.querySelectorAll('.match-card').forEach(card => {
+    const show = category === 'Tümü' || card.dataset.category === category;
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+
+  document.getElementById('matchEmpty').style.display = visible ? 'none' : 'block';
+}
+
+document.querySelectorAll('#matchTabs .tab').forEach(button => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('#matchTabs .tab').forEach(b => b.classList.remove('active'));
+    button.classList.add('active');
+    filterMatches(button.dataset.filter);
+  });
+});
+
+function setSport(sport) {
+  document.querySelectorAll('.subnav .pill').forEach(b => {
+    b.classList.toggle('active', b.dataset.sport === sport);
+  });
+
+  const tab = [...document.querySelectorAll('#matchTabs .tab')]
+    .find(b => b.dataset.filter === sport);
+
+  if (tab) {
+    tab.click();
+  } else {
+    filterMatches('Tümü');
+    toast(sport + ' bölümü yakında genişletilecek.');
+  }
+
+  document.querySelector('#maclar').scrollIntoView({behavior: 'smooth'});
+}
+
+document.getElementById('menuToggle').addEventListener('click', () => {
+  document.getElementById('mainNav').classList.toggle('open');
+});
+
+document.querySelectorAll('.nav a').forEach(a => {
+  a.addEventListener('click', () => {
+    document.getElementById('mainNav').classList.remove('open');
+  });
+});
+
+document.getElementById('searchToggle').addEventListener('click', () => {
+  const input = document.getElementById('searchInput');
+
+  if (window.innerWidth <= 640) {
+    const term = prompt('Takım veya haber ara:');
+
+    if (term !== null) {
+      input.value = term;
+      runSearch(term);
+    }
+  } else {
+    input.focus();
+  }
+});
+
+function runSearch(value) {
+  const term = value.trim().toLocaleLowerCase('tr');
+  let found = 0;
+
+  document.querySelectorAll('.match-card, .news-card').forEach(card => {
+    const haystack = ((card.dataset.search || '') + ' ' + card.innerText)
+      .toLocaleLowerCase('tr');
+
+    const show = !term || haystack.includes(term);
+    card.style.display = show ? '' : 'none';
+
+    if (show) found++;
+  });
+
+  document.getElementById('matchEmpty').style.display =
+    term && found === 0 ? 'block' : 'none';
+
+  if (term) {
+    document.querySelector('#maclar').scrollIntoView({behavior: 'smooth'});
+  }
+}
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  runSearch(e.target.value);
+});
+
+const leagueData = {
+  'Süper Lig': ['Galatasaray', 'Fenerbahçe', 'Beşiktaş', 'Trabzonspor', 'Başakşehir'],
+  'Premier Lig': ['Manchester City', 'Arsenal', 'Liverpool', 'Chelsea', 'Tottenham'],
+  'La Liga': ['Real Madrid', 'Barcelona', 'Atlético Madrid', 'Girona', 'Athletic Bilbao']
+};
+
+document.getElementById('leagueSelect').addEventListener('change', e => {
+  const teams = leagueData[e.target.value] || leagueData['Süper Lig'];
+
+  document.getElementById('standingsBody').innerHTML = teams.map((team, i) =>
+    `<tr><td><span class="rank">${i + 1}</span><span class="club">${team}</span></td><td>0</td><td>0</td><td>0</td></tr>`
+  ).join('');
+
+  toast(e.target.value + ' örnek tablosu gösteriliyor.');
+});
+</script>
 </body>
 </html>
