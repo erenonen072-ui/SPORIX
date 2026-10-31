@@ -13,19 +13,35 @@
 
 <header class="header">
   <div class="header-inner">
+
     <a class="logo" href="/">
-      SPOR<span>IX</span>
-      <small>SPORUN MERKEZİ</small>
+      <img src="images/logo.jpeg" alt="SPORIX Logo">
     </a>
 
-    <nav class="nav">
-      <a class="active" href="#maclar">MAÇLAR</a>
-      <a href="#haberler">HABERLER</a>
-      <a href="#puan">PUAN DURUMU</a>
-      <a href="#fikstur">FİKSTÜR</a>
+    <nav class="nav" id="mainNav">
+      <a href="/maclar/">MAÇLAR</a>
+      <a href="/haberler/">HABERLER</a>
+
+      <div class="dropdown">
+        <a href="/sporlar/" class="dropdown-toggle">
+          SPORLAR <span>⌄</span>
+        </a>
+
+        <div class="dropdown-menu">
+          <a href="/sporlar/futbol/">⚽ Futbol</a>
+          <a href="/sporlar/basketbol/">🏀 Basketbol</a>
+          <a href="/sporlar/tenis/">🎾 Tenis</a>
+          <a href="/sporlar/voleybol/">🏐 Voleybol</a>
+          <a href="/sporlar/at-yarisi/">🏇 At Yarışı</a>
+        </div>
+      </div>
+
+      <a href="/puan-durumu/">PUAN DURUMU</a>
+      <a href="/fikstur/">FİKSTÜR</a>
     </nav>
 
     <button class="menu-btn" id="menuBtn">☰</button>
+
   </div>
 </header>
 
@@ -39,14 +55,6 @@
 
 <main class="container">
 
-  <section class="welcome">
-    <div>
-      <span class="eyebrow">SPORUN NABZI BURADA ATAR</span>
-      <h1>SPOR DÜNYASININ<br><span>MERKEZİ</span></h1>
-      <p>Canlı skorlar, son dakika haberleri ve futbolun tüm heyecanı.</p>
-    </div>
-    <div class="welcome-ball">⚽</div>
-  </section>
 
   <div class="section-heading" id="maclar">
     <div>
