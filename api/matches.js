@@ -25,28 +25,58 @@ function getTurkeyDate() {
   return `${values.year}-${values.month}-${values.day}`;
 }
 
-export default async function handler(req, res) {
-  const { league, date, status } = req.query;
+function getMatches(data) {
+  if (Array.isArray(data)) return data;
 
-  if (!league) {
+  return (
+    data?.matches ||
+    data?.fixtures ||
+    data?.results ||
+    data?.data?.matches ||
+    data?.data?.fixtures ||
+    data?.data?.results ||
+    []
+  );
+}
+
+export default async function handler(req, res) {
+  const { league, competition, date, status } = req.query;
+
+  // Önce eski lig kodlarını, sonra doğrudan gönderilen slug'ı kullan.
+  const selectedCompetition =
+    competition ||
+    LEAGUES[league] ||
+    league;
+
+  if (
+    !selectedCompetition ||
+    !/^[a-z0-9-]+$/i.test(selectedCompetition)
+  ) {
     return res.status(400).json({
       success: false,
-      error: "Lütfen lig seç."
+      error: "Geçerli bir lig seçmelisin."
     });
   }
 
-  const competition = LEAGUES[league];
-
-  if (!competition) {
+  if (
+    status &&
+    !["live", "finished", "upcoming"].includes(status)
+  ) {
     return res.status(400).json({
       success: false,
-      error: "Desteklenmeyen lig.",
-      league
+      error: "Geçersiz maç filtresi."
     });
   }
 
   try {
     const selectedDate = date || getTurkeyDate();
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(selectedDate)) {
+      return res.status(400).json({
+        success: false,
+        error: "Tarih YYYY-MM-DD formatında olmalı."
+      });
+    }
 
     const url = new URL(
       "https://sportscore.com/api/v1/fixtures/"
@@ -54,10 +84,10 @@ export default async function handler(req, res) {
 
     url.searchParams.set("sport", "football");
     url.searchParams.set("date", selectedDate);
-    url.searchParams.set("competition", competition);
+    url.searchParams.set("competition", selectedCompetition);
     url.searchParams.set("limit", "200");
 
-    if (status && ["live", "finished", "upcoming"].includes(status)) {
+    if (status) {
       url.searchParams.set("status", status);
     }
 
@@ -71,7 +101,12 @@ export default async function handler(req, res) {
       headers["X-Api-Key"] = apiKey;
     }
 
-    const response = await fetch(url, { headers });
+    const response = await fetch(url, {
+      method: "GET",
+      headers,
+      cache: "no-store"
+    });
+
     const data = await response.json();
 
     if (!response.ok) {
@@ -82,15 +117,17 @@ export default async function handler(req, res) {
       });
     }
 
-    const matches = Array.isArray(data.matches)
-      ? data.matches
-      : [];
+    const matches = getMatches(data);
+
+    if (!Array.isArray(matches)) {
+      throw new Error("API geçerli bir maç listesi döndürmedi.");
+    }
 
     return res.status(200).json({
       success: true,
       sport: "football",
-      league,
-      competition,
+      league: league || selectedCompetition,
+      competition: selectedCompetition,
       date: selectedDate,
       count: matches.length,
       matches,
