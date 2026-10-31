@@ -618,3 +618,181 @@ footer p {
     height: 125px;
   }
 }
+
+/* LİG SEÇİMİ */
+.league-selector {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 16px;
+}
+
+.league-selector label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #555;
+}
+
+#leagueSelect {
+  width: 100%;
+  max-width: 330px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  color: #222;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* MAÇ KARTLARI */
+.matches-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.match-card {
+  min-width: 0;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid #e9e9e9;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.match-card-top,
+.match-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #777;
+}
+
+.match-card-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 18px 0;
+}
+
+.match-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.match-team img {
+  display: block;
+  width: 34px;
+  height: 34px;
+  max-width: 34px;
+  max-height: 34px;
+  object-fit: contain;
+}
+
+.team-placeholder {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  font-size: 23px;
+}
+
+.match-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.match-score {
+  font-size: 21px;
+  font-weight: 900;
+  color: #171717;
+}
+
+.match-time {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.match-result small {
+  color: #777;
+  font-size: 10px;
+}
+
+.match-status {
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.match-status.live {
+  color: #e50914;
+}
+
+.match-status.finished {
+  color: #777;
+}
+
+.match-status.upcoming {
+  color: #2465bd;
+}
+
+.match-card-bottom {
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.empty-state,
+.error-state {
+  text-align: center;
+  padding: 35px 15px;
+  background: #fff;
+  border-radius: 10px;
+}
+
+.loading {
+  text-align: center;
+  padding: 30px;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 17px;
+  height: 17px;
+  border: 2px solid #ddd;
+  border-top-color: #e50914;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 650px) {
+  .matches-list {
+    grid-template-columns: 1fr;
+  }
+
+  .match-card {
+    padding: 12px;
+  }
+}
