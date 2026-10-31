@@ -3,175 +3,85 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#101827">
-  <meta name="description" content="SPORIX canlı futbol skorları, maç sonuçları ve karşılaşmalar.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Canlı Skorlar | SPORIX</title>
-
   <link rel="stylesheet" href="/assets/style.css">
   <script src="/assets/app.js" defer></script>
 </head>
 <body>
+<header class="header">
+  <div class="header-inner">
+    <a href="/" class="logo"><img src="/images/logo.jpeg" alt="SPORIX"><span>SPOR<span>IX</span></span></a>
+    <button class="menu-btn" id="menuBtn">☰</button>
+    <nav class="nav" id="mainNav">
+      <a href="/">Ana Sayfa</a>
+      <a class="active" href="/maclar/">Canlı Skorlar</a>
+      <a href="/haberler/">Haberler</a>
+      <a href="/puan-durumu/">Puan Durumu</a>
+      <a href="/fikstur/">Fikstür</a>
+    </nav>
+  </div>
+</header>
 
-  <div class="top-strip">
-    <div class="top-strip-inner">
-      <span>SPORUN NABZI BURADA ATIYOR</span>
-      <span id="matchDate"></span>
-    </div>
+<main class="container">
+  <div class="page-title">
+    <h1>Canlı Skorlar</h1>
+    <p>Ligleri seç, karşılaşmaları ve maç sonuçlarını takip et.</p>
   </div>
 
-  <header class="header">
-    <div class="header-inner">
-
-      <a class="logo" href="/">
-        <img src="/images/logo.jpeg" alt="SPORIX">
-      </a>
-
-      <nav class="nav" id="mainNav">
-        <a class="nav-link" href="/">ANA SAYFA</a>
-        <a class="nav-link active" href="/maclar/">CANLI SKOR</a>
-        <a class="nav-link" href="/haberler/">HABERLER</a>
-        <a class="nav-link" href="/sporlar/">SPORLAR</a>
-        <a class="nav-link" href="/puan-durumu/">PUAN DURUMU</a>
-        <a class="nav-link" href="/fikstur/">FİKSTÜR</a>
-      </nav>
-
-      <div class="header-actions">
-        <span class="header-live">
-          <span class="live-dot"></span>
-          CANLI SKOR MERKEZİ
-        </span>
-
-        <button class="menu-btn" id="menuBtn" aria-label="Menüyü aç">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+  <div class="match-box">
+    <div class="match-toolbar">
+      <div class="toolbar-title">
+        <strong id="matchDate">Günün Maçları</strong>
+        <span>Karşılaşmalar</span>
       </div>
-
-    </div>
-  </header>
-
-  <main class="container">
-
-    <section class="match-section" id="maclar">
-
-      <div class="section-heading">
-        <div class="heading-left">
-          <span class="heading-icon">⚽</span>
-          <div>
-            <span class="eyebrow">SPORIX SCORE CENTER</span>
-            <h2>CANLI MAÇ SKORLARI</h2>
-          </div>
-        </div>
-
-        <span class="live-label">
-          <span class="live-dot"></span>
-          CANLI TAKİP
-        </span>
-      </div>
-
-      <div class="match-panel">
-
-        <div class="match-panel-header">
-          <div>
-            <span class="eyebrow">FUTBOL KARŞILAŞMALARI</span>
-            <h3>MAÇ MERKEZİ</h3>
-          </div>
-          <span class="panel-date">GÜNCEL MAÇLAR</span>
-        </div>
-
-        <div class="league-selector">
-          <div class="league-label">
-            <span class="league-icon">🏆</span>
-            <div>
-              <label for="leagueSelect">LİG SEÇİMİ</label>
-              <small>Takip etmek istediğin organizasyonu seç</small>
-            </div>
-          </div>
-
-          <select id="leagueSelect">
-            <optgroup label="TÜRKİYE">
-              <option value="super-lig">Türkiye Süper Lig</option>
-              <option value="1-lig">Türkiye 1. Lig</option>
-            </optgroup>
-
-            <optgroup label="İNGİLTERE">
-              <option value="premier-league">Premier League</option>
-            </optgroup>
-
-            <optgroup label="İSPANYA">
-              <option value="la-liga">La Liga</option>
-            </optgroup>
-
-            <optgroup label="İTALYA">
-              <option value="serie-a">Serie A</option>
-            </optgroup>
-
-            <optgroup label="ALMANYA">
-              <option value="bundesliga">Bundesliga</option>
-            </optgroup>
-
-            <optgroup label="FRANSA">
-              <option value="ligue-1">Ligue 1</option>
-            </optgroup>
-
-            <optgroup label="AVRUPA">
-              <option value="champions-league">Şampiyonlar Ligi</option>
-            </optgroup>
-          </select>
-        </div>
-
-        <div class="match-toolbar">
-          <div class="match-tabs">
-            <button class="selected" data-filter="all">TÜMÜ</button>
-            <button data-filter="live">CANLI</button>
-            <button data-filter="finished">BİTEN</button>
-            <button data-filter="upcoming">YAKLAŞAN</button>
-          </div>
-
-          <button class="refresh-btn" id="refreshMatches">
-            ↻ YENİLE
-          </button>
-        </div>
-
-        <div class="match-date"></div>
-
-        <div id="matches" aria-live="polite">
-          <div class="loading">Maçlar yükleniyor...</div>
-        </div>
-
-        <div class="api-credit">
-          <span>VERİ SAĞLAYICI</span>
-          <a href="https://sportscore.com/" rel="dofollow" target="_blank">
-            Powered by SportScore
-          </a>
-        </div>
-
-      </div>
-    </section>
-
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-      <div class="footer-brand">
-        <div class="footer-logo">SPOR<span>IX</span></div>
-        <p>Sporun nabzı burada atar.</p>
-      </div>
-
-      <div class="footer-links">
-        <a href="/">Ana Sayfa</a>
-        <a href="/maclar/">Canlı Skor</a>
-        <a href="/haberler/">Haberler</a>
-        <a href="/fikstur/">Fikstür</a>
-      </div>
-
-      <div class="footer-copy">
-        © 2026 SPORIX. Tüm hakları saklıdır.
+      <div class="toolbar-actions">
+        <select id="leagueSelect" class="league-select">
+          <option value="super-lig">Türkiye Süper Lig</option>
+          <option value="1-lig">Türkiye 1. Lig</option>
+          <option value="premier-league">Premier League</option>
+          <option value="la-liga">La Liga</option>
+          <option value="serie-a">Serie A</option>
+          <option value="bundesliga">Bundesliga</option>
+          <option value="ligue-1">Ligue 1</option>
+          <option value="champions-league">Şampiyonlar Ligi</option>
+        </select>
+        <button id="refreshMatches" class="refresh-btn" type="button">↻</button>
       </div>
     </div>
-  </footer>
 
+    <div class="filters">
+      <button class="filter-button active" data-filter="all">Tümü</button>
+      <button class="filter-button" data-filter="live">Canlı</button>
+      <button class="filter-button" data-filter="finished">Biten</button>
+      <button class="filter-button" data-filter="upcoming">Yaklaşan</button>
+    </div>
+
+    <div id="matches" class="matches-list">
+      <div class="loading-state">Maçlar yükleniyor...</div>
+    </div>
+
+    <div class="box-footer">
+      <a href="/">Ana sayfaya dön</a>
+      <small>Veri sağlayıcı: <a href="https://sportscore.com/" target="_blank" rel="dofollow">SportScore</a></small>
+    </div>
+  </div>
+</main>
+
+<footer class="footer"><div class="footer-inner">
+  <a href="/" class="footer-logo">SPOR<span>IX</span></a>
+  <div class="footer-links"><a href="/">Ana Sayfa</a><a href="/haberler/">Haberler</a><a href="/puan-durumu/">Puan Durumu</a><a href="/fikstur/">Fikstür</a></div>
+  <small>© 2026 SPORIX</small>
+</div></footer>
+
+<script>
+  const savedLeague = sessionStorage.getItem("sporix-selected-league");
+  const select = document.getElementById("leagueSelect");
+  if (savedLeague && select) {
+    select.value = savedLeague;
+    sessionStorage.removeItem("sporix-selected-league");
+    select.dispatchEvent(new Event("change"));
+  }
+</script>
 </body>
 </html>
