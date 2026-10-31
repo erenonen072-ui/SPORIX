@@ -33,6 +33,18 @@ function escapeHTML(value) {
   })[char]);
 }
 
+function cleanImageURL(value) {
+  if (!value) return "";
+
+  let url = String(value).trim();
+
+  // Markdown bağlantısı olarak gelirse gerçek URL'yi ayıkla.
+  const markdown = url.match(/^\[.*?\]\((https?:\/\/.*?)\)$/);
+  if (markdown) url = markdown[1];
+
+  return /^https?:\/\//i.test(url) ? url : "";
+}
+
 function getMatchList(data) {
   if (Array.isArray(data)) return data;
 
@@ -65,10 +77,10 @@ function getTeamLogo(team, match, side) {
     ? match.home_logo || match.homeLogo
     : match.away_logo || match.awayLogo;
 
-  if (direct) return direct;
+  if (direct) return cleanImageURL(direct);
 
   return typeof team === "object"
-    ? team?.logo || team?.image || team?.crest || ""
+    ? cleanImageURL(team?.logo || team?.image || team?.crest || "")
     : "";
 }
 
@@ -132,35 +144,35 @@ function getStatus(match) {
   return "upcoming";
 }
 
-function getStatusLabel(match, status) {
-  const text =
-    match.status_text ||
-    match.statusText ||
-    match.minute ||
-    match.elapsed ||
-    "";
+function getKickoffTime(match) {
+  const time = match.time || match.date || match.start_time || match.startTime;
 
+  if (!time) return "Saat bilgisi yok";
+
+  const date = new Date(time);
+
+  if (Number.isNaN(date.getTime())) return "Saat bilgisi yok";
+
+  return date.toLocaleTimeString("tr-TR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Istanbul"
+  });
+}
+
+function getStatusLabel(match, status) {
   if (status === "live") {
-    return text ? String(text) : "CANLI";
+    return (
+      match.minute ||
+      match.elapsed ||
+      match.status_text ||
+      "CANLI"
+    );
   }
 
   if (status === "finished") return "MAÇ SONU";
 
-  const time = match.time || match.date || match.start_time;
-
-  if (time) {
-    const date = new Date(time);
-
-    if (!Number.isNaN(date.getTime())) {
-      return date.toLocaleTimeString("tr-TR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: "Europe/Istanbul"
-      });
-    }
-  }
-
-  return "BAŞLAMADI";
+  return getKickoffTime(match);
 }
 
 function getMatchDate(match) {
@@ -175,8 +187,7 @@ function getMatchDate(match) {
   return date.toLocaleString("tr-TR", {
     day: "2-digit",
     month: "long",
-    hour: "2-digit",
-    minute: "2-digit",
+    year: "numeric",
     timeZone: "Europe/Istanbul"
   });
 }
@@ -200,30 +211,36 @@ function renderMatch(match) {
   const awayLogo = getTeamLogo(away, match, "away");
 
   const status = getStatus(match);
+
   const homeScore = getScore(match, "home");
   const awayScore = getScore(match, "away");
 
   const scoreHTML = status === "upcoming"
-    ? `<span class="match-time">${escapeHTML(getStatusLabel(match, status))}</span>`
+    ? `<span class="match-time">${escapeHTML(getKickoffTime(match))}</span>`
     : `<strong class="match-score">${escapeHTML(homeScore)} - ${escapeHTML(awayScore)}</strong>`;
 
   const competition = getCompetitionName(match);
 
   return `
     <article class="match-card" data-status="${status}">
+
       <div class="match-card-top">
         <span class="match-status ${status}">
           ${status === "live" ? '<i></i>' : ""}
           ${escapeHTML(STATUS_TEXT[status])}
         </span>
-        <span class="match-competition">${escapeHTML(competition)}</span>
+
+        <span class="match-competition">
+          ${escapeHTML(competition)}
+        </span>
       </div>
 
       <div class="match-card-body">
+
         <div class="match-team">
           ${
             homeLogo
-              ? `<img src="${escapeHTML(homeLogo)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+              ? `<img src="${escapeHTML(homeLogo)}" alt="${escapeHTML(homeName)}" loading="lazy" onerror="this.style.display='none'">`
               : `<span class="team-placeholder">⚽</span>`
           }
           <span>${escapeHTML(homeName)}</span>
@@ -237,16 +254,18 @@ function renderMatch(match) {
         <div class="match-team away">
           ${
             awayLogo
-              ? `<img src="${escapeHTML(awayLogo)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+              ? `<img src="${escapeHTML(awayLogo)}" alt="${escapeHTML(awayName)}" loading="lazy" onerror="this.style.display='none'">`
               : `<span class="team-placeholder">⚽</span>`
           }
           <span>${escapeHTML(awayName)}</span>
         </div>
+
       </div>
 
       <div class="match-card-bottom">
         <span>${escapeHTML(getMatchDate(match))}</span>
       </div>
+
     </article>
   `;
 }
@@ -263,7 +282,7 @@ function renderMatches() {
       <div class="empty-state">
         <div class="empty-icon">⚽</div>
         <h3>Bu kategoride maç bulunamadı</h3>
-        <p>Seçili ligde bugün gösterilecek karşılaşma yok.</p>
+        <p>Seçili ligde bu filtreye uygun karşılaşma bulunmuyor.</p>
       </div>
     `;
     return;
@@ -284,11 +303,30 @@ function showError(message) {
       <div class="empty-icon">!</div>
       <h3>Maçlar yüklenemedi</h3>
       <p>${escapeHTML(message)}</p>
-      <button type="button" class="retry-btn" id="retryMatches">Tekrar dene</button>
+      <button type="button" class="retry-btn" id="retryMatches">
+        Tekrar dene
+      </button>
     </div>
   `;
 
-  document.getElementById("retryMatches")?.addEventListener("click", loadMatches);
+  document
+    .getElementById("retryMatches")
+    ?.addEventListener("click", loadMatches);
+}
+
+function getTurkeyDate() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Istanbul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(new Date());
+
+  const values = Object.fromEntries(
+    parts.map(part => [part.type, part.value])
+  );
+
+  return `${values.year}-${values.month}-${values.day}`;
 }
 
 function updateDate() {
@@ -298,7 +336,8 @@ function updateDate() {
     weekday: "long",
     day: "numeric",
     month: "long",
-    year: "numeric"
+    year: "numeric",
+    timeZone: "Europe/Istanbul"
   });
 }
 
@@ -326,29 +365,28 @@ async function loadMatches() {
 
     url.searchParams.set("league", leagueSlug);
 
-    // Tarih Türkiye'nin yerel takvim gününe göre gönderilir.
-    const parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Europe/Istanbul",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit"
-    }).formatToParts(new Date());
-
-    const dateParts = Object.fromEntries(parts.map(part => [part.type, part.value]));
-    const today = `${dateParts.year}-${dateParts.month}-${dateParts.day}`;
-
-    url.searchParams.set("date", today);
+    // Süper Lig takım fikstürü.
+    // Şimdilik doğrulanmış takım slug'ı Galatasaray.
+    if (leagueSlug === "super-lig") {
+      url.searchParams.set("team", "galatasaray");
+    } else {
+      url.searchParams.set("date", getTurkeyDate());
+    }
 
     const response = await fetch(url, {
       method: "GET",
-      headers: { "Accept": "application/json" },
+      headers: {
+        "Accept": "application/json"
+      },
       cache: "no-store"
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || `Sunucu hatası: ${response.status}`);
+      throw new Error(
+        data.error || `Sunucu hatası: ${response.status}`
+      );
     }
 
     allMatches = getMatchList(data);
@@ -357,12 +395,20 @@ async function loadMatches() {
       throw new Error("API maç listesi beklenen formatta değil.");
     }
 
+    // Tarihe göre sırala: en yakın maçlar önce.
+    allMatches.sort((a, b) => {
+      return new Date(a.time || a.date || 0) -
+        new Date(b.time || b.date || 0);
+    });
+
     updateDate();
     renderMatches();
 
   } catch (error) {
     console.error("SPORIX maç API hatası:", error);
+
     showError(error.message || "Bağlantı kurulamadı.");
+
   } finally {
     loading = false;
 
@@ -373,7 +419,7 @@ async function loadMatches() {
   }
 }
 
-// Lig değişince seçilen ligin maçlarını getir.
+// Lig değişince maçları getir.
 elements.league?.addEventListener("change", () => {
   loadMatches();
 });
@@ -400,14 +446,21 @@ elements.menuBtn?.addEventListener("click", () => {
 
   const isOpen = elements.nav?.classList.contains("active");
 
-  elements.menuBtn.setAttribute("aria-expanded", String(Boolean(isOpen)));
+  elements.menuBtn.setAttribute(
+    "aria-expanded",
+    String(Boolean(isOpen))
+  );
 });
 
-// Menüde bir bağlantıya tıklanınca mobil menüyü kapat.
+// Menü bağlantılarına tıklanınca menüyü kapat.
 elements.nav?.querySelectorAll("a").forEach(link => {
   link.addEventListener("click", () => {
     elements.nav.classList.remove("active");
-    elements.menuBtn?.setAttribute("aria-expanded", "false");
+
+    elements.menuBtn?.setAttribute(
+      "aria-expanded",
+      "false"
+    );
   });
 });
 
