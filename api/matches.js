@@ -1,4 +1,6 @@
 
+"use strict";
+
 const LEAGUES = {
   "premier-league": "english-premier-league",
   "la-liga": "spanish-la-liga",
@@ -11,19 +13,39 @@ const TEAM_COMPETITIONS = {
   "super-lig": "Turkish Super League"
 };
 
-function filterMatches(matches, { competition, date, status }) {
+function getTurkeyDate() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Istanbul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(new Date());
+
+  const values = Object.fromEntries(
+    parts.map(part => [part.type, part.value])
+  );
+
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function filterMatches(matches, competition, date, status) {
   let result = Array.isArray(matches) ? matches : [];
 
   if (competition) {
-    result = result.filter(
-      match => match.competition === competition
-    );
+    result = result.filter(match => {
+      const name = typeof match.competition === "string"
+        ? match.competition
+        : match.competition?.name || "";
+
+      return name.toLowerCase() === competition.toLowerCase();
+    });
   }
 
   if (date) {
-    result = result.filter(
-      match => match.time?.slice(0, 10) === date
-    );
+    result = result.filter(match => {
+      const matchDate = match.time || match.date || "";
+      return String(matchDate).slice(0, 10) === date;
+    });
   }
 
   if (status && ["live", "finished", "upcoming"].includes(status)) {
@@ -34,62 +56,52 @@ function filterMatches(matches, { competition, date, status }) {
 }
 
 export default async function handler(req, res) {
-  const { league, date, status, team } = req.query;
+  const { league, date, status } = req.query;
 
   if (!league) {
     return res.status(400).json({
-      error: "Lig seçilmedi."
+      error: "Lütfen bir lig seç."
     });
   }
 
   try {
-    let url;
+    const selectedDate = date || getTurkeyDate();
+
+    const url = new URL(
+      "https://sportscore.com/api/v1/fixtures/"
+    );
+
+    url.searchParams.set("sport", "football");
+    url.searchParams.set("date", selectedDate);
+    url.searchParams.set("limit", "200");
+    url.searchParams.set("src", "sporix");
+
     let competitionName = null;
 
-    // Süper Lig: takım fikstüründen yalnızca lig maçlarını al.
     if (TEAM_COMPETITIONS[league]) {
-      if (!team || !/^[a-z0-9-]+$/i.test(team)) {
-        return res.status(400).json({
-          error: "Süper Lig takım fikstürü için team parametresi gerekli.",
-          example: "/api/matches?league=super-lig&team=galatasaray"
-        });
-      }
-
-      url = new URL("https://sportscore.com/api/widget/team/");
-      url.searchParams.set("sport", "football");
-      url.searchParams.set("slug", team);
-      url.searchParams.set("limit", "30");
-
+      // Süper Lig: tüm takımların günlük maçlarını getir.
       competitionName = TEAM_COMPETITIONS[league];
     } else {
       const competitionSlug = LEAGUES[league];
 
       if (!competitionSlug) {
         return res.status(400).json({
-          error: "Bu lig için doğrulanmış SportScore kodu henüz eklenmedi.",
+          error: "Bu lig henüz desteklenmiyor.",
           league
         });
       }
 
-      url = new URL("https://sportscore.com/api/v1/fixtures/");
-      url.searchParams.set("sport", "football");
-      url.searchParams.set(
-        "date",
-        date || new Date().toLocaleDateString("en-CA", {
-          timeZone: "Europe/Istanbul"
-        })
-      );
       url.searchParams.set("competition", competitionSlug);
-      url.searchParams.set("limit", "200");
-
-      if (status && ["live", "finished", "upcoming"].includes(status)) {
-        url.searchParams.set("status", status);
-      }
     }
 
-    url.searchParams.set("src", "sporix");
+    if (status && ["live", "finished", "upcoming"].includes(status)) {
+      url.searchParams.set("status", status);
+    }
 
-    const headers = {};
+    const headers = {
+      Accept: "application/json"
+    };
+
     const apiKey = process.env.SPORTSCORE_API_KEY;
 
     if (apiKey) {
@@ -101,29 +113,33 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       return res.status(response.status).json({
-        error: "SportScore API isteği başarısız oldu.",
+        error: "SportScore API bağlantısı başarısız.",
         details: data
       });
     }
 
-    const matches = filterMatches(data.matches, {
-      competition: competitionName,
-      date: TEAM_COMPETITIONS[league] ? date : null,
+    const matches = filterMatches(
+      data.matches,
+      competitionName,
+      null,
       status
-    });
+    );
 
     return res.status(200).json({
+      success: true,
       sport: "football",
       league,
-      team: team || null,
-      date: date || null,
+      date: selectedDate,
       count: matches.length,
       matches,
       updated: data.updated || new Date().toISOString()
     });
 
   } catch (error) {
+    console.error("SPORIX API:", error);
+
     return res.status(502).json({
+      success: false,
       error: "Maç verileri alınamadı.",
       message: error.message
     });
