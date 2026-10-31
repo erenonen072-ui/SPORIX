@@ -2,15 +2,12 @@
 "use strict";
 
 const LEAGUES = {
+  "super-lig": "turkish-super-league",
   "premier-league": "english-premier-league",
   "la-liga": "spanish-la-liga",
   "serie-a": "italian-serie-a",
   "bundesliga": "bundesliga",
   "champions-league": "uefa-champions-league"
-};
-
-const TEAM_COMPETITIONS = {
-  "super-lig": "Turkish Super League"
 };
 
 function getTurkeyDate() {
@@ -28,39 +25,23 @@ function getTurkeyDate() {
   return `${values.year}-${values.month}-${values.day}`;
 }
 
-function filterMatches(matches, competition, date, status) {
-  let result = Array.isArray(matches) ? matches : [];
-
-  if (competition) {
-    result = result.filter(match => {
-      const name = typeof match.competition === "string"
-        ? match.competition
-        : match.competition?.name || "";
-
-      return name.toLowerCase() === competition.toLowerCase();
-    });
-  }
-
-  if (date) {
-    result = result.filter(match => {
-      const matchDate = match.time || match.date || "";
-      return String(matchDate).slice(0, 10) === date;
-    });
-  }
-
-  if (status && ["live", "finished", "upcoming"].includes(status)) {
-    result = result.filter(match => match.status === status);
-  }
-
-  return result;
-}
-
 export default async function handler(req, res) {
   const { league, date, status } = req.query;
 
   if (!league) {
     return res.status(400).json({
-      error: "Lütfen bir lig seç."
+      success: false,
+      error: "Lütfen lig seç."
+    });
+  }
+
+  const competition = LEAGUES[league];
+
+  if (!competition) {
+    return res.status(400).json({
+      success: false,
+      error: "Desteklenmeyen lig.",
+      league
     });
   }
 
@@ -73,26 +54,8 @@ export default async function handler(req, res) {
 
     url.searchParams.set("sport", "football");
     url.searchParams.set("date", selectedDate);
+    url.searchParams.set("competition", competition);
     url.searchParams.set("limit", "200");
-    url.searchParams.set("src", "sporix");
-
-    let competitionName = null;
-
-    if (TEAM_COMPETITIONS[league]) {
-      // Süper Lig: tüm takımların günlük maçlarını getir.
-      competitionName = TEAM_COMPETITIONS[league];
-    } else {
-      const competitionSlug = LEAGUES[league];
-
-      if (!competitionSlug) {
-        return res.status(400).json({
-          error: "Bu lig henüz desteklenmiyor.",
-          league
-        });
-      }
-
-      url.searchParams.set("competition", competitionSlug);
-    }
 
     if (status && ["live", "finished", "upcoming"].includes(status)) {
       url.searchParams.set("status", status);
@@ -113,22 +76,21 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       return res.status(response.status).json({
-        error: "SportScore API bağlantısı başarısız.",
+        success: false,
+        error: "SportScore API isteği başarısız.",
         details: data
       });
     }
 
-    const matches = filterMatches(
-      data.matches,
-      competitionName,
-      null,
-      status
-    );
+    const matches = Array.isArray(data.matches)
+      ? data.matches
+      : [];
 
     return res.status(200).json({
       success: true,
       sport: "football",
       league,
+      competition,
       date: selectedDate,
       count: matches.length,
       matches,
@@ -136,7 +98,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error("SPORIX API:", error);
+    console.error("SPORIX API hatası:", error);
 
     return res.status(502).json({
       success: false,
