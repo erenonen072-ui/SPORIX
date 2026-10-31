@@ -401,3 +401,86 @@ footer {
   .match-tabs { overflow-x: auto; }
   .match-tabs button { white-space: nowrap; }
 }
+/* SPORIX LOGO */
+.logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  height: 75px;
+}
+
+.logo img {
+  width: 175px;
+  height: 65px;
+  object-fit: contain;
+}
+
+/* SPORLAR AÇILIR MENÜ */
+.dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-toggle span {
+  margin-left: 5px;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 190px;
+  background: white;
+  border: 1px solid #eee;
+  border-top: 3px solid #e50914;
+  box-shadow: 0 10px 25px #00000018;
+  border-radius: 0 0 6px 6px;
+  z-index: 200;
+  padding: 8px 0;
+}
+
+.dropdown:hover .dropdown-menu,
+.dropdown:focus-within .dropdown-menu {
+  display: block;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 13px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 0 !important;
+  color: #222 !important;
+}
+
+.dropdown-menu a:hover {
+  background: #fff0f0;
+  color: #e50914 !important;
+}
+
+/* MOBİL MENÜ */
+@media(max-width:750px) {
+  .logo img {
+    width: 145px;
+    height: 58px;
+  }
+
+  .dropdown {
+    display: block;
+  }
+
+  .dropdown-menu {
+    position: static;
+    width: 100%;
+    box-shadow: none;
+    border: none;
+    border-left: 3px solid #e50914;
+    margin: 5px 0;
+  }
+
+  .dropdown:hover .dropdown-menu {
+    display: block;
+  }
+}
