@@ -38,9 +38,11 @@ function cleanImageURL(value) {
 
   let url = String(value).trim();
 
-  // Markdown bağlantısı olarak gelirse gerçek URL'yi ayıkla.
   const markdown = url.match(/^\[.*?\]\((https?:\/\/.*?)\)$/);
-  if (markdown) url = markdown[1];
+
+  if (markdown) {
+    url = markdown[1];
+  }
 
   return /^https?:\/\//i.test(url) ? url : "";
 }
@@ -48,7 +50,7 @@ function cleanImageURL(value) {
 function getMatchList(data) {
   if (Array.isArray(data)) return data;
 
-  const possibleLists = [
+  const lists = [
     data?.matches,
     data?.fixtures,
     data?.results,
@@ -57,7 +59,7 @@ function getMatchList(data) {
     data?.data?.results
   ];
 
-  return possibleLists.find(Array.isArray) || [];
+  return lists.find(Array.isArray) || [];
 }
 
 function getTeamName(team, fallback) {
@@ -91,7 +93,9 @@ function getScore(match, side) {
     ? match.home_score ?? match.homeScore
     : match.away_score ?? match.awayScore;
 
-  if (direct !== undefined && direct !== null) return direct;
+  if (direct !== undefined && direct !== null) {
+    return direct;
+  }
 
   if (typeof team === "object") {
     return team?.score ?? team?.goals ?? "-";
@@ -144,14 +148,16 @@ function getStatus(match) {
   return "upcoming";
 }
 
-function getKickoffTime(match) {
-  const time = match.time || match.date || match.start_time || match.startTime;
+function getTurkeyTime(match) {
+  const value = match.time || match.date || match.start_time || match.startTime;
 
-  if (!time) return "Saat bilgisi yok";
+  if (!value) return "Saat bilgisi yok";
 
-  const date = new Date(time);
+  const date = new Date(value);
 
-  if (Number.isNaN(date.getTime())) return "Saat bilgisi yok";
+  if (Number.isNaN(date.getTime())) {
+    return "Saat bilgisi yok";
+  }
 
   return date.toLocaleTimeString("tr-TR", {
     hour: "2-digit",
@@ -170,9 +176,11 @@ function getStatusLabel(match, status) {
     );
   }
 
-  if (status === "finished") return "MAÇ SONU";
+  if (status === "finished") {
+    return "MAÇ SONU";
+  }
 
-  return getKickoffTime(match);
+  return getTurkeyTime(match);
 }
 
 function getMatchDate(match) {
@@ -184,7 +192,7 @@ function getMatchDate(match) {
 
   if (Number.isNaN(date.getTime())) return "";
 
-  return date.toLocaleString("tr-TR", {
+  return date.toLocaleDateString("tr-TR", {
     day: "2-digit",
     month: "long",
     year: "numeric",
@@ -195,7 +203,9 @@ function getMatchDate(match) {
 function getCompetitionName(match) {
   const competition = match.competition || match.league || match.tournament;
 
-  if (typeof competition === "string") return competition;
+  if (typeof competition === "string") {
+    return competition;
+  }
 
   return competition?.name || competition?.title || "";
 }
@@ -216,22 +226,20 @@ function renderMatch(match) {
   const awayScore = getScore(match, "away");
 
   const scoreHTML = status === "upcoming"
-    ? `<span class="match-time">${escapeHTML(getKickoffTime(match))}</span>`
+    ? `<span class="match-time">${escapeHTML(getTurkeyTime(match))}</span>`
     : `<strong class="match-score">${escapeHTML(homeScore)} - ${escapeHTML(awayScore)}</strong>`;
-
-  const competition = getCompetitionName(match);
 
   return `
     <article class="match-card" data-status="${status}">
 
       <div class="match-card-top">
         <span class="match-status ${status}">
-          ${status === "live" ? '<i></i>' : ""}
+          ${status === "live" ? "<i></i>" : ""}
           ${escapeHTML(STATUS_TEXT[status])}
         </span>
 
         <span class="match-competition">
-          ${escapeHTML(competition)}
+          ${escapeHTML(getCompetitionName(match))}
         </span>
       </div>
 
@@ -241,7 +249,7 @@ function renderMatch(match) {
           ${
             homeLogo
               ? `<img src="${escapeHTML(homeLogo)}" alt="${escapeHTML(homeName)}" loading="lazy" onerror="this.style.display='none'">`
-              : `<span class="team-placeholder">⚽</span>`
+              : '<span class="team-placeholder">⚽</span>'
           }
           <span>${escapeHTML(homeName)}</span>
         </div>
@@ -255,7 +263,7 @@ function renderMatch(match) {
           ${
             awayLogo
               ? `<img src="${escapeHTML(awayLogo)}" alt="${escapeHTML(awayName)}" loading="lazy" onerror="this.style.display='none'">`
-              : `<span class="team-placeholder">⚽</span>`
+              : '<span class="team-placeholder">⚽</span>'
           }
           <span>${escapeHTML(awayName)}</span>
         </div>
@@ -282,7 +290,7 @@ function renderMatches() {
       <div class="empty-state">
         <div class="empty-icon">⚽</div>
         <h3>Bu kategoride maç bulunamadı</h3>
-        <p>Seçili ligde bu filtreye uygun karşılaşma bulunmuyor.</p>
+        <p>Seçili ligde bu filtreye uygun karşılaşma yok.</p>
       </div>
     `;
     return;
@@ -364,14 +372,7 @@ async function loadMatches() {
     const url = new URL(API_URL, window.location.origin);
 
     url.searchParams.set("league", leagueSlug);
-
-    // Süper Lig takım fikstürü.
-    // Şimdilik doğrulanmış takım slug'ı Galatasaray.
-    if (leagueSlug === "super-lig") {
-      url.searchParams.set("team", "galatasaray");
-    } else {
-      url.searchParams.set("date", getTurkeyDate());
-    }
+    url.searchParams.set("date", getTurkeyDate());
 
     const response = await fetch(url, {
       method: "GET",
@@ -391,21 +392,18 @@ async function loadMatches() {
 
     allMatches = getMatchList(data);
 
-    if (!Array.isArray(allMatches)) {
-      throw new Error("API maç listesi beklenen formatta değil.");
-    }
-
-    // Tarihe göre sırala: en yakın maçlar önce.
     allMatches.sort((a, b) => {
-      return new Date(a.time || a.date || 0) -
-        new Date(b.time || b.date || 0);
+      const dateA = new Date(a.time || a.date || 0).getTime();
+      const dateB = new Date(b.time || b.date || 0).getTime();
+
+      return dateA - dateB;
     });
 
     updateDate();
     renderMatches();
 
   } catch (error) {
-    console.error("SPORIX maç API hatası:", error);
+    console.error("SPORIX API hatası:", error);
 
     showError(error.message || "Bağlantı kurulamadı.");
 
@@ -419,10 +417,8 @@ async function loadMatches() {
   }
 }
 
-// Lig değişince maçları getir.
-elements.league?.addEventListener("change", () => {
-  loadMatches();
-});
+// Lig seçimi.
+elements.league?.addEventListener("change", loadMatches);
 
 // Maç filtreleri.
 elements.tabs.forEach(button => {
@@ -437,7 +433,7 @@ elements.tabs.forEach(button => {
   });
 });
 
-// Yenile butonu.
+// Yenile.
 elements.refresh?.addEventListener("click", loadMatches);
 
 // Mobil menü.
