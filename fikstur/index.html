@@ -5,55 +5,85 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fikstür | SPORIX</title>
+  <meta name="description" content="Futbol takımlarının geçmiş ve yaklaşan maç fikstürlerini SPORIX ile takip et.">
+  <meta name="theme-color" content="#e50914">
+  <link rel="icon" href="/images/logo.jpeg">
   <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="/assets/pages.css">
+  <script src="/assets/pages.js" defer></script>
 </head>
-<body>
-<header class="header"><div class="header-inner">
-  <a href="/" class="logo"><img src="/images/logo.jpeg" alt="SPORIX"><span>SPOR<span>IX</span></span></a>
-  <button class="menu-btn" id="menuBtn">☰</button>
-  <nav class="nav" id="mainNav">
-    <a href="/">Ana Sayfa</a><a href="/maclar/">Canlı Skorlar</a>
-    <a href="/haberler/">Haberler</a><a href="/puan-durumu/">Puan Durumu</a>
-    <a class="active" href="/fikstur/">Fikstür</a>
-  </nav>
-</div></header>
+<body data-page="fixtures">
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="brand">
+        <img src="/images/logo.jpeg" alt="SPORIX">
+        <div>
+          <div class="brand-name">SPOR<span>IX</span></div>
+          <span class="brand-tagline">SPORUN NABZI BURADA ATAR</span>
+        </div>
+      </a>
+      <button class="mobile-menu-button" id="mobileMenuButton" aria-label="Menüyü aç">☰</button>
+      <nav class="main-nav" id="mainNav">
+        <a href="/">Ana Sayfa</a>
+        <a href="/maclar/">Maçlar</a>
+        <a href="/puan-durumu/">Puan Durumu</a>
+        <a href="/fikstur/" class="active">Fikstür</a>
+      </nav>
+    </div>
+  </header>
 
-<main class="container">
-  <div class="page-title">
-    <h1>Fikstür</h1>
-    <p>Takımların gelecek karşılaşmalarını ve maç takvimini incele.</p>
-  </div>
-
-  <div class="content-panel">
-    <div class="match-toolbar">
-      <div class="toolbar-title"><strong>Maç takvimi</strong><span>Lig ve karşılaşma programı</span></div>
-      <select class="league-select" id="fixtureLeague">
-        <option value="super-lig">Türkiye Süper Lig</option>
-        <option value="premier-league">Premier League</option>
-        <option value="la-liga">La Liga</option>
-        <option value="serie-a">Serie A</option>
-        <option value="bundesliga">Bundesliga</option>
-      </select>
+  <main class="sp-page">
+    <div class="sp-page-heading">
+      <div>
+        <span class="sp-eyebrow">TAKIM MAÇ TAKVİMİ</span>
+        <h1>Takım <span>Fikstürü</span></h1>
+        <p>Takımların önceki ve yaklaşan karşılaşmalarını görüntüle.</p>
+      </div>
     </div>
 
-    <div class="empty-state">
-      <strong>Fikstür bağlantısı bekleniyor</strong>
-      <p>Gelecek maçların programı henüz ayrı bir fikstür veri kaynağına bağlanmadı. Gerçek maç takvimi bağlandığında burada listelenecek.</p>
-      <div class="inner-links"><a href="/maclar/">Günün maçlarına git</a></div>
+    <section class="sp-panel">
+      <form class="sp-filter" id="fixtureForm">
+        <label for="teamSlug">Takım slug bilgisi</label>
+        <input
+          id="teamSlug"
+          type="text"
+          value="barcelona"
+          placeholder="Örnek: barcelona"
+          required
+          pattern="[a-zA-Z0-9-]+"
+        >
+        <button class="sp-primary-button" type="submit">Fikstürü Getir</button>
+      </form>
+
+      <div class="sp-hint">
+        Takım slug'ı, veri sağlayıcısındaki takımın URL kimliğidir.
+        Örnek: <strong>barcelona</strong>.
+      </div>
+
+      <div class="sp-panel-heading">
+        <h2>Takım Karşılaşmaları</h2>
+        <span class="sp-small-label">Geçmiş ve gelecek maçlar</span>
+      </div>
+
+      <div id="pageResults" class="sp-results">
+        <div class="sp-loading">Fikstür yükleniyor...</div>
+      </div>
+    </section>
+
+    <p class="sp-provider">
+      Spor verileri:
+      <a href="https://sportscore.com/" rel="dofollow" target="_blank">Powered by SportScore</a>
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">SPOR<span>IX</span></div>
+        <div class="footer-copy">© <span id="currentYear"></span> SPORIX. Tüm hakları saklıdır.</div>
+      </div>
+      <div class="footer-credit">Sporun nabzı burada atar.</div>
     </div>
-  </div>
-</main>
-
-<footer class="footer"><div class="footer-inner">
-  <a href="/" class="footer-logo">SPOR<span>IX</span></a>
-  <div class="footer-links"><a href="/">Ana Sayfa</a><a href="/maclar/">Canlı Skorlar</a><a href="/haberler/">Haberler</a><a href="/puan-durumu/">Puan Durumu</a></div>
-  <small>© 2026 SPORIX</small>
-</div></footer>
-
-<script>
-  document.getElementById("menuBtn")?.addEventListener("click", () => {
-    document.getElementById("mainNav")?.classList.toggle("open");
-  });
-</script>
+  </footer>
 </body>
 </html>
