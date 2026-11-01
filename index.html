@@ -1,334 +1,189 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>SPORIX | Canlı Skorlar, Futbol Haberleri ve Puan Durumu</title>
-
-  <meta name="description" content="SPORIX ile dünyanın futbol liglerini takip et. Canlı maç sonuçları, fikstür, puan durumları ve güncel futbol haberlerine ulaş.">
+  <title>SPORIX | Futbolun Takip Merkezi</title>
+  <meta name="description" content="SPORIX ile futbol maçlarını, canlı skorları, fikstürleri ve lig puan durumlarını takip et.">
   <meta name="robots" content="index, follow">
-  <meta name="author" content="SPORIX">
-
   <link rel="canonical" href="https://sporix.vercel.app/">
-  <link rel="icon" href="/images/logo.jpeg">
-  <link rel="stylesheet" href="/assets/style.css">
+  <meta name="theme-color" content="#101b2d">
 
   <meta property="og:type" content="website">
   <meta property="og:title" content="SPORIX | Futbolun Takip Merkezi">
-  <meta property="og:description" content="Canlı skorlar, futbol haberleri, fikstür ve puan durumları SPORIX'te.">
+  <meta property="og:description" content="Futbol dünyasını tek yerden takip et.">
   <meta property="og:url" content="https://sporix.vercel.app/">
   <meta property="og:image" content="https://sporix.vercel.app/images/logo.jpeg">
-  <meta property="og:locale" content="tr_TR">
-  <meta property="og:site_name" content="SPORIX">
 
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="SPORIX | Futbolun Takip Merkezi">
-  <meta name="twitter:description" content="Canlı skorlar ve futbol dünyasından haberler.">
-
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "SPORIX",
-    "url": "https://sporix.vercel.app/",
-    "description": "Canlı futbol skorları, maç fikstürleri, puan durumları ve futbol haberleri."
-  }
-  </script>
-
-  <script src="/assets/app.js" defer></script>
+  <link rel="icon" href="/images/logo.jpeg">
+  <link rel="stylesheet" href="/assets/style.css">
 </head>
 
 <body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="brand" aria-label="SPORIX ana sayfa">
+        <img src="/images/logo.jpeg" alt="SPORIX logo">
+        <span>SPORIX</span>
+      </a>
 
-<header class="site-header">
-  <div class="header-inner">
+      <nav class="main-nav" aria-label="Ana menü">
+        <a href="/" class="nav-link active">Ana Sayfa</a>
+        <a href="/maclar/" class="nav-link">Maçlar</a>
+        <a href="/puan-durumu/" class="nav-link">Puan Durumu</a>
+        <a href="/fikstur/" class="nav-link">Fikstür</a>
+        <a href="/haberler/" class="nav-link">Haberler</a>
+      </nav>
 
-    <a href="/" class="brand" aria-label="SPORIX Ana Sayfa">
-      <img src="/images/logo.jpeg" alt="SPORIX logo">
-      <span>SPOR<span>IX</span></span>
-    </a>
-
-    <button class="menu-toggle" id="menuToggle" aria-label="Menüyü aç" aria-expanded="false">
-      ☰
-    </button>
-
-    <nav class="main-nav" id="mainNav">
-      <a href="/" class="active">Ana Sayfa</a>
-      <a href="/maclar/">Maçlar</a>
-      <a href="/haberler/">Haberler</a>
-      <a href="/puan-durumu/">Puan Durumu</a>
-      <a href="/fikstur/">Fikstür</a>
-    </nav>
-
-  </div>
-</header>
-
-<main class="container">
-
-  <!-- GİRİŞ -->
-
-  <section class="welcome">
-    <div>
-      <span class="eyebrow">FUTBOLUN TAKİP MERKEZİ</span>
-      <h1>Futbol dünyası burada.</h1>
-      <p>Canlı skorlar, maç sonuçları ve futbol haberlerini tek yerde takip et.</p>
+      <a href="/maclar/" class="header-button">
+        Maçları Gör
+        <span>→</span>
+      </a>
     </div>
-  </section>
+  </header>
 
-  <!-- REKLAM ALANI -->
+  <main>
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-label">
+          <span class="hero-label-dot"></span>
+          FUTBOLUN TAKİP MERKEZİ
+        </div>
 
-  <div class="ad-space" aria-label="Reklam alanı">
-    <span>Reklam</span>
-    <!-- AdSense reklam kodu, hesap onaylandıktan sonra buraya eklenecek. -->
-  </div>
+        <h1>Futbolun heyecanı<br> <span>SPORIX'te.</span></h1>
 
-  <!-- MAÇ MERKEZİ -->
+        <p>
+          Maçları takip et, skorları öğren, lig sıralamalarını ve
+          fikstürleri tek noktadan incele.
+        </p>
 
-  <section class="section" id="mac-merkezi">
+        <div class="hero-actions">
+          <a href="/maclar/" class="primary-button">
+            Maçları Keşfet <span>→</span>
+          </a>
+          <a href="/puan-durumu/" class="secondary-button">
+            Puan Durumları
+          </a>
+        </div>
 
-    <div class="section-heading">
+        <div class="hero-bottom">
+          <span><i></i> Futbol tek noktada</span>
+          <span>Hızlı · Kolay · Güncel</span>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="visual-glow"></div>
+        <div class="football-circle">
+          <div class="football-ball">⚽</div>
+        </div>
+        <div class="visual-tag visual-tag-top">
+          <span class="visual-tag-icon">🏆</span>
+          <span>Futbol dünyası</span>
+        </div>
+        <div class="visual-tag visual-tag-bottom">
+          <span class="visual-live-dot"></span>
+          <span>Maçları takip et</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="sections-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">SPORIX'İ KEŞFET</span>
+          <h2>Futbol burada başlar.</h2>
+          <p>İhtiyacın olan futbol bölümüne kolayca ulaş.</p>
+        </div>
+      </div>
+
+      <div class="feature-grid">
+        <a href="/maclar/" class="feature-card feature-card-main">
+          <div class="feature-top">
+            <div class="feature-icon icon-blue">⚽</div>
+            <span class="card-arrow">↗</span>
+          </div>
+          <div class="feature-info">
+            <span class="feature-number">01 / MAÇ MERKEZİ</span>
+            <h3>Maçlar</h3>
+            <p>Futbol karşılaşmalarını ve maç bilgilerini incele.</p>
+          </div>
+        </a>
+
+        <a href="/puan-durumu/" class="feature-card">
+          <div class="feature-top">
+            <div class="feature-icon icon-purple">🏆</div>
+            <span class="card-arrow">↗</span>
+          </div>
+          <div class="feature-info">
+            <span class="feature-number">02 / LİG SIRALAMASI</span>
+            <h3>Puan Durumu</h3>
+            <p>Takımların lig sıralamalarını görüntüle.</p>
+          </div>
+        </a>
+
+        <a href="/fikstur/" class="feature-card">
+          <div class="feature-top">
+            <div class="feature-icon icon-orange">📅</div>
+            <span class="card-arrow">↗</span>
+          </div>
+          <div class="feature-info">
+            <span class="feature-number">03 / MAÇ TAKVİMİ</span>
+            <h3>Fikstür</h3>
+            <p>Oynanacak karşılaşmaları takip et.</p>
+          </div>
+        </a>
+
+        <a href="/haberler/" class="feature-card">
+          <div class="feature-top">
+            <div class="feature-icon icon-green">📰</div>
+            <span class="card-arrow">↗</span>
+          </div>
+          <div class="feature-info">
+            <span class="feature-number">04 / FUTBOL GÜNDEMİ</span>
+            <h3>Haberler</h3>
+            <p>Futbol dünyasındaki gelişmeleri oku.</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <section class="bottom-cta">
       <div>
-        <h2>Maç Merkezi</h2>
-        <p>Seçtiğin ligdeki karşılaşmaları takip et.</p>
+        <span class="eyebrow">FUTBOLU TAKİP ET</span>
+        <h2>Maç heyecanını kaçırma.</h2>
+        <p>SPORIX maç merkezine geç ve karşılaşmaları incele.</p>
       </div>
-      <a href="/maclar/" class="text-link">Tüm maçlar →</a>
-    </div>
-
-    <div class="score-panel">
-
-      <div class="score-toolbar">
-
-        <div class="today-label">
-          <strong id="matchDate">Bugünün Maçları</strong>
-          <span>Futbol karşılaşmaları</span>
-        </div>
-
-        <div class="score-actions">
-          <select id="leagueSelect" aria-label="Lig seç">
-            <option value="turkish-super-league">Türkiye Süper Lig</option>
-            <option value="english-premier-league">Premier League</option>
-            <option value="spanish-la-liga">La Liga</option>
-            <option value="italian-serie-a">Serie A</option>
-            <option value="bundesliga">Bundesliga</option>
-            <option value="uefa-champions-league">Şampiyonlar Ligi</option>
-          </select>
-
-          <button id="refreshMatches" class="refresh-button" type="button" aria-label="Maçları yenile">
-            ↻
-          </button>
-        </div>
-
-      </div>
-
-      <div class="league-search">
-        <input
-          type="search"
-          id="competitionSearch"
-          placeholder="🌍 Ülke veya lig ara..."
-          autocomplete="off"
-          aria-label="Dünya liglerinde ara"
-        >
-        <div id="competitionResults" class="search-results" hidden></div>
-      </div>
-
-      <div class="match-filters">
-        <button type="button" class="filter-button selected" data-filter="all">Tümü</button>
-        <button type="button" class="filter-button" data-filter="live">Canlı</button>
-        <button type="button" class="filter-button" data-filter="finished">Biten</button>
-        <button type="button" class="filter-button" data-filter="upcoming">Yaklaşan</button>
-      </div>
-
-      <div id="matches" class="matches-list" aria-live="polite">
-        <div class="loading-state">Maçlar yükleniyor...</div>
-      </div>
-
-      <div class="score-footer">
-        <a href="/maclar/">Bütün maçları görüntüle →</a>
-        <span>Veri sağlayıcı: <a href="https://sportscore.com/" target="_blank" rel="dofollow noopener">SportScore</a></span>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- REKLAM ALANI -->
-
-  <div class="ad-space" aria-label="Reklam alanı">
-    <span>Reklam</span>
-    <!-- AdSense reklam kodu buraya eklenebilir. -->
-  </div>
-
-  <!-- HABERLER -->
-
-  <section class="section">
-
-    <div class="section-heading">
-      <div>
-        <h2>Futbol Haberleri</h2>
-        <p>Futbol dünyasından son gelişmeler.</p>
-      </div>
-      <a href="/haberler/" class="text-link">Tüm haberler →</a>
-    </div>
-
-    <div class="news-grid">
-
-      <a href="/haberler/" class="news-card">
-        <div class="news-image news-image-one">
-          <span>FUTBOL</span>
-        </div>
-        <div class="news-content">
-          <small>GÜNDEM</small>
-          <h3>Futbol dünyasındaki gelişmeleri takip edin</h3>
-          <p>Liglerden, takımlardan ve futbol gündeminden haberler.</p>
-        </div>
+      <a href="/maclar/" class="primary-button">
+        Maç Merkezine Git <span>→</span>
       </a>
+    </section>
+  </main>
 
-      <a href="/haberler/" class="news-card">
-        <div class="news-image news-image-two">
-          <span>TRANSFER</span>
-        </div>
-        <div class="news-content">
-          <small>TRANSFER</small>
-          <h3>Transfer gündemindeki gelişmeler</h3>
-          <p>Takımların kadro planlamaları ve transfer haberleri.</p>
-        </div>
-      </a>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <a href="/" class="footer-brand">SPORIX</a>
+      <p>Futbolun takip merkezi.</p>
 
-      <a href="/haberler/" class="news-card">
-        <div class="news-image news-image-three">
-          <span>AVRUPA</span>
-        </div>
-        <div class="news-content">
-          <small>AVRUPA FUTBOLU</small>
-          <h3>Avrupa liglerinde futbol heyecanı</h3>
-          <p>Avrupa futbolundan gelişmeler ve karşılaşmalar.</p>
-        </div>
-      </a>
+      <div class="footer-links">
+        <a href="/hakkimizda/">Hakkımızda</a>
+        <a href="/iletisim/">İletişim</a>
+        <a href="/gizlilik/">Gizlilik</a>
+        <a href="/kullanim-sartlari/">Kullanım Şartları</a>
+      </div>
 
-    </div>
-
-    <p class="editorial-note">
-      Bu alan örnek yerleşimdir. Yayına almadan önce gerçek, özgün ve ilgili haberlerinle değiştirmelisin.
-    </p>
-
-  </section>
-
-  <!-- PUAN DURUMU VE FİKSTÜR -->
-
-  <section class="section">
-
-    <div class="section-heading">
-      <div>
-        <h2>Futbol Takip Merkezi</h2>
-        <p>Takip etmek istediğin bölüme kolayca ulaş.</p>
+      <div class="footer-bottom">
+        <span>© <span id="currentYear">2026</span> SPORIX. Tüm hakları saklıdır.</span>
+        <a href="/">sporix.vercel.app</a>
       </div>
     </div>
+  </footer>
 
-    <div class="quick-grid">
-
-      <a href="/puan-durumu/" class="quick-card">
-        <span class="quick-icon">▤</span>
-        <span>
-          <b>Puan Durumu</b>
-          <small>Lig sıralamalarını görüntüle.</small>
-        </span>
-        <strong>→</strong>
-      </a>
-
-      <a href="/fikstur/" class="quick-card">
-        <span class="quick-icon">▦</span>
-        <span>
-          <b>Fikstür</b>
-          <small>Oynanacak maçları incele.</small>
-        </span>
-        <strong>→</strong>
-      </a>
-
-      <a href="/maclar/" class="quick-card">
-        <span class="quick-icon">⚽</span>
-        <span>
-          <b>Canlı Skorlar</b>
-          <small>Karşılaşma sonuçlarını takip et.</small>
-        </span>
-        <strong>→</strong>
-      </a>
-
-    </div>
-
-  </section>
-
-  <!-- SEO İÇERİK -->
-
-  <section class="section seo-section">
-
-    <h2>SPORIX ile futbol dünyasını takip edin</h2>
-
-    <p>
-      SPORIX, futbolseverlerin maç sonuçlarını, canlı skorları,
-      fikstürleri ve futbol haberlerini takip edebilmesi için
-      hazırlanmış bir futbol platformudur.
-    </p>
-
-    <p>
-      Türkiye liglerinin yanı sıra dünyanın farklı ülkelerindeki
-      futbol organizasyonlarını keşfedebilir, takip ettiğiniz
-      karşılaşmaların sonuçlarına ulaşabilirsiniz.
-    </p>
-
-    <p>
-      Futbol gündemini takip etmek, maçları incelemek ve ligler
-      hakkında bilgi edinmek için SPORIX'i kullanabilirsiniz.
-    </p>
-
-  </section>
-
-  <!-- ALT REKLAM -->
-
-  <div class="ad-space" aria-label="Reklam alanı">
-    <span>Reklam</span>
-  </div>
-
-</main>
-
-<footer class="site-footer">
-
-  <div class="footer-inner">
-
-    <div class="footer-brand">
-      <a href="/" class="brand">
-        <img src="/images/logo.jpeg" alt="">
-        <span>SPOR<span>IX</span></span>
-      </a>
-      <p>Futbol dünyasını takip etmenin sade yolu.</p>
-    </div>
-
-    <div class="footer-links">
-      <a href="/maclar/">Maçlar</a>
-      <a href="/haberler/">Haberler</a>
-      <a href="/puan-durumu/">Puan Durumu</a>
-      <a href="/fikstur/">Fikstür</a>
-    </div>
-
-    <div class="footer-links">
-      <a href="/hakkimizda/">Hakkımızda</a>
-      <a href="/iletisim/">İletişim</a>
-      <a href="/gizlilik/">Gizlilik Politikası</a>
-      <a href="/kullanim-sartlari/">Kullanım Şartları</a>
-    </div>
-
-  </div>
-
-  <div class="footer-bottom">
-    © <span id="currentYear">2026</span> SPORIX. Tüm hakları saklıdır.
-  </div>
-
-</footer>
-
-<script>
-  document.getElementById("currentYear").textContent =
-    new Date().getFullYear();
-</script>
-
+  <script>
+    document.getElementById("currentYear").textContent =
+      new Date().getFullYear();
+  </script>
 </body>
 </html>
