@@ -75,3 +75,292 @@ a{text-decoration:none;color:inherit}
  .footer-inner{gap:12px}
  .footer-links{width:100%;margin-left:0}
 }
+
+/* PROFESYONEL MAÇ TAKVİMİ */
+
+.match-toolbar {
+  margin: 35px 0 24px;
+}
+
+.toolbar-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.toolbar-title h1 {
+  color: #101b2d;
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+#selectedDateLabel {
+  color: #718096;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.date-strip {
+  display: flex;
+  gap: 9px;
+  overflow-x: auto;
+  padding: 3px 2px 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.date-button {
+  min-width: 78px;
+  height: 72px;
+  border: 1px solid #e6ebf2;
+  background: #fff;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: .2s;
+}
+
+.date-button:hover {
+  border-color: #2563eb;
+  background: #f5f8ff;
+}
+
+.date-button.active {
+  background: #101b2d;
+  border-color: #101b2d;
+  color: white;
+  box-shadow: 0 5px 15px rgba(16,27,45,.15);
+}
+
+.date-button .day-name {
+  font-size: 10px;
+  font-weight: 600;
+  color: #8490a2;
+  text-transform: uppercase;
+}
+
+.date-button.active .day-name {
+  color: #b8c9e6;
+}
+
+.date-button .day-number {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.date-button .day-month {
+  font-size: 10px;
+  color: #8490a2;
+}
+
+.date-button.active .day-month {
+  color: #b8c9e6;
+}
+
+.league-section {
+  margin-bottom: 17px;
+  border: 1px solid #e8edf3;
+  border-radius: 11px;
+  background: white;
+  overflow: hidden;
+}
+
+.league-heading {
+  min-height: 61px;
+  padding: 0 19px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.league-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.league-identity h2 {
+  font-size: 14px;
+  font-weight: 800;
+  color: #172033;
+}
+
+.league-logo {
+  width: 29px;
+  height: 29px;
+  object-fit: contain;
+}
+
+.league-fallback {
+  font-size: 23px;
+}
+
+.league-matches {
+  padding: 0 18px;
+}
+
+.match-card {
+  display: grid;
+  grid-template-columns: 85px minmax(0, 1fr) 80px;
+  align-items: center;
+  gap: 15px;
+  min-height: 92px;
+  padding: 13px 5px;
+  border-bottom: 1px solid #edf0f4;
+  transition: background .15s;
+}
+
+.match-card:last-child {
+  border-bottom: 0;
+}
+
+.match-card:hover {
+  background: #fafcff;
+}
+
+.match-status {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: #7c8798;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.match-status.live {
+  color: #dc2626;
+}
+
+.match-status .match-date {
+  color: #9aa4b2;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.match-teams {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.match-team {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: #273449;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.match-team img {
+  width: 23px;
+  height: 23px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.match-team span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.match-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  color: #172033;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.match-score span {
+  min-height: 15px;
+}
+
+.match-score .match-time {
+  color: #2563eb;
+  font-size: 12px;
+}
+
+.loading,
+.empty-state {
+  padding: 23px 8px;
+  color: #8490a2;
+  text-align: center;
+  font-size: 12px;
+}
+
+@media(max-width: 600px) {
+  .match-toolbar {
+    margin-top: 23px;
+  }
+
+  .toolbar-title h1 {
+    font-size: 23px;
+  }
+
+  .date-button {
+    min-width: 68px;
+    height: 67px;
+  }
+
+  .league-heading {
+    min-height: 56px;
+    padding: 0 13px;
+  }
+
+  .league-identity {
+    gap: 9px;
+  }
+
+  .league-identity h2 {
+    font-size: 12px;
+  }
+
+  .league-logo {
+    width: 25px;
+    height: 25px;
+  }
+
+  .league-matches {
+    padding: 0 11px;
+  }
+
+  .match-card {
+    grid-template-columns: 58px minmax(0, 1fr) 48px;
+    gap: 7px;
+    min-height: 85px;
+    padding: 12px 1px;
+  }
+
+  .match-status {
+    font-size: 9px;
+  }
+
+  .match-team {
+    gap: 6px;
+    font-size: 10px;
+  }
+
+  .match-team img {
+    width: 19px;
+    height: 19px;
+  }
+
+  .match-score {
+    font-size: 12px;
+  }
+}
