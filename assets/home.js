@@ -1,4 +1,3 @@
-
 const competitions = [
   "turkish-super-league",
   "english-premier-league",
