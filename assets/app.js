@@ -2,19 +2,24 @@
 "use strict";
 
 // ========================================
-// SPORIX - MAÇ SİSTEMİ
+// SPORIX - DÜNYA FUTBOL SİSTEMİ
 // ========================================
 
 const API_URL = "/api/matches";
+const SEARCH_URL = "/api/search";
 
 const elements = {
   league: document.getElementById("leagueSelect"),
   matches: document.getElementById("matches"),
   date: document.getElementById("matchDate"),
+  dateInput: document.getElementById("matchDateInput"),
   refresh: document.getElementById("refreshMatches"),
   tabs: document.querySelectorAll("[data-filter]"),
   menuBtn: document.getElementById("menuBtn"),
-  nav: document.getElementById("mainNav")
+  nav: document.getElementById("mainNav"),
+  search: document.getElementById("competitionSearch"),
+  searchResults: document.getElementById("competitionResults"),
+  clearSearch: document.getElementById("clearCompetitionSearch")
 };
 
 let allMatches = [];
@@ -22,6 +27,14 @@ let activeFilter = "all";
 let loading = false;
 let requestController = null;
 let requestNumber = 0;
+
+let searchTimer = null;
+let searchController = null;
+
+let selectedCompetitionSlug = "";
+let selectedCompetitionName = "";
+
+let selectedDate = getTurkeyDate();
 
 const STATUS_TEXT = {
   live: "CANLI",
@@ -33,7 +46,7 @@ const STATUS_TEXT = {
 };
 
 // ========================================
-// GÜVENLİ METİN İŞLEMLERİ
+// GÜVENLİ METİN
 // ========================================
 
 function escapeHTML(value) {
@@ -76,6 +89,43 @@ function getText(value) {
   }
 
   return "";
+}
+
+// ========================================
+// TÜRKİYE TARİHİ
+// ========================================
+
+function getTurkeyDate() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Istanbul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(new Date());
+
+  const values = Object.fromEntries(
+    parts.map(part => [part.type, part.value])
+  );
+
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function updateDate() {
+  if (!elements.date) return;
+
+  const date = selectedDate || getTurkeyDate();
+  const parsed = new Date(`${date}T12:00:00`);
+
+  elements.date.textContent = parsed.toLocaleDateString("tr-TR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+
+  if (elements.dateInput && elements.dateInput.value !== date) {
+    elements.dateInput.value = date;
+  }
 }
 
 // ========================================
@@ -259,7 +309,6 @@ function getStatus(match) {
     return "upcoming";
   }
 
-  // Bilinmeyen durumlarda canlı veya bitmiş olduğunu varsayma.
   return "upcoming";
 }
 
@@ -285,10 +334,11 @@ function getStartTime(match) {
 
   if (!value) return null;
 
-  // Unix timestamp desteği
-  if (typeof value === "number" || /^\d{10,13}$/.test(String(value))) {
+  if (
+    typeof value === "number" ||
+    /^\d{10,13}$/.test(String(value))
+  ) {
     const number = Number(value);
-
     const timestamp = number < 100000000000
       ? number * 1000
       : number;
@@ -296,7 +346,6 @@ function getStartTime(match) {
     return Number.isFinite(timestamp) ? timestamp : null;
   }
 
-  // Sadece saat bilgisi verilmişse tarih hesaplamaya çalışma.
   if (/^\d{1,2}:\d{2}$/.test(String(value))) {
     return null;
   }
@@ -311,7 +360,6 @@ function getTurkeyTime(match) {
 
   if (!value) return "Saat bilgisi yok";
 
-  // API doğrudan 18:30 gibi saat gönderiyorsa koru.
   if (/^\d{1,2}:\d{2}$/.test(String(value))) {
     return String(value);
   }
@@ -379,7 +427,6 @@ function formatLiveTime(match) {
   const minute = Number(rawMinute);
   const second = Number(rawSecond);
 
-  // API dakika ve saniye gönderiyorsa kullan.
   if (
     rawMinute !== undefined &&
     rawMinute !== null &&
@@ -401,7 +448,6 @@ function formatLiveTime(match) {
     return `${minute}'`;
   }
 
-  // API yalnızca toplam geçen saniyeyi gönderiyorsa kullan.
   if (
     rawSecond !== undefined &&
     rawSecond !== null &&
@@ -417,30 +463,15 @@ function formatLiveTime(match) {
     }
   }
 
-  // Gerçek süre bilgisi yoksa yanlış süre üretme.
   return "CANLI";
 }
 
 function getStatusLabel(match, status) {
-  if (status === "live") {
-    return formatLiveTime(match);
-  }
-
-  if (status === "finished") {
-    return "MAÇ SONU";
-  }
-
-  if (status === "postponed") {
-    return "ERTELENDİ";
-  }
-
-  if (status === "cancelled") {
-    return "İPTAL";
-  }
-
-  if (status === "suspended") {
-    return "DURDURULDU";
-  }
+  if (status === "live") return formatLiveTime(match);
+  if (status === "finished") return "MAÇ SONU";
+  if (status === "postponed") return "ERTELENDİ";
+  if (status === "cancelled") return "İPTAL";
+  if (status === "suspended") return "DURDURULDU";
 
   return getTurkeyTime(match);
 }
@@ -464,7 +495,8 @@ function renderMatch(match, index) {
   const homeScore = getScore(match, "home");
   const awayScore = getScore(match, "away");
 
-  const isUpcoming = status === "upcoming" ||
+  const isUpcoming =
+    status === "upcoming" ||
     status === "postponed" ||
     status === "cancelled";
 
@@ -481,7 +513,11 @@ function renderMatch(match, index) {
     : '<span class="team-placeholder">⚽</span>';
 
   return `
-    <article class="match-card" data-status="${status}" data-match-index="${index}">
+    <article
+      class="match-card"
+      data-status="${status}"
+      data-match-index="${index}"
+    >
 
       <div class="match-card-top">
 
@@ -491,7 +527,7 @@ function renderMatch(match, index) {
         </span>
 
         <span class="match-competition">
-          ${escapeHTML(getCompetitionName(match) || "Futbol")}
+          ${escapeHTML(getCompetitionName(match) || selectedCompetitionName || "Futbol")}
         </span>
 
       </div>
@@ -504,13 +540,11 @@ function renderMatch(match, index) {
         </div>
 
         <div class="match-result">
-
           ${scoreHTML}
 
           <small class="live-clock">
             ${escapeHTML(getStatusLabel(match, status))}
           </small>
-
         </div>
 
         <div class="match-team away">
@@ -529,7 +563,7 @@ function renderMatch(match, index) {
 }
 
 // ========================================
-// CANLI SAYAÇ GÜNCELLEME
+// CANLI SAYAÇ
 // ========================================
 
 function updateLiveClocks() {
@@ -567,9 +601,12 @@ function getFilteredMatches() {
 
 function updateFilterButtons() {
   elements.tabs.forEach(button => {
-    const selected = (button.dataset.filter || "all") === activeFilter;
+    const selected =
+      (button.dataset.filter || "all") === activeFilter;
 
     button.classList.toggle("selected", selected);
+    button.classList.toggle("active", selected);
+
     button.setAttribute("aria-pressed", String(selected));
   });
 }
@@ -582,15 +619,14 @@ function renderMatches() {
   if (!filtered.length) {
     elements.matches.innerHTML = `
       <div class="empty-state">
-
         <div class="empty-icon">⚽</div>
 
-        <h3>Bu kategoride maç bulunamadı</h3>
+        <h3>Maç bulunamadı</h3>
 
         <p>
-          Seçili ligde bu filtreye uygun karşılaşma bulunmuyor.
+          Bu tarihte seçili organizasyonda bu filtreye uygun
+          karşılaşma bulunmuyor.
         </p>
-
       </div>
     `;
 
@@ -622,7 +658,11 @@ function showError(message) {
 
       <p>${escapeHTML(message)}</p>
 
-      <button type="button" class="retry-btn" id="retryMatches">
+      <button
+        type="button"
+        class="retry-btn"
+        id="retryMatches"
+      >
         Tekrar dene
       </button>
 
@@ -635,34 +675,46 @@ function showError(message) {
 }
 
 // ========================================
-// TÜRKİYE TARİHİ
+// LİG SEÇİMİ
 // ========================================
 
-function getTurkeyDate() {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Europe/Istanbul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }).formatToParts(new Date());
+function addLeagueOption(slug, name) {
+  if (!elements.league) return;
 
-  const values = Object.fromEntries(
-    parts.map(part => [part.type, part.value])
+  let option = [...elements.league.options].find(
+    item => item.value === slug
   );
 
-  return `${values.year}-${values.month}-${values.day}`;
+  if (!option) {
+    option = document.createElement("option");
+    option.value = slug;
+    option.textContent = name;
+    elements.league.appendChild(option);
+  }
+
+  elements.league.value = slug;
 }
 
-function updateDate() {
-  if (!elements.date) return;
+function selectCompetition(slug, name) {
+  if (!slug || !/^[a-z0-9-]+$/i.test(slug)) return;
 
-  elements.date.textContent = new Date().toLocaleDateString("tr-TR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "Europe/Istanbul"
-  });
+  selectedCompetitionSlug = slug;
+  selectedCompetitionName = name || "Seçilen organizasyon";
+
+  addLeagueOption(slug, selectedCompetitionName);
+
+  if (elements.search) {
+    elements.search.value = selectedCompetitionName;
+  }
+
+  if (elements.searchResults) {
+    elements.searchResults.hidden = true;
+  }
+
+  activeFilter = "all";
+  updateFilterButtons();
+
+  loadMatches(true);
 }
 
 // ========================================
@@ -670,22 +722,24 @@ function updateDate() {
 // ========================================
 
 async function loadMatches(force = false) {
-  if (!elements.league || !elements.matches) return;
-
+  if (!elements.matches) return;
   if (loading && !force) return;
 
-  // Yeni istek eski isteği geçersiz kılar.
   if (requestController) {
     requestController.abort();
   }
 
   const currentRequest = ++requestNumber;
-  const controller = new AbortController();
 
+  const controller = new AbortController();
   requestController = controller;
+
   loading = true;
 
-  const leagueSlug = elements.league.value;
+  const competitionSlug =
+    selectedCompetitionSlug ||
+    elements.league?.value ||
+    "turkish-super-league";
 
   elements.matches.innerHTML = `
     <div class="loading">
@@ -702,8 +756,8 @@ async function loadMatches(force = false) {
   try {
     const url = new URL(API_URL, window.location.origin);
 
-    url.searchParams.set("league", leagueSlug);
-    url.searchParams.set("date", getTurkeyDate());
+    url.searchParams.set("competition", competitionSlug);
+    url.searchParams.set("date", selectedDate || getTurkeyDate());
 
     const response = await fetch(url, {
       method: "GET",
@@ -732,7 +786,6 @@ async function loadMatches(force = false) {
 
     allMatches = getMatchList(data);
 
-    // Maçları başlangıç saatine göre sırala.
     allMatches.sort((a, b) => {
       const dateA = getStartTime(a);
       const dateB = getStartTime(b);
@@ -750,7 +803,6 @@ async function loadMatches(force = false) {
 
   } catch (error) {
     if (error.name === "AbortError") return;
-
     if (currentRequest !== requestNumber) return;
 
     console.error("SPORIX API hatası:", error);
@@ -771,11 +823,230 @@ async function loadMatches(force = false) {
 }
 
 // ========================================
+// DÜNYA LİGLERİ ARAMA
+// ========================================
+
+function showCompetitionMessage(message) {
+  if (!elements.searchResults) return;
+
+  elements.searchResults.hidden = false;
+
+  elements.searchResults.innerHTML = `
+    <div class="competition-message">
+      ${escapeHTML(message)}
+    </div>
+  `;
+}
+
+async function searchCompetitions(query) {
+  if (!elements.searchResults) return;
+
+  if (searchController) {
+    searchController.abort();
+  }
+
+  const controller = new AbortController();
+  searchController = controller;
+
+  showCompetitionMessage("Dünya ligleri aranıyor...");
+
+  try {
+    const url = new URL(SEARCH_URL, window.location.origin);
+
+    url.searchParams.set("q", query);
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json"
+      },
+      cache: "no-store",
+      signal: controller.signal
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || data.success === false) {
+      throw new Error(data.error || "Lig araması başarısız.");
+    }
+
+    const competitions = data.results?.competitions || [];
+
+    if (!Array.isArray(competitions) || competitions.length === 0) {
+      showCompetitionMessage(
+        "Bu aramayla eşleşen organizasyon bulunamadı. Başka bir isim dene."
+      );
+      return;
+    }
+
+    const unique = new Map();
+
+    competitions.forEach(competition => {
+      if (
+        competition &&
+        typeof competition.slug === "string" &&
+        /^[a-z0-9-]+$/i.test(competition.slug)
+      ) {
+        unique.set(competition.slug, competition);
+      }
+    });
+
+    const results = [...unique.values()];
+
+    if (!results.length) {
+      showCompetitionMessage("Geçerli lig sonucu bulunamadı.");
+      return;
+    }
+
+    elements.searchResults.innerHTML = results.map(competition => {
+      const name = escapeHTML(
+        competition.name || "İsimsiz organizasyon"
+      );
+
+      const slug = escapeHTML(competition.slug);
+      const logo = cleanImageURL(competition.logo);
+
+      return `
+        <button
+          type="button"
+          class="competition-result"
+          data-competition-slug="${slug}"
+          data-competition-name="${name}"
+        >
+
+          ${
+            logo
+              ? `<img src="${escapeHTML(logo)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+              : `<span class="competition-placeholder">🏆</span>`
+          }
+
+          <span class="competition-result-name">
+            ${name}
+          </span>
+
+          <b>Seç →</b>
+
+        </button>
+      `;
+    }).join("");
+
+    elements.searchResults.hidden = false;
+
+  } catch (error) {
+    if (error.name === "AbortError") return;
+
+    console.error("SPORIX lig arama hatası:", error);
+
+    showCompetitionMessage(
+      error.message || "Arama sırasında hata oluştu."
+    );
+  }
+}
+
+// ========================================
+// ARAMA KUTUSU
+// ========================================
+
+elements.search?.addEventListener("input", () => {
+  const query = elements.search.value.trim();
+
+  clearTimeout(searchTimer);
+
+  if (query.length < 2) {
+    if (searchController) {
+      searchController.abort();
+    }
+
+    if (elements.searchResults) {
+      elements.searchResults.hidden = true;
+      elements.searchResults.innerHTML = "";
+    }
+
+    return;
+  }
+
+  searchTimer = setTimeout(() => {
+    searchCompetitions(query);
+  }, 450);
+});
+
+// ========================================
+// ARAMA SONUCU SEÇİMİ
+// ========================================
+
+elements.searchResults?.addEventListener("click", event => {
+  const button = event.target.closest("[data-competition-slug]");
+
+  if (!button) return;
+
+  const slug = button.dataset.competitionSlug;
+  const name = button.dataset.competitionName;
+
+  selectCompetition(slug, name);
+});
+
+// ========================================
+// ARAMA TEMİZLE
+// ========================================
+
+elements.clearSearch?.addEventListener("click", () => {
+  if (elements.search) {
+    elements.search.value = "";
+    elements.search.focus();
+  }
+
+  if (elements.searchResults) {
+    elements.searchResults.hidden = true;
+    elements.searchResults.innerHTML = "";
+  }
+
+  if (searchController) {
+    searchController.abort();
+  }
+});
+
+// ========================================
+// TARİH SEÇİMİ
+// ========================================
+
+elements.dateInput?.addEventListener("change", () => {
+  const value = elements.dateInput.value;
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return;
+
+  selectedDate = value;
+
+  updateDate();
+  loadMatches(true);
+});
+
+// ========================================
 // LİG SEÇİMİ
 // ========================================
 
 elements.league?.addEventListener("change", () => {
+  selectedCompetitionSlug = elements.league.value;
+
+  selectedCompetitionName =
+    elements.league.options[elements.league.selectedIndex]?.text || "";
+
+  activeFilter = "all";
+
+  updateFilterButtons();
   loadMatches(true);
+});
+
+// ========================================
+// POPÜLER LİG SEÇİMİ
+// ========================================
+
+document.querySelectorAll("[data-league]").forEach(link => {
+  link.addEventListener("click", () => {
+    sessionStorage.setItem(
+      "sporix-selected-league",
+      link.dataset.league
+    );
+  });
 });
 
 // ========================================
@@ -808,7 +1079,10 @@ elements.refresh?.addEventListener("click", () => {
 function closeMenu() {
   elements.nav?.classList.remove("active", "open");
 
-  elements.menuBtn?.setAttribute("aria-expanded", "false");
+  elements.menuBtn?.setAttribute(
+    "aria-expanded",
+    "false"
+  );
 }
 
 elements.menuBtn?.addEventListener("click", () => {
@@ -838,13 +1112,13 @@ setInterval(() => {
 }, 1000);
 
 // ========================================
-// OTOMATİK YENİLEME
+// OTOMATİK MAÇ YENİLEME
 // ========================================
 
 setInterval(() => {
   if (
     !document.hidden &&
-    elements.league &&
+    elements.matches &&
     !loading
   ) {
     loadMatches();
@@ -855,8 +1129,37 @@ setInterval(() => {
 // SAYFA BAŞLANGICI
 // ========================================
 
-updateDate();
+function initializeSporix() {
+  const savedLeague = sessionStorage.getItem(
+    "sporix-selected-league"
+  );
 
-if (elements.league && elements.matches) {
-  loadMatches();
+  if (savedLeague && /^[a-z0-9-]+$/i.test(savedLeague)) {
+    selectedCompetitionSlug = savedLeague;
+
+    if (elements.league) {
+      addLeagueOption(savedLeague, savedLeague);
+    }
+
+    sessionStorage.removeItem("sporix-selected-league");
+  }
+
+  if (elements.league && !selectedCompetitionSlug) {
+    selectedCompetitionSlug = elements.league.value;
+
+    selectedCompetitionName =
+      elements.league.options[elements.league.selectedIndex]?.text || "";
+  }
+
+  if (elements.dateInput) {
+    elements.dateInput.value = selectedDate;
+  }
+
+  updateDate();
+
+  if (elements.matches) {
+    loadMatches(true);
+  }
 }
+
+initializeSporix();
