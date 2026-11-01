@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPORIX | Futbol Merkezi</title>
+  <meta name="description" content="SPORIX futbol maç detayları, puan durumları, oyuncu istatistikleri ve fikstür merkezi.">
+  <meta name="theme-color" content="#101b2d">
+  <link rel="icon" href="/images/logo.jpeg">
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="brand">
+        <img src="/images/logo.jpeg" alt="SPORIX">
+        <span>SPORIX</span>
+      </a>
+      <button class="menu-toggle" id="menuToggle" type="button"
+        aria-label="Menüyü aç" aria-expanded="false">☰</button>
+      <nav class="main-nav" id="mainNav">
+        <a href="/">Ana Sayfa</a>
+        <a href="/#leagueSections">Maçlar</a>
+        <a href="/veri.html?view=standings">Puan Durumu</a>
+        <a href="/veri.html?view=team">Takım Fikstürü</a>
+        <a href="/veri.html?view=topscorers">Gol Krallığı</a>
+        <a href="/veri.html?view=player">Oyuncular</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container data-page">
+    <section class="data-heading">
+      <span class="data-kicker">SPORIX FUTBOL MERKEZİ</span>
+      <h1 id="pageTitle">Futbol Verileri</h1>
+      <p id="pageDescription">SportScore verileri yükleniyor.</p>
+    </section>
+
+    <section class="data-search">
+      <form id="dataForm">
+        <label for="slugInput">Takım, lig, oyuncu veya maç slug</label>
+        <input id="slugInput" name="slug" placeholder="Örnek: premier-league">
+        <label for="idInput">Maç ID (canlı takip için)</label>
+        <input id="idInput" name="id" placeholder="Örnek: 7420812">
+        <label for="statInput">İstatistik türü</label>
+        <select id="statInput" name="stat">
+          <option value="goals">Gol krallığı</option>
+          <option value="assists">Asist krallığı</option>
+        </select>
+        <button type="submit">Verileri Getir</button>
+      </form>
+    </section>
+
+    <section class="data-result">
+      <div class="data-result-top">
+        <h2 id="resultTitle">Sonuçlar</h2>
+        <span id="resultStatus">Hazırlanıyor</span>
+      </div>
+      <div id="dataOutput">
+        <div class="loading">Veriler yükleniyor...</div>
+      </div>
+    </section>
+
+    <p class="data-attribution">
+      Veriler:
+      <a href="https://sportscore.com/" rel="dofollow"
+        title="Sports data by SportScore">SportScore</a>
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <strong>SPORIX</strong>
+      <span>Futbolun takip merkezi.</span>
+      <div class="footer-links">
+        <a href="/">Ana Sayfa</a>
+        <a href="/hakkimizda/">Hakkımızda</a>
+        <a href="/iletisim/">İletişim</a>
+        <a href="/gizlilik/">Gizlilik</a>
+      </div>
+      <small>© <span id="year">2026</span> SPORIX</small>
+      <small>
+        <a href="https://sportscore.com/" rel="dofollow">Powered by SportScore</a>
+      </small>
+    </div>
+  </footer>
+
+  <script src="/assets/veri.js" defer></script>
+</body>
+</html>
