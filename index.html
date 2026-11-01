@@ -3,187 +3,93 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>SPORIX | Futbolun Takip Merkezi</title>
-  <meta name="description" content="SPORIX ile futbol maçlarını, canlı skorları, fikstürleri ve lig puan durumlarını takip et.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SPORIX | Canlı Skorlar ve Futbol Maçları</title>
+  <meta name="description" content="SPORIX ile Süper Lig, Premier League, La Liga ve dünyanın önemli futbol liglerindeki maçları takip edin.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://sporix.vercel.app/">
   <meta name="theme-color" content="#101b2d">
-
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="SPORIX | Futbolun Takip Merkezi">
-  <meta property="og:description" content="Futbol dünyasını tek yerden takip et.">
-  <meta property="og:url" content="https://sporix.vercel.app/">
-  <meta property="og:image" content="https://sporix.vercel.app/images/logo.jpeg">
-
   <link rel="icon" href="/images/logo.jpeg">
   <link rel="stylesheet" href="/assets/style.css">
 </head>
-
 <body>
-  <header class="site-header">
-    <div class="header-inner">
-      <a href="/" class="brand" aria-label="SPORIX ana sayfa">
-        <img src="/images/logo.jpeg" alt="SPORIX logo">
-        <span>SPORIX</span>
-      </a>
 
-      <nav class="main-nav" aria-label="Ana menü">
-        <a href="/" class="nav-link active">Ana Sayfa</a>
-        <a href="/maclar/" class="nav-link">Maçlar</a>
-        <a href="/puan-durumu/" class="nav-link">Puan Durumu</a>
-        <a href="/fikstur/" class="nav-link">Fikstür</a>
-        <a href="/haberler/" class="nav-link">Haberler</a>
-      </nav>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="brand">
+      <img src="/images/logo.jpeg" alt="SPORIX">
+      <span>SPORIX</span>
+    </a>
 
-      <a href="/maclar/" class="header-button">
-        Maçları Gör
-        <span>→</span>
-      </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Menüyü aç" aria-expanded="false">☰</button>
+
+    <nav class="main-nav" id="mainNav">
+      <a href="/" class="active">Ana Sayfa</a>
+      <a href="/maclar/">Maçlar</a>
+      <a href="/puan-durumu/">Puan Durumu</a>
+      <a href="/fikstur/">Fikstür</a>
+      <a href="/haberler/">Haberler</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="page-heading">
+    <div>
+      <span class="eyebrow">SPORIX FUTBOL MERKEZİ</span>
+      <h1>Bugünün Maçları</h1>
+      <p>Futbol liglerindeki karşılaşmaları takip et.</p>
     </div>
-  </header>
+    <button class="refresh-button" id="refreshAll">↻ Yenile</button>
+  </div>
 
-  <main>
-    <section class="hero">
-      <div class="hero-content">
-        <div class="hero-label">
-          <span class="hero-label-dot"></span>
-          FUTBOLUN TAKİP MERKEZİ
-        </div>
-
-        <h1>Futbolun heyecanı<br> <span>SPORIX'te.</span></h1>
-
-        <p>
-          Maçları takip et, skorları öğren, lig sıralamalarını ve
-          fikstürleri tek noktadan incele.
-        </p>
-
-        <div class="hero-actions">
-          <a href="/maclar/" class="primary-button">
-            Maçları Keşfet <span>→</span>
-          </a>
-          <a href="/puan-durumu/" class="secondary-button">
-            Puan Durumları
-          </a>
-        </div>
-
-        <div class="hero-bottom">
-          <span><i></i> Futbol tek noktada</span>
-          <span>Hızlı · Kolay · Güncel</span>
-        </div>
-      </div>
-
-      <div class="hero-visual" aria-hidden="true">
-        <div class="visual-glow"></div>
-        <div class="football-circle">
-          <div class="football-ball">⚽</div>
-        </div>
-        <div class="visual-tag visual-tag-top">
-          <span class="visual-tag-icon">🏆</span>
-          <span>Futbol dünyası</span>
-        </div>
-        <div class="visual-tag visual-tag-bottom">
-          <span class="visual-live-dot"></span>
-          <span>Maçları takip et</span>
-        </div>
-      </div>
+  <div id="leagueSections">
+    <section class="league-section" data-competition="turkish-super-league">
+      <div class="league-heading"><span>🇹🇷</span><h2>Türkiye Süper Lig</h2></div>
+      <div class="league-matches" id="matches-turkish-super-league"><div class="loading">Maçlar yükleniyor...</div></div>
     </section>
 
-    <section class="sections-section">
-      <div class="section-heading">
-        <div>
-          <span class="eyebrow">SPORIX'İ KEŞFET</span>
-          <h2>Futbol burada başlar.</h2>
-          <p>İhtiyacın olan futbol bölümüne kolayca ulaş.</p>
-        </div>
-      </div>
-
-      <div class="feature-grid">
-        <a href="/maclar/" class="feature-card feature-card-main">
-          <div class="feature-top">
-            <div class="feature-icon icon-blue">⚽</div>
-            <span class="card-arrow">↗</span>
-          </div>
-          <div class="feature-info">
-            <span class="feature-number">01 / MAÇ MERKEZİ</span>
-            <h3>Maçlar</h3>
-            <p>Futbol karşılaşmalarını ve maç bilgilerini incele.</p>
-          </div>
-        </a>
-
-        <a href="/puan-durumu/" class="feature-card">
-          <div class="feature-top">
-            <div class="feature-icon icon-purple">🏆</div>
-            <span class="card-arrow">↗</span>
-          </div>
-          <div class="feature-info">
-            <span class="feature-number">02 / LİG SIRALAMASI</span>
-            <h3>Puan Durumu</h3>
-            <p>Takımların lig sıralamalarını görüntüle.</p>
-          </div>
-        </a>
-
-        <a href="/fikstur/" class="feature-card">
-          <div class="feature-top">
-            <div class="feature-icon icon-orange">📅</div>
-            <span class="card-arrow">↗</span>
-          </div>
-          <div class="feature-info">
-            <span class="feature-number">03 / MAÇ TAKVİMİ</span>
-            <h3>Fikstür</h3>
-            <p>Oynanacak karşılaşmaları takip et.</p>
-          </div>
-        </a>
-
-        <a href="/haberler/" class="feature-card">
-          <div class="feature-top">
-            <div class="feature-icon icon-green">📰</div>
-            <span class="card-arrow">↗</span>
-          </div>
-          <div class="feature-info">
-            <span class="feature-number">04 / FUTBOL GÜNDEMİ</span>
-            <h3>Haberler</h3>
-            <p>Futbol dünyasındaki gelişmeleri oku.</p>
-          </div>
-        </a>
-      </div>
+    <section class="league-section" data-competition="english-premier-league">
+      <div class="league-heading"><span>🏴</span><h2>İngiltere Premier League</h2></div>
+      <div class="league-matches" id="matches-english-premier-league"><div class="loading">Maçlar yükleniyor...</div></div>
     </section>
 
-    <section class="bottom-cta">
-      <div>
-        <span class="eyebrow">FUTBOLU TAKİP ET</span>
-        <h2>Maç heyecanını kaçırma.</h2>
-        <p>SPORIX maç merkezine geç ve karşılaşmaları incele.</p>
-      </div>
-      <a href="/maclar/" class="primary-button">
-        Maç Merkezine Git <span>→</span>
-      </a>
+    <section class="league-section" data-competition="spanish-la-liga">
+      <div class="league-heading"><span>🇪🇸</span><h2>İspanya La Liga</h2></div>
+      <div class="league-matches" id="matches-spanish-la-liga"><div class="loading">Maçlar yükleniyor...</div></div>
     </section>
-  </main>
 
-  <footer class="site-footer">
-    <div class="footer-inner">
-      <a href="/" class="footer-brand">SPORIX</a>
-      <p>Futbolun takip merkezi.</p>
+    <section class="league-section" data-competition="bundesliga">
+      <div class="league-heading"><span>🇩🇪</span><h2>Almanya Bundesliga</h2></div>
+      <div class="league-matches" id="matches-bundesliga"><div class="loading">Maçlar yükleniyor...</div></div>
+    </section>
 
-      <div class="footer-links">
-        <a href="/hakkimizda/">Hakkımızda</a>
-        <a href="/iletisim/">İletişim</a>
-        <a href="/gizlilik/">Gizlilik</a>
-        <a href="/kullanim-sartlari/">Kullanım Şartları</a>
-      </div>
+    <section class="league-section" data-competition="italian-serie-a">
+      <div class="league-heading"><span>🇮🇹</span><h2>İtalya Serie A</h2></div>
+      <div class="league-matches" id="matches-italian-serie-a"><div class="loading">Maçlar yükleniyor...</div></div>
+    </section>
 
-      <div class="footer-bottom">
-        <span>© <span id="currentYear">2026</span> SPORIX. Tüm hakları saklıdır.</span>
-        <a href="/">sporix.vercel.app</a>
-      </div>
+    <section class="league-section" data-competition="uefa-champions-league">
+      <div class="league-heading"><span>🏆</span><h2>UEFA Şampiyonlar Ligi</h2></div>
+      <div class="league-matches" id="matches-uefa-champions-league"><div class="loading">Maçlar yükleniyor...</div></div>
+    </section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <strong>SPORIX</strong>
+    <span>Futbolun takip merkezi.</span>
+    <div class="footer-links">
+      <a href="/hakkimizda/">Hakkımızda</a>
+      <a href="/iletisim/">İletişim</a>
+      <a href="/gizlilik/">Gizlilik</a>
+      <a href="/kullanim-sartlari/">Kullanım Şartları</a>
     </div>
-  </footer>
+    <small>© <span id="year"></span> SPORIX</small>
+  </div>
+</footer>
 
-  <script>
-    document.getElementById("currentYear").textContent =
-      new Date().getFullYear();
-  </script>
+<script src="/assets/home.js"></script>
 </body>
 </html>
