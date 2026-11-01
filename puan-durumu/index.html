@@ -1,57 +1,84 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Puan Durumu | SPORIX</title>
+  <meta name="description" content="Futbol liglerinin güncel puan durumlarını SPORIX ile takip et.">
+  <meta name="theme-color" content="#e50914">
+  <link rel="icon" href="/images/logo.jpeg">
   <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="/assets/pages.css">
+  <script src="/assets/pages.js" defer></script>
 </head>
-<body>
-<header class="header"><div class="header-inner">
-  <a href="/" class="logo"><img src="/images/logo.jpeg" alt="SPORIX"><span>SPOR<span>IX</span></span></a>
-  <button class="menu-btn" id="menuBtn">☰</button>
-  <nav class="nav" id="mainNav">
-    <a href="/">Ana Sayfa</a><a href="/maclar/">Canlı Skorlar</a>
-    <a href="/haberler/">Haberler</a><a class="active" href="/puan-durumu/">Puan Durumu</a>
-    <a href="/fikstur/">Fikstür</a>
-  </nav>
-</div></header>
-
-<main class="container">
-  <div class="page-title">
-    <h1>Puan Durumu</h1>
-    <p>Liglerdeki takım sıralamalarını takip et.</p>
-  </div>
-
-  <div class="content-panel">
-    <div class="match-toolbar">
-      <div class="toolbar-title"><strong>Lig sıralamaları</strong><span>Sezon puan tabloları</span></div>
-      <select class="league-select" id="standingsLeague">
-        <option value="super-lig">Türkiye Süper Lig</option>
-        <option value="premier-league">Premier League</option>
-        <option value="la-liga">La Liga</option>
-        <option value="serie-a">Serie A</option>
-        <option value="bundesliga">Bundesliga</option>
-      </select>
+<body data-page="standings">
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="brand">
+        <img src="/images/logo.jpeg" alt="SPORIX">
+        <div>
+          <div class="brand-name">SPOR<span>IX</span></div>
+          <span class="brand-tagline">SPORUN NABZI BURADA ATAR</span>
+        </div>
+      </a>
+      <button class="mobile-menu-button" id="mobileMenuButton" aria-label="Menüyü aç">☰</button>
+      <nav class="main-nav" id="mainNav">
+        <a href="/">Ana Sayfa</a>
+        <a href="/maclar/">Maçlar</a>
+        <a href="/puan-durumu/" class="active">Puan Durumu</a>
+        <a href="/fikstur/">Fikstür</a>
+      </nav>
     </div>
-    <div class="empty-state">
-      <strong>Puan tablosu bağlantısı bekleniyor</strong>
-      <p>Takım sıralamaları henüz veri kaynağına bağlanmadı. Gerçek puanları göstermek için puan durumu API bağlantısı eklenmesi gerekiyor.</p>
-      <div class="inner-links"><a href="/maclar/">Maç sonuçlarını görüntüle</a></div>
+  </header>
+
+  <main class="sp-page">
+    <div class="sp-page-heading">
+      <div>
+        <span class="sp-eyebrow">LİG SIRALAMALARI</span>
+        <h1>Puan <span>Durumu</span></h1>
+        <p>Takımların ligdeki sıralamalarını ve puanlarını incele.</p>
+      </div>
     </div>
-  </div>
-</main>
 
-<footer class="footer"><div class="footer-inner">
-  <a href="/" class="footer-logo">SPOR<span>IX</span></a>
-  <div class="footer-links"><a href="/">Ana Sayfa</a><a href="/maclar/">Canlı Skorlar</a><a href="/haberler/">Haberler</a><a href="/fikstur/">Fikstür</a></div>
-  <small>© 2026 SPORIX</small>
-</div></footer>
+    <section class="sp-panel">
+      <div class="sp-filter">
+        <label for="competitionSelect">Lig seç</label>
+        <select id="competitionSelect">
+          <option value="turkish-super-league">Türkiye Süper Lig</option>
+          <option value="english-premier-league">İngiltere Premier League</option>
+          <option value="spanish-la-liga">İspanya La Liga</option>
+          <option value="bundesliga">Almanya Bundesliga</option>
+          <option value="italian-serie-a">İtalya Serie A</option>
+          <option value="uefa-champions-league">UEFA Şampiyonlar Ligi</option>
+        </select>
+        <button class="sp-primary-button" id="loadButton">Tabloyu Getir</button>
+      </div>
 
-<script>
-  document.getElementById("menuBtn")?.addEventListener("click", () => {
-    document.getElementById("mainNav")?.classList.toggle("open");
-  });
-</script>
+      <div class="sp-panel-heading">
+        <h2 id="tableTitle">Lig Puan Tablosu</h2>
+        <span class="sp-small-label">Güncel veriler</span>
+      </div>
+
+      <div id="pageResults" class="sp-results">
+        <div class="sp-loading">Lig tablosu yükleniyor...</div>
+      </div>
+    </section>
+
+    <p class="sp-provider">
+      Spor verileri:
+      <a href="https://sportscore.com/" rel="dofollow" target="_blank">Powered by SportScore</a>
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">SPOR<span>IX</span></div>
+        <div class="footer-copy">© <span id="currentYear"></span> SPORIX. Tüm hakları saklıdır.</div>
+      </div>
+      <div class="footer-credit">Sporun nabzı burada atar.</div>
+    </div>
+  </footer>
 </body>
 </html>
