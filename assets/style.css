@@ -616,3 +616,157 @@ button { cursor: pointer; }
   .match-result { min-width: 48px; }
   .filter-button { padding: 8px 10px; }
 }
+
+/* ==================================
+   SPORIX - MAÇ KARTI İSİM DÜZENİ
+================================== */
+
+.matches-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.match-card {
+  min-width: 0;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e8eaf0;
+  border-radius: 14px;
+  padding: 0;
+}
+
+.match-card-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 22px 14px;
+  min-width: 0;
+}
+
+.match-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+  width: 100%;
+  text-align: center;
+}
+
+.match-team img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.match-team span:not(.team-placeholder) {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 700;
+  text-align: center;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  white-space: normal;
+}
+
+.match-result {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  text-align: center;
+}
+
+.match-score {
+  font-size: 23px;
+  line-height: 1.2;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.match-time {
+  font-size: 16px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.live-clock {
+  display: block;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: center;
+  white-space: normal;
+}
+
+.match-card-top,
+.match-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px 14px;
+}
+
+.match-competition {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.match-card-bottom span {
+  font-size: 11px;
+  color: #777;
+}
+
+/* Tablet ve telefon */
+@media (max-width: 650px) {
+  .matches-list {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .match-card-body {
+    grid-template-columns: minmax(0, 1fr) 76px minmax(0, 1fr);
+    gap: 6px;
+    padding: 20px 12px;
+  }
+
+  .match-team img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .match-team span:not(.team-placeholder) {
+    font-size: 13px;
+  }
+}
+
+/* Küçük ekranlar */
+@media (max-width: 360px) {
+  .match-card-body {
+    grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1fr);
+    gap: 4px;
+    padding: 18px 8px;
+  }
+
+  .match-score {
+    font-size: 20px;
+  }
+
+  .match-team span:not(.team-placeholder) {
+    font-size: 12px;
+  }
+}
