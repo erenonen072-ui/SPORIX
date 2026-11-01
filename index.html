@@ -3,93 +3,328 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>SPORIX | Canlı Skorlar ve Futbol Maçları</title>
-  <meta name="description" content="SPORIX ile Süper Lig, Premier League, La Liga ve dünyanın önemli futbol liglerindeki maçları takip edin.">
+  <meta name="description" content="SPORIX ile Türkiye Süper Lig, Premier League, La Liga, Bundesliga, Serie A ve Şampiyonlar Ligi maçlarını takip edin.">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://sporix.vercel.app/">
   <meta name="theme-color" content="#101b2d">
+
+  <link rel="canonical" href="https://sporix.vercel.app/">
   <link rel="icon" href="/images/logo.jpeg">
   <link rel="stylesheet" href="/assets/style.css">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="SPORIX | Futbolun Takip Merkezi">
+  <meta property="og:description" content="Futbol maçlarını, saatlerini ve sonuçlarını SPORIX ile takip edin.">
+  <meta property="og:url" content="https://sporix.vercel.app/">
+  <meta property="og:image" content="https://sporix.vercel.app/images/logo.jpeg">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "SPORIX",
+    "url": "https://sporix.vercel.app/",
+    "description": "Futbol maçları ve canlı skor takip platformu."
+  }
+  </script>
 </head>
+
 <body>
 
-<header class="site-header">
-  <div class="header-inner">
-    <a href="/" class="brand">
-      <img src="/images/logo.jpeg" alt="SPORIX">
-      <span>SPORIX</span>
-    </a>
+  <!-- ÜST MENÜ -->
+  <header class="site-header">
+    <div class="header-inner">
 
-    <button class="menu-toggle" id="menuToggle" aria-label="Menüyü aç" aria-expanded="false">☰</button>
+      <a href="/" class="brand" aria-label="SPORIX ana sayfa">
+        <img src="/images/logo.jpeg" alt="SPORIX Logo">
+        <span>SPORIX</span>
+      </a>
 
-    <nav class="main-nav" id="mainNav">
-      <a href="/" class="active">Ana Sayfa</a>
-      <a href="/maclar/">Maçlar</a>
-      <a href="/puan-durumu/">Puan Durumu</a>
-      <a href="/fikstur/">Fikstür</a>
-      <a href="/haberler/">Haberler</a>
-    </nav>
-  </div>
-</header>
+      <button
+        class="menu-toggle"
+        id="menuToggle"
+        type="button"
+        aria-label="Menüyü aç"
+        aria-expanded="false"
+      >
+        ☰
+      </button>
 
-<main class="container">
-  <div class="page-heading">
-    <div>
-      <span class="eyebrow">SPORIX FUTBOL MERKEZİ</span>
-      <h1>Bugünün Maçları</h1>
-      <p>Futbol liglerindeki karşılaşmaları takip et.</p>
+      <nav class="main-nav" id="mainNav" aria-label="Ana menü">
+        <a href="/" class="active">Ana Sayfa</a>
+        <a href="/maclar/">Maçlar</a>
+        <a href="/puan-durumu/">Puan Durumu</a>
+        <a href="/fikstur/">Fikstür</a>
+        <a href="/haberler/">Haberler</a>
+      </nav>
+
     </div>
-    <button class="refresh-button" id="refreshAll">↻ Yenile</button>
-  </div>
+  </header>
 
-  <div id="leagueSections">
-    <section class="league-section" data-competition="turkish-super-league">
-      <div class="league-heading"><span>🇹🇷</span><h2>Türkiye Süper Lig</h2></div>
-      <div class="league-matches" id="matches-turkish-super-league"><div class="loading">Maçlar yükleniyor...</div></div>
+
+  <!-- MAÇ MERKEZİ -->
+  <main class="container">
+
+    <!-- GÜN SEÇİMİ -->
+    <section class="match-toolbar">
+
+      <div class="toolbar-title">
+        <div>
+          <h1>Maç Takvimi</h1>
+          <span id="selectedDateLabel"></span>
+        </div>
+      </div>
+
+      <div
+        class="date-strip"
+        id="dateStrip"
+        aria-label="Maç günü seç"
+      >
+        <!-- Günler home.js tarafından oluşturulur -->
+      </div>
+
     </section>
 
-    <section class="league-section" data-competition="english-premier-league">
-      <div class="league-heading"><span>🏴</span><h2>İngiltere Premier League</h2></div>
-      <div class="league-matches" id="matches-english-premier-league"><div class="loading">Maçlar yükleniyor...</div></div>
-    </section>
 
-    <section class="league-section" data-competition="spanish-la-liga">
-      <div class="league-heading"><span>🇪🇸</span><h2>İspanya La Liga</h2></div>
-      <div class="league-matches" id="matches-spanish-la-liga"><div class="loading">Maçlar yükleniyor...</div></div>
-    </section>
+    <!-- TÜM LİGLER -->
+    <div id="leagueSections">
 
-    <section class="league-section" data-competition="bundesliga">
-      <div class="league-heading"><span>🇩🇪</span><h2>Almanya Bundesliga</h2></div>
-      <div class="league-matches" id="matches-bundesliga"><div class="loading">Maçlar yükleniyor...</div></div>
-    </section>
 
-    <section class="league-section" data-competition="italian-serie-a">
-      <div class="league-heading"><span>🇮🇹</span><h2>İtalya Serie A</h2></div>
-      <div class="league-matches" id="matches-italian-serie-a"><div class="loading">Maçlar yükleniyor...</div></div>
-    </section>
+      <!-- TÜRKİYE SÜPER LİG -->
+      <section
+        class="league-section"
+        data-competition="turkish-super-league"
+      >
 
-    <section class="league-section" data-competition="uefa-champions-league">
-      <div class="league-heading"><span>🏆</span><h2>UEFA Şampiyonlar Ligi</h2></div>
-      <div class="league-matches" id="matches-uefa-champions-league"><div class="loading">Maçlar yükleniyor...</div></div>
-    </section>
-  </div>
-</main>
+        <div class="league-heading">
+          <div class="league-identity">
 
-<footer class="site-footer">
-  <div class="footer-inner">
-    <strong>SPORIX</strong>
-    <span>Futbolun takip merkezi.</span>
-    <div class="footer-links">
-      <a href="/hakkimizda/">Hakkımızda</a>
-      <a href="/iletisim/">İletişim</a>
-      <a href="/gizlilik/">Gizlilik</a>
-      <a href="/kullanim-sartlari/">Kullanım Şartları</a>
+            <img
+              class="league-logo"
+              src=""
+              alt="Türkiye Süper Lig"
+              hidden
+            >
+
+            <span class="league-fallback">🇹🇷</span>
+
+            <h2>Türkiye Süper Lig</h2>
+
+          </div>
+        </div>
+
+        <div
+          class="league-matches"
+          id="matches-turkish-super-league"
+        >
+          <div class="loading">Maçlar yükleniyor...</div>
+        </div>
+
+      </section>
+
+
+      <!-- PREMIER LEAGUE -->
+      <section
+        class="league-section"
+        data-competition="english-premier-league"
+      >
+
+        <div class="league-heading">
+          <div class="league-identity">
+
+            <img
+              class="league-logo"
+              src=""
+              alt="Premier League"
+              hidden
+            >
+
+            <span class="league-fallback">🏴</span>
+
+            <h2>İngiltere Premier League</h2>
+
+          </div>
+        </div>
+
+        <div
+          class="league-matches"
+          id="matches-english-premier-league"
+        >
+          <div class="loading">Maçlar yükleniyor...</div>
+        </div>
+
+      </section>
+
+
+      <!-- LA LIGA -->
+      <section
+        class="league-section"
+        data-competition="spanish-la-liga"
+      >
+
+        <div class="league-heading">
+          <div class="league-identity">
+
+            <img
+              class="league-logo"
+              src=""
+              alt="La Liga"
+              hidden
+            >
+
+            <span class="league-fallback">🇪🇸</span>
+
+            <h2>İspanya La Liga</h2>
+
+          </div>
+        </div>
+
+        <div
+          class="league-matches"
+          id="matches-spanish-la-liga"
+        >
+          <div class="loading">Maçlar yükleniyor...</div>
+        </div>
+
+      </section>
+
+
+      <!-- BUNDESLIGA -->
+      <section
+        class="league-section"
+        data-competition="bundesliga"
+      >
+
+        <div class="league-heading">
+          <div class="league-identity">
+
+            <img
+              class="league-logo"
+              src=""
+              alt="Bundesliga"
+              hidden
+            >
+
+            <span class="league-fallback">🇩🇪</span>
+
+            <h2>Almanya Bundesliga</h2>
+
+          </div>
+        </div>
+
+        <div
+          class="league-matches"
+          id="matches-bundesliga"
+        >
+          <div class="loading">Maçlar yükleniyor...</div>
+        </div>
+
+      </section>
+
+
+      <!-- SERIE A -->
+      <section
+        class="league-section"
+        data-competition="italian-serie-a"
+      >
+
+        <div class="league-heading">
+          <div class="league-identity">
+
+            <img
+              class="league-logo"
+              src=""
+              alt="Serie A"
+              hidden
+            >
+
+            <span class="league-fallback">🇮🇹</span>
+
+            <h2>İtalya Serie A</h2>
+
+          </div>
+        </div>
+
+        <div
+          class="league-matches"
+          id="matches-italian-serie-a"
+        >
+          <div class="loading">Maçlar yükleniyor...</div>
+        </div>
+
+      </section>
+
+
+      <!-- ŞAMPİYONLAR LİGİ -->
+      <section
+        class="league-section"
+        data-competition="uefa-champions-league"
+      >
+
+        <div class="league-heading">
+          <div class="league-identity">
+
+            <img
+              class="league-logo"
+              src=""
+              alt="UEFA Şampiyonlar Ligi"
+              hidden
+            >
+
+            <span class="league-fallback">🏆</span>
+
+            <h2>UEFA Şampiyonlar Ligi</h2>
+
+          </div>
+        </div>
+
+        <div
+          class="league-matches"
+          id="matches-uefa-champions-league"
+        >
+          <div class="loading">Maçlar yükleniyor...</div>
+        </div>
+
+      </section>
+
     </div>
-    <small>© <span id="year"></span> SPORIX</small>
-  </div>
-</footer>
 
-<script src="/assets/home.js"></script>
+  </main>
+
+
+  <!-- ALT BİLGİ -->
+  <footer class="site-footer">
+
+    <div class="footer-inner">
+
+      <strong>SPORIX</strong>
+
+      <span>Futbolun takip merkezi.</span>
+
+      <div class="footer-links">
+        <a href="/hakkimizda/">Hakkımızda</a>
+        <a href="/iletisim/">İletişim</a>
+        <a href="/gizlilik/">Gizlilik</a>
+        <a href="/kullanim-sartlari/">Kullanım Şartları</a>
+      </div>
+
+      <small>
+        © <span id="year">2026</span> SPORIX. Tüm hakları saklıdır.
+      </small>
+
+      <small>
+        Maç verileri: <a href="https://sportscore.com/" target="_blank" rel="noopener noreferrer">SportScore</a>
+      </small>
+
+    </div>
+
+  </footer>
+
+
+  <!-- ANA SAYFA MAÇ SİSTEMİ -->
+  <script src="/assets/home.js" defer></script>
+
 </body>
 </html>
