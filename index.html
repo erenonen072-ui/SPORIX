@@ -1,12 +1,20 @@
- <!DOCTYPE html>
+
+<!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="SPORIX ile dünyanın dört bir yanından futbol maçlarını, canlı skorları ve ligleri takip et.">
+
+  <title>SPORIX - Canlı Skorlar ve Futbol</title>
+
   <link rel="icon" href="/images/logo.jpeg">
   <link rel="stylesheet" href="/assets/style.css">
+
   <script src="/assets/app.js" defer></script>
 </head>
+
 <body>
 
 <header class="header">
@@ -15,100 +23,317 @@
       <img src="/images/logo.jpeg" alt="SPORIX">
       <span>SPOR<span>IX</span></span>
     </a>
+
+    <button
+      id="menuBtn"
+      class="menu-btn"
+      type="button"
+      aria-label="Menüyü aç"
+      aria-expanded="false"
+    >
+      ☰
+    </button>
+
+    <nav id="mainNav">
+      <a href="/">Ana Sayfa</a>
+      <a href="/maclar/">Maçlar</a>
+      <a href="/haberler/">Haberler</a>
+      <a href="/puan-durumu/">Puan Durumu</a>
+      <a href="/fikstur/">Fikstür</a>
+    </nav>
   </div>
 </header>
 
 <main class="container">
 
- 
   <section class="section">
+
     <div class="section-heading">
       <div>
         <h2>Maç Merkezi</h2>
-        <p>Günün karşılaşmalarını takip et.</p>
+        <p>Dünyanın dört bir yanından futbol karşılaşmaları.</p>
       </div>
-      <a href="/maclar/" class="more-link">Tüm maçlar →</a>
+
+      <a href="/maclar/" class="more-link">
+        Tüm maçlar →
+      </a>
     </div>
 
     <div class="match-box">
+
       <div class="match-toolbar">
+
         <div class="toolbar-title">
           <strong id="matchDate">Günün Maçları</strong>
           <span>Karşılaşmalar</span>
         </div>
+
         <div class="toolbar-actions">
+
+          <input
+            type="date"
+            id="matchDateInput"
+            class="date-select"
+            aria-label="Maç tarihi seç"
+          >
+
           <select id="leagueSelect" class="league-select">
-            <option value="super-lig">Türkiye Süper Lig</option>
-            <option value="1-lig">Türkiye 1. Lig</option>
-            <option value="premier-league">Premier League</option>
-            <option value="la-liga">La Liga</option>
-            <option value="serie-a">Serie A</option>
-            <option value="bundesliga">Bundesliga</option>
-            <option value="ligue-1">Ligue 1</option>
-            <option value="champions-league">Şampiyonlar Ligi</option>
+
+            <option value="turkish-super-league">
+              Türkiye Süper Lig
+            </option>
+
+            <option value="turkish-first-league">
+              Türkiye 1. Lig
+            </option>
+
+            <option value="turkish-second-league">
+              Türkiye 2. Lig
+            </option>
+
+            <option value="turkish-third-league">
+              Türkiye 3. Lig
+            </option>
+
+            <option value="english-premier-league">
+              Premier League
+            </option>
+
+            <option value="spanish-la-liga">
+              La Liga
+            </option>
+
+            <option value="italian-serie-a">
+              Serie A
+            </option>
+
+            <option value="bundesliga">
+              Bundesliga
+            </option>
+
+            <option value="uefa-champions-league">
+              Şampiyonlar Ligi
+            </option>
+
+            <option value="french-ligue-1">
+              Ligue 1
+            </option>
+
+            <option value="portuguese-primeira-liga">
+              Portekiz Ligi
+            </option>
+
+            <option value="dutch-eredivisie">
+              Hollanda Ligi
+            </option>
+
           </select>
-          <button id="refreshMatches" class="refresh-btn" type="button">↻</button>
+
+          <button
+            id="refreshMatches"
+            class="refresh-btn"
+            type="button"
+          >
+            ↻ Yenile
+          </button>
+
         </div>
       </div>
 
-      <div class="filters">
-        <button class="filter-button active" data-filter="all">Tümü</button>
-        <button class="filter-button" data-filter="live">Canlı</button>
-        <button class="filter-button" data-filter="finished">Biten</button>
-        <button class="filter-button" data-filter="upcoming">Yaklaşan</button>
+      <!-- DÜNYA LİGLERİ ARAMA -->
+
+      <div class="world-league-search">
+
+        <div class="world-search-heading">
+          <div>
+            <h3>🌍 Dünya Ligleri</h3>
+            <p>Ülke veya organizasyon adına göre ara.</p>
+          </div>
+        </div>
+
+        <div class="world-search-input">
+
+          <input
+            type="search"
+            id="competitionSearch"
+            placeholder="Örn: Brazil, Turkish, Premier League..."
+            autocomplete="off"
+          >
+
+          <button
+            type="button"
+            id="clearCompetitionSearch"
+            aria-label="Aramayı temizle"
+          >
+            ×
+          </button>
+
+        </div>
+
+        <div
+          id="competitionResults"
+          class="competition-results"
+          hidden
+        ></div>
+
+        <p class="search-help">
+          Arama sonuçlarından bir lige tıklayarak maçlarını görüntüleyebilirsin.
+        </p>
+
       </div>
 
+      <!-- MAÇ FİLTRELERİ -->
+
+      <div class="filters">
+
+        <button
+          class="filter-button selected"
+          data-filter="all"
+          type="button"
+        >
+          Tümü
+        </button>
+
+        <button
+          class="filter-button"
+          data-filter="live"
+          type="button"
+        >
+          Canlı
+        </button>
+
+        <button
+          class="filter-button"
+          data-filter="finished"
+          type="button"
+        >
+          Biten
+        </button>
+
+        <button
+          class="filter-button"
+          data-filter="upcoming"
+          type="button"
+        >
+          Yaklaşan
+        </button>
+
+      </div>
+
+      <!-- MAÇLAR -->
+
       <div id="matches" class="matches-list">
-        <div class="loading-state">Maçlar yükleniyor...</div>
+
+        <div class="loading-state">
+          Maçlar yükleniyor...
+        </div>
+
       </div>
 
       <div class="box-footer">
-        <a href="/maclar/">Bütün maçları gör →</a>
-        <small>Veri sağlayıcı: <a href="https://sportscore.com/" target="_blank" rel="dofollow">SportScore</a></small>
+
+        <a href="/maclar/">
+          Bütün maçları gör →
+        </a>
+
+        <small>
+          Veri sağlayıcı:
+          <a
+            href="https://sportscore.com/"
+            target="_blank"
+            rel="dofollow noopener"
+          >
+            SportScore
+          </a>
+        </small>
+
       </div>
+
     </div>
   </section>
 
+  <!-- POPÜLER LİGLER -->
+
   <section class="section">
+
     <div class="section-heading">
       <div>
         <h2>Popüler Ligler</h2>
-        <p>Takip etmek istediğin ligi seç.</p>
+        <p>Takip etmek istediğin organizasyonu seç.</p>
       </div>
     </div>
+
     <div class="league-grid">
-      <a href="/maclar/" data-league="super-lig"><small>TÜRKİYE</small><b>Süper Lig</b><span>→</span></a>
-      <a href="/maclar/" data-league="premier-league"><small>İNGİLTERE</small><b>Premier League</b><span>→</span></a>
-      <a href="/maclar/" data-league="la-liga"><small>İSPANYA</small><b>La Liga</b><span>→</span></a>
-      <a href="/maclar/" data-league="serie-a"><small>İTALYA</small><b>Serie A</b><span>→</span></a>
-      <a href="/maclar/" data-league="bundesliga"><small>ALMANYA</small><b>Bundesliga</b><span>→</span></a>
-      <a href="/maclar/" data-league="champions-league"><small>AVRUPA</small><b>Şampiyonlar Ligi</b><span>→</span></a>
+
+      <a href="/maclar/" data-league="turkish-super-league">
+        <small>TÜRKİYE</small>
+        <b>Süper Lig</b>
+        <span>→</span>
+      </a>
+
+      <a href="/maclar/" data-league="english-premier-league">
+        <small>İNGİLTERE</small>
+        <b>Premier League</b>
+        <span>→</span>
+      </a>
+
+      <a href="/maclar/" data-league="spanish-la-liga">
+        <small>İSPANYA</small>
+        <b>La Liga</b>
+        <span>→</span>
+      </a>
+
+      <a href="/maclar/" data-league="italian-serie-a">
+        <small>İTALYA</small>
+        <b>Serie A</b>
+        <span>→</span>
+      </a>
+
+      <a href="/maclar/" data-league="bundesliga">
+        <small>ALMANYA</small>
+        <b>Bundesliga</b>
+        <span>→</span>
+      </a>
+
+      <a href="/maclar/" data-league="uefa-champions-league">
+        <small>AVRUPA</small>
+        <b>Şampiyonlar Ligi</b>
+        <span>→</span>
+      </a>
+
     </div>
+
   </section>
 
 </main>
 
 <footer class="footer">
+
   <div class="footer-inner">
-    <a href="/" class="footer-logo">SPOR<span>IX</span></a>
+
+    <a href="/" class="footer-logo">
+      SPOR<span>IX</span>
+    </a>
+
     <div class="footer-links">
       <a href="/maclar/">Canlı Skorlar</a>
       <a href="/haberler/">Haberler</a>
       <a href="/puan-durumu/">Puan Durumu</a>
       <a href="/fikstur/">Fikstür</a>
     </div>
-    <small>© <span id="currentYear">2026</span> SPORIX</small>
+
+    <small>
+      © <span id="currentYear">2026</span> SPORIX
+    </small>
+
   </div>
+
 </footer>
 
 <script>
-  document.getElementById("currentYear").textContent = new Date().getFullYear();
-
-  document.querySelectorAll("[data-league]").forEach(link => {
-    link.addEventListener("click", () => {
-      sessionStorage.setItem("sporix-selected-league", link.dataset.league);
-    });
-  });
+  document.getElementById("currentYear").textContent =
+    new Date().getFullYear();
 </script>
+
 </body>
 </html>
