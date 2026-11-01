@@ -1,103 +1,14 @@
 
 "use strict";
 
-const API = "https://sportscore.com/api/v1";
-
-function normalize(value) {
-  return String(value || "")
-    .toLocaleLowerCase("tr-TR")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-}
-
-function collectObjects(value, result = []) {
-  if (!value || typeof value !== "object") return result;
-
-  if (Array.isArray(value)) {
-    value.forEach(item => collectObjects(item, result));
-    return result;
-  }
-
-  result.push(value);
-
-  Object.values(value).forEach(item => {
-    if (item && typeof item === "object") {
-      collectObjects(item, result);
-    }
-  });
-
-  return result;
-}
-
-async function fetchJSON(url) {
-  const headers = { Accept: "application/json" };
-
-  const key = process.env.SPORTSCORE_API_KEY;
-  if (key) headers["X-Api-Key"] = key;
-
-  const response = await fetch(url, { headers });
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data?.error || `SportScore hatası: ${response.status}`
-    );
-  }
-
-  return data;
-}
-
-async function findCompetitionSlug(query) {
-  const url = new URL(`${API}/search/`);
-
-  url.searchParams.set("q", query);
-  url.searchParams.set("sport", "football");
-  url.searchParams.set("limit", "20");
-
-  const data = await fetchJSON(url);
-  const objects = collectObjects(data);
-
-  const candidates = objects
-    .map(item => {
-      const name =
-        item.name ||
-        item.title ||
-        item.display_name ||
-        item.competition_name ||
-        item.league_name ||
-        "";
-
-      const slug =
-        item.slug ||
-        item.competition_slug ||
-        item.league_slug ||
-        "";
-
-      return {
-        name: String(name),
-        slug: String(slug),
-        normalized: normalize(name)
-      };
-    })
-    .filter(item => item.name && item.slug);
-
-  const target = normalize(query);
-
-  const exact = candidates.find(item =>
-    item.normalized === target
-  );
-
-  if (exact) return exact;
-
-  const similar = candidates.find(item =>
-    item.normalized.includes(target) ||
-    target.includes(item.normalized)
-  );
-
-  return similar || null;
-}
+const LEAGUES = {
+  "super-lig": "turkish-super-league",
+  "premier-league": "english-premier-league",
+  "la-liga": "spanish-la-liga",
+  "serie-a": "italian-serie-a",
+  "bundesliga": "bundesliga",
+  "champions-league": "uefa-champions-league"
+};
 
 function getTurkeyDate() {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -115,8 +26,9 @@ function getTurkeyDate() {
 }
 
 export default async function handler(req, res) {
-  const league = String(req.query.league || "").trim();
+  const league = String(req.query.league || "");
   const date = req.query.date || getTurkeyDate();
+  const competition = LEAGUES[league];
 
   if (!league) {
     return res.status(400).json({
@@ -125,46 +37,67 @@ export default async function handler(req, res) {
     });
   }
 
+  if (!competition) {
+    return res.status(400).json({
+      success: false,
+      error: "Bu lig henüz API listesinde tanımlı değil.",
+      league
+    });
+  }
+
   try {
-    const competition = await findCompetitionSlug(league);
-
-    if (!competition) {
-      return res.status(404).json({
-        success: false,
-        error: "Bu lig SportScore aramasında bulunamadı.",
-        searched: league
-      });
-    }
-
-    const url = new URL(`${API}/fixtures/`);
+    const url = new URL(
+      "https://sportscore.com/api/v1/fixtures/"
+    );
 
     url.searchParams.set("sport", "football");
     url.searchParams.set("date", date);
-    url.searchParams.set("competition", competition.slug);
+    url.searchParams.set("competition", competition);
     url.searchParams.set("limit", "200");
 
-    const data = await fetchJSON(url);
+    const headers = {
+      Accept: "application/json"
+    };
 
-    const matches = Array.isArray(data.matches)
-      ? data.matches
-      : Array.isArray(data.fixtures)
-        ? data.fixtures
-        : Array.isArray(data.results)
-          ? data.results
-          : [];
+    const apiKey = process.env.SPORTSCORE_API_KEY;
+
+    if (apiKey) {
+      headers["X-Api-Key"] = apiKey;
+    }
+
+    const response = await fetch(url, { headers });
+    const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        success: false,
+        error: "SportScore API isteği başarısız.",
+        details: data
+      });
+    }
+
+    const matches =
+      data.matches ||
+      data.fixtures ||
+      data.results ||
+      data.data?.matches ||
+      data.data?.fixtures ||
+      data.data?.results ||
+      [];
 
     return res.status(200).json({
       success: true,
-      league: competition.name,
-      competition: competition.slug,
+      sport: "football",
+      league,
+      competition,
       date,
-      count: matches.length,
-      matches,
+      count: Array.isArray(matches) ? matches.length : 0,
+      matches: Array.isArray(matches) ? matches : [],
       updated: data.updated || new Date().toISOString()
     });
 
   } catch (error) {
-    console.error("SPORIX API:", error);
+    console.error("SPORIX API hatası:", error);
 
     return res.status(502).json({
       success: false,
