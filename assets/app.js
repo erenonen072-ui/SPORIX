@@ -1,6 +1,10 @@
 
 "use strict";
 
+// ========================================
+// SPORIX - MAÇ SİSTEMİ
+// ========================================
+
 const API_URL = "/api/matches";
 
 const elements = {
@@ -16,12 +20,21 @@ const elements = {
 let allMatches = [];
 let activeFilter = "all";
 let loading = false;
+let requestController = null;
+let requestNumber = 0;
 
 const STATUS_TEXT = {
   live: "CANLI",
-  finished: "BİTTİ",
-  upcoming: "BAŞLAMADI"
+  finished: "MAÇ SONU",
+  upcoming: "BAŞLAMADI",
+  postponed: "ERTELENDİ",
+  cancelled: "İPTAL",
+  suspended: "DURDURULDU"
 };
+
+// ========================================
+// GÜVENLİ METİN İŞLEMLERİ
+// ========================================
 
 function escapeHTML(value) {
   return String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -34,16 +47,40 @@ function escapeHTML(value) {
 }
 
 function cleanImageURL(value) {
-  if (!value) return "";
+  if (!value || typeof value !== "string") return "";
 
-  let url = String(value).trim();
+  let url = value.trim();
 
   const markdown = url.match(/^\[.*?\]\((https?:\/\/.*?)\)$/);
 
-  if (markdown) url = markdown[1];
+  if (markdown) {
+    url = markdown[1];
+  }
 
   return /^https?:\/\//i.test(url) ? url : "";
 }
+
+function getText(value) {
+  if (typeof value === "string" || typeof value === "number") {
+    return String(value);
+  }
+
+  if (value && typeof value === "object") {
+    return String(
+      value.name ||
+      value.title ||
+      value.label ||
+      value.short_name ||
+      ""
+    );
+  }
+
+  return "";
+}
+
+// ========================================
+// API VERİLERİ
+// ========================================
 
 function getMatchList(data) {
   if (Array.isArray(data)) return data;
@@ -54,10 +91,27 @@ function getMatchList(data) {
     data?.results,
     data?.data?.matches,
     data?.data?.fixtures,
-    data?.data?.results
+    data?.data?.results,
+    data?.data
   ];
 
   return lists.find(Array.isArray) || [];
+}
+
+function getHomeTeam(match) {
+  return match.home ||
+    match.home_team ||
+    match.homeTeam ||
+    match.teams?.home ||
+    {};
+}
+
+function getAwayTeam(match) {
+  return match.away ||
+    match.away_team ||
+    match.awayTeam ||
+    match.teams?.away ||
+    {};
 }
 
 function getTeamName(team, fallback) {
@@ -68,6 +122,7 @@ function getTeamName(team, fallback) {
     team?.title ||
     team?.short_name ||
     team?.display_name ||
+    team?.team_name ||
     fallback
   );
 }
@@ -79,41 +134,112 @@ function getTeamLogo(team, match, side) {
 
   if (direct) return cleanImageURL(direct);
 
-  return typeof team === "object"
-    ? cleanImageURL(team?.logo || team?.image || team?.crest || "")
-    : "";
+  if (typeof team === "object") {
+    return cleanImageURL(
+      team?.logo ||
+      team?.image ||
+      team?.crest ||
+      team?.badge ||
+      team?.photo ||
+      ""
+    );
+  }
+
+  return "";
+}
+
+// ========================================
+// SKOR
+// ========================================
+
+function normalizeScore(value) {
+  if (value === null || value === undefined) return "-";
+
+  if (typeof value === "object") {
+    value =
+      value.current ??
+      value.total ??
+      value.score ??
+      value.goals ??
+      value.value;
+  }
+
+  if (value === null || value === undefined || value === "") {
+    return "-";
+  }
+
+  return String(value);
 }
 
 function getScore(match, side) {
-  const team = side === "home" ? match.home : match.away;
+  const team = side === "home"
+    ? getHomeTeam(match)
+    : getAwayTeam(match);
 
   const direct = side === "home"
     ? match.home_score ?? match.homeScore
     : match.away_score ?? match.awayScore;
 
   if (direct !== undefined && direct !== null) {
-    return direct;
+    return normalizeScore(direct);
   }
 
   if (typeof team === "object") {
-    return team?.score ?? team?.goals ?? "-";
+    const teamScore = team.score ?? team.goals;
+
+    if (teamScore !== undefined && teamScore !== null) {
+      return normalizeScore(teamScore);
+    }
   }
 
   const scores = match.score || match.scores || {};
 
-  return side === "home"
-    ? scores.home ?? scores.home_score ?? "-"
-    : scores.away ?? scores.away_score ?? "-";
+  const score = side === "home"
+    ? scores.home ?? scores.home_score
+    : scores.away ?? scores.away_score;
+
+  return normalizeScore(score);
 }
 
-function getStatus(match) {
-  const raw = String(
-    match.status ||
+// ========================================
+// MAÇ DURUMU
+// ========================================
+
+function getRawStatus(match) {
+  const status = match.status ||
     match.state ||
     match.status_text ||
     match.statusText ||
-    ""
-  ).toLowerCase();
+    match.fixture_status ||
+    "";
+
+  if (typeof status === "object") {
+    return String(
+      status.name ||
+      status.description ||
+      status.short ||
+      status.type ||
+      ""
+    ).toLowerCase();
+  }
+
+  return String(status).toLowerCase();
+}
+
+function getStatus(match) {
+  const raw = getRawStatus(match);
+
+  if (/postponed|delayed|ertelendi/.test(raw)) {
+    return "postponed";
+  }
+
+  if (/cancelled|canceled|iptal/.test(raw)) {
+    return "cancelled";
+  }
+
+  if (/suspended|abandoned|interrupted|durduruldu/.test(raw)) {
+    return "suspended";
+  }
 
   if (
     /live|in.play|playing|1st half|2nd half|half time|halftime|extra time|penalty|canlı/.test(raw)
@@ -122,134 +248,91 @@ function getStatus(match) {
   }
 
   if (
-    /finished|complete|ended|full time|ft|after.penalty|bitti|maç sonu/.test(raw)
+    /finished|complete|ended|full time|after.penalty|bitti|maç sonu/.test(raw)
   ) {
     return "finished";
   }
 
   if (
-    /upcoming|scheduled|not.started|ns|fixture|başlamadı|ertelendi/.test(raw)
+    /upcoming|scheduled|not.started|fixture|başlamadı|not started/.test(raw)
   ) {
     return "upcoming";
   }
 
+  // Bilinmeyen durumlarda canlı veya bitmiş olduğunu varsayma.
   return "upcoming";
 }
 
-function getStartTime(match) {
-  const value =
+// ========================================
+// TARİH VE SAAT
+// ========================================
+
+function getStartValue(match) {
+  return (
     match.start_time ||
     match.startTime ||
     match.kickoff ||
+    match.kickoff_at ||
+    match.starting_at ||
+    match.date ||
     match.time ||
-    match.date;
+    null
+  );
+}
+
+function getStartTime(match) {
+  const value = getStartValue(match);
 
   if (!value) return null;
+
+  // Unix timestamp desteği
+  if (typeof value === "number" || /^\d{10,13}$/.test(String(value))) {
+    const number = Number(value);
+
+    const timestamp = number < 100000000000
+      ? number * 1000
+      : number;
+
+    return Number.isFinite(timestamp) ? timestamp : null;
+  }
+
+  // Sadece saat bilgisi verilmişse tarih hesaplamaya çalışma.
+  if (/^\d{1,2}:\d{2}$/.test(String(value))) {
+    return null;
+  }
 
   const timestamp = new Date(value).getTime();
 
   return Number.isNaN(timestamp) ? null : timestamp;
 }
 
-function getLiveElapsed(match) {
-  const startTime = getStartTime(match);
-
-  if (!startTime) return null;
-
-  const now = Date.now();
-  const elapsedSeconds = Math.max(
-    0,
-    Math.floor((now - startTime) / 1000)
-  );
-
-  return elapsedSeconds;
-}
-
-function formatLiveTime(match) {
-  const status = getStatus(match);
-
-  if (status !== "live") return "";
-
-  // API gerçek dakika ve saniye gönderiyorsa onu kullan.
-  const apiMinute = Number(
-    match.minute ?? match.elapsed ?? match.time_elapsed
-  );
-
-  const apiSecond = Number(
-    match.second ?? match.seconds ?? match.elapsed_seconds
-  );
-
-  if (
-    Number.isFinite(apiMinute) &&
-    Number.isFinite(apiSecond) &&
-    apiMinute >= 0 &&
-    apiSecond >= 0 &&
-    apiSecond < 60
-  ) {
-    return `${apiMinute}' ${String(apiSecond).padStart(2, "0")}"`;
-  }
-
-  // API başlangıç zamanı sağlıyorsa gerçek geçen süreyi hesapla.
-  const elapsed = getLiveElapsed(match);
-
-  if (elapsed !== null) {
-    const minutes = Math.floor(elapsed / 60);
-    const seconds = elapsed % 60;
-
-    return `${minutes}' ${String(seconds).padStart(2, "0")}"`;
-  }
-
-  return "CANLI";
-}
-
 function getTurkeyTime(match) {
-  const value =
-    match.time ||
-    match.date ||
-    match.start_time ||
-    match.startTime;
+  const value = getStartValue(match);
 
   if (!value) return "Saat bilgisi yok";
 
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Saat bilgisi yok";
+  // API doğrudan 18:30 gibi saat gönderiyorsa koru.
+  if (/^\d{1,2}:\d{2}$/.test(String(value))) {
+    return String(value);
   }
 
-  return date.toLocaleTimeString("tr-TR", {
+  const timestamp = getStartTime(match);
+
+  if (!timestamp) return "Saat bilgisi yok";
+
+  return new Date(timestamp).toLocaleTimeString("tr-TR", {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "Europe/Istanbul"
   });
 }
 
-function getStatusLabel(match, status) {
-  if (status === "live") {
-    return formatLiveTime(match);
-  }
-
-  if (status === "finished") {
-    return "MAÇ SONU";
-  }
-
-  return getTurkeyTime(match);
-}
-
 function getMatchDate(match) {
-  const value =
-    match.time ||
-    match.date ||
-    match.start_time ||
-    match.startTime;
+  const timestamp = getStartTime(match);
 
-  if (!value) return "";
+  if (!timestamp) return "";
 
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) return "";
-
-  return date.toLocaleDateString("tr-TR", {
+  return new Date(timestamp).toLocaleDateString("tr-TR", {
     day: "2-digit",
     month: "long",
     year: "numeric",
@@ -267,21 +350,108 @@ function getCompetitionName(match) {
     return competition;
   }
 
-  return competition?.name || competition?.title || "";
+  return (
+    competition?.name ||
+    competition?.title ||
+    competition?.display_name ||
+    ""
+  );
 }
 
-function renderMatch(match) {
-  const home =
-    match.home ||
-    match.home_team ||
-    match.homeTeam ||
-    {};
+// ========================================
+// CANLI MAÇ SÜRESİ
+// ========================================
 
-  const away =
-    match.away ||
-    match.away_team ||
-    match.awayTeam ||
-    {};
+function formatLiveTime(match) {
+  if (getStatus(match) !== "live") return "";
+
+  const rawMinute =
+    match.minute ??
+    match.elapsed ??
+    match.time_elapsed ??
+    match.elapsed_minute;
+
+  const rawSecond =
+    match.second ??
+    match.seconds ??
+    match.elapsed_seconds;
+
+  const minute = Number(rawMinute);
+  const second = Number(rawSecond);
+
+  // API dakika ve saniye gönderiyorsa kullan.
+  if (
+    rawMinute !== undefined &&
+    rawMinute !== null &&
+    rawMinute !== "" &&
+    Number.isFinite(minute) &&
+    minute >= 0
+  ) {
+    if (
+      rawSecond !== undefined &&
+      rawSecond !== null &&
+      rawSecond !== "" &&
+      Number.isFinite(second) &&
+      second >= 0 &&
+      second < 60
+    ) {
+      return `${minute}' ${String(second).padStart(2, "0")}"`;
+    }
+
+    return `${minute}'`;
+  }
+
+  // API yalnızca toplam geçen saniyeyi gönderiyorsa kullan.
+  if (
+    rawSecond !== undefined &&
+    rawSecond !== null &&
+    rawMinute === undefined
+  ) {
+    const totalSeconds = Number(rawSecond);
+
+    if (Number.isFinite(totalSeconds) && totalSeconds >= 0) {
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+
+      return `${minutes}' ${String(seconds).padStart(2, "0")}"`;
+    }
+  }
+
+  // Gerçek süre bilgisi yoksa yanlış süre üretme.
+  return "CANLI";
+}
+
+function getStatusLabel(match, status) {
+  if (status === "live") {
+    return formatLiveTime(match);
+  }
+
+  if (status === "finished") {
+    return "MAÇ SONU";
+  }
+
+  if (status === "postponed") {
+    return "ERTELENDİ";
+  }
+
+  if (status === "cancelled") {
+    return "İPTAL";
+  }
+
+  if (status === "suspended") {
+    return "DURDURULDU";
+  }
+
+  return getTurkeyTime(match);
+}
+
+// ========================================
+// MAÇ KARTI
+// ========================================
+
+function renderMatch(match, index) {
+  const home = getHomeTeam(match);
+  const away = getAwayTeam(match);
 
   const homeName = getTeamName(home, "Ev sahibi");
   const awayName = getTeamName(away, "Deplasman");
@@ -294,70 +464,82 @@ function renderMatch(match) {
   const homeScore = getScore(match, "home");
   const awayScore = getScore(match, "away");
 
-  const scoreHTML = status === "upcoming"
+  const isUpcoming = status === "upcoming" ||
+    status === "postponed" ||
+    status === "cancelled";
+
+  const scoreHTML = isUpcoming
     ? `<span class="match-time">${escapeHTML(getTurkeyTime(match))}</span>`
     : `<strong class="match-score">${escapeHTML(homeScore)} - ${escapeHTML(awayScore)}</strong>`;
 
+  const homeImage = homeLogo
+    ? `<img src="${escapeHTML(homeLogo)}" alt="${escapeHTML(homeName)}" loading="lazy" onerror="this.style.display='none'">`
+    : '<span class="team-placeholder">⚽</span>';
+
+  const awayImage = awayLogo
+    ? `<img src="${escapeHTML(awayLogo)}" alt="${escapeHTML(awayName)}" loading="lazy" onerror="this.style.display='none'">`
+    : '<span class="team-placeholder">⚽</span>';
+
   return `
-    <article class="match-card" data-status="${status}">
+    <article class="match-card" data-status="${status}" data-match-index="${index}">
+
       <div class="match-card-top">
+
         <span class="match-status ${status}">
           ${status === "live" ? "<i></i>" : ""}
-          ${escapeHTML(STATUS_TEXT[status])}
+          ${escapeHTML(STATUS_TEXT[status] || "MAÇ")}
         </span>
 
         <span class="match-competition">
-          ${escapeHTML(getCompetitionName(match))}
+          ${escapeHTML(getCompetitionName(match) || "Futbol")}
         </span>
+
       </div>
 
       <div class="match-card-body">
+
         <div class="match-team">
-          ${
-            homeLogo
-              ? `<img src="${escapeHTML(homeLogo)}" alt="${escapeHTML(homeName)}" loading="lazy" onerror="this.style.display='none'">`
-              : '<span class="team-placeholder">⚽</span>'
-          }
+          ${homeImage}
           <span>${escapeHTML(homeName)}</span>
         </div>
 
         <div class="match-result">
+
           ${scoreHTML}
-          <small
-            class="live-clock"
-            data-match-id="${escapeHTML(match.id || match.match_id || "")}"
-          >
+
+          <small class="live-clock">
             ${escapeHTML(getStatusLabel(match, status))}
           </small>
+
         </div>
 
         <div class="match-team away">
-          ${
-            awayLogo
-              ? `<img src="${escapeHTML(awayLogo)}" alt="${escapeHTML(awayName)}" loading="lazy" onerror="this.style.display='none'">`
-              : '<span class="team-placeholder">⚽</span>'
-          }
+          ${awayImage}
           <span>${escapeHTML(awayName)}</span>
         </div>
+
       </div>
 
       <div class="match-card-bottom">
         <span>${escapeHTML(getMatchDate(match))}</span>
       </div>
+
     </article>
   `;
 }
+
+// ========================================
+// CANLI SAYAÇ GÜNCELLEME
+// ========================================
 
 function updateLiveClocks() {
   if (!elements.matches) return;
 
   elements.matches
     .querySelectorAll(".match-card[data-status='live']")
-    .forEach((card, index) => {
-      const match = allMatches.filter(match => {
-        return activeFilter === "all" ||
-          getStatus(match) === activeFilter;
-      })[index];
+    .forEach(card => {
+      const index = Number(card.dataset.matchIndex);
+      const match = getFilteredMatches()[index];
 
       if (!match) return;
 
@@ -369,49 +551,92 @@ function updateLiveClocks() {
     });
 }
 
+// ========================================
+// FİLTRELEME
+// ========================================
+
+function getFilteredMatches() {
+  if (activeFilter === "all") {
+    return allMatches;
+  }
+
+  return allMatches.filter(match => {
+    return getStatus(match) === activeFilter;
+  });
+}
+
+function updateFilterButtons() {
+  elements.tabs.forEach(button => {
+    const selected = (button.dataset.filter || "all") === activeFilter;
+
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+}
+
 function renderMatches() {
   if (!elements.matches) return;
 
-  const filtered = activeFilter === "all"
-    ? allMatches
-    : allMatches.filter(match => getStatus(match) === activeFilter);
+  const filtered = getFilteredMatches();
 
   if (!filtered.length) {
     elements.matches.innerHTML = `
       <div class="empty-state">
+
         <div class="empty-icon">⚽</div>
+
         <h3>Bu kategoride maç bulunamadı</h3>
-        <p>Seçili ligde bu filtreye uygun karşılaşma yok.</p>
+
+        <p>
+          Seçili ligde bu filtreye uygun karşılaşma bulunmuyor.
+        </p>
+
       </div>
     `;
+
     return;
   }
 
   elements.matches.innerHTML = `
     <div class="matches-list">
-      ${filtered.map(renderMatch).join("")}
+      ${filtered.map((match, index) => renderMatch(match, index)).join("")}
     </div>
   `;
+
+  updateLiveClocks();
 }
+
+// ========================================
+// HATA MESAJI
+// ========================================
 
 function showError(message) {
   if (!elements.matches) return;
 
   elements.matches.innerHTML = `
     <div class="error-state">
+
       <div class="empty-icon">!</div>
+
       <h3>Maçlar yüklenemedi</h3>
+
       <p>${escapeHTML(message)}</p>
+
       <button type="button" class="retry-btn" id="retryMatches">
         Tekrar dene
       </button>
+
     </div>
   `;
 
   document
     .getElementById("retryMatches")
-    ?.addEventListener("click", loadMatches);
+    ?.addEventListener("click", () => loadMatches(true));
 }
+
+// ========================================
+// TÜRKİYE TARİHİ
+// ========================================
 
 function getTurkeyDate() {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -440,9 +665,24 @@ function updateDate() {
   });
 }
 
-async function loadMatches() {
-  if (loading || !elements.league || !elements.matches) return;
+// ========================================
+// MAÇLARI API'DEN YÜKLE
+// ========================================
 
+async function loadMatches(force = false) {
+  if (!elements.league || !elements.matches) return;
+
+  if (loading && !force) return;
+
+  // Yeni istek eski isteği geçersiz kılar.
+  if (requestController) {
+    requestController.abort();
+  }
+
+  const currentRequest = ++requestNumber;
+  const controller = new AbortController();
+
+  requestController = controller;
   loading = true;
 
   const leagueSlug = elements.league.value;
@@ -470,96 +710,153 @@ async function loadMatches() {
       headers: {
         Accept: "application/json"
       },
-      cache: "no-store"
+      cache: "no-store",
+      signal: controller.signal
     });
 
     const data = await response.json();
 
     if (!response.ok) {
       throw new Error(
-        data.error || `Sunucu hatası: ${response.status}`
+        data.error ||
+        data.message ||
+        `Sunucu hatası: ${response.status}`
       );
+    }
+
+    if (currentRequest !== requestNumber) return;
+
+    if (data.success === false) {
+      throw new Error(data.error || "API isteği başarısız.");
     }
 
     allMatches = getMatchList(data);
 
+    // Maçları başlangıç saatine göre sırala.
     allMatches.sort((a, b) => {
-      const dateA = getStartTime(a) || 0;
-      const dateB = getStartTime(b) || 0;
+      const dateA = getStartTime(a);
+      const dateB = getStartTime(b);
+
+      if (dateA === null && dateB === null) return 0;
+      if (dateA === null) return 1;
+      if (dateB === null) return -1;
 
       return dateA - dateB;
     });
 
     updateDate();
+    updateFilterButtons();
     renderMatches();
 
   } catch (error) {
+    if (error.name === "AbortError") return;
+
+    if (currentRequest !== requestNumber) return;
+
     console.error("SPORIX API hatası:", error);
+
     showError(error.message || "Bağlantı kurulamadı.");
 
   } finally {
-    loading = false;
+    if (currentRequest === requestNumber) {
+      loading = false;
+      requestController = null;
 
-    if (elements.refresh) {
-      elements.refresh.disabled = false;
-      elements.refresh.textContent = "↻ Yenile";
+      if (elements.refresh) {
+        elements.refresh.disabled = false;
+        elements.refresh.textContent = "↻ Yenile";
+      }
     }
   }
 }
 
-// Lig seçimi
-elements.league?.addEventListener("change", loadMatches);
+// ========================================
+// LİG SEÇİMİ
+// ========================================
 
-// Maç filtreleri
+elements.league?.addEventListener("change", () => {
+  loadMatches(true);
+});
+
+// ========================================
+// MAÇ FİLTRELERİ
+// ========================================
+
 elements.tabs.forEach(button => {
   button.addEventListener("click", () => {
     activeFilter = button.dataset.filter || "all";
 
-    elements.tabs.forEach(tab => {
-      tab.classList.toggle("selected", tab === button);
-    });
-
+    updateFilterButtons();
     renderMatches();
   });
 });
 
-// Yenile
-elements.refresh?.addEventListener("click", loadMatches);
+updateFilterButtons();
 
-// Mobil menü
+// ========================================
+// YENİLE BUTONU
+// ========================================
+
+elements.refresh?.addEventListener("click", () => {
+  loadMatches(true);
+});
+
+// ========================================
+// MOBİL MENÜ
+// ========================================
+
+function closeMenu() {
+  elements.nav?.classList.remove("active", "open");
+
+  elements.menuBtn?.setAttribute("aria-expanded", "false");
+}
+
 elements.menuBtn?.addEventListener("click", () => {
-  elements.nav?.classList.toggle("active");
+  if (!elements.nav) return;
 
-  const isOpen = elements.nav?.classList.contains("active");
+  const isOpen = !elements.nav.classList.contains("active");
+
+  elements.nav.classList.toggle("active", isOpen);
+  elements.nav.classList.toggle("open", isOpen);
 
   elements.menuBtn.setAttribute(
     "aria-expanded",
-    String(Boolean(isOpen))
+    String(isOpen)
   );
 });
 
-// Menü bağlantıları
 elements.nav?.querySelectorAll("a").forEach(link => {
-  link.addEventListener("click", () => {
-    elements.nav.classList.remove("active");
-
-    elements.menuBtn?.setAttribute(
-      "aria-expanded",
-      "false"
-    );
-  });
+  link.addEventListener("click", closeMenu);
 });
 
-// Canlı sayaç: her saniye güncellenir.
-setInterval(updateLiveClocks, 1000);
+// ========================================
+// CANLI SAYAÇ
+// ========================================
 
-// İlk yükleme
-updateDate();
-loadMatches();
-
-// Skor ve maç durumlarını düzenli olarak API'den yenile.
 setInterval(() => {
-  if (!document.hidden) {
+  updateLiveClocks();
+}, 1000);
+
+// ========================================
+// OTOMATİK YENİLEME
+// ========================================
+
+setInterval(() => {
+  if (
+    !document.hidden &&
+    elements.league &&
+    !loading
+  ) {
     loadMatches();
   }
 }, 30000);
+
+// ========================================
+// SAYFA BAŞLANGICI
+// ========================================
+
+updateDate();
+
+if (elements.league && elements.matches) {
+  loadMatches();
+}
