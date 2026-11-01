@@ -1,5 +1,5 @@
 
-"use strict";
+ "use strict";
 
 document.addEventListener("DOMContentLoaded", () => {
   const page = document.body.dataset.page;
