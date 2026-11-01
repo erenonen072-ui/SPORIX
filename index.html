@@ -1,329 +1,876 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-BNEDMNED4M"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-BNEDMNED4M');
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>SPORIX | Canlı Skorlar ve Futbol Maçları</title>
-  <meta name="description" content="SPORIX ile Türkiye Süper Lig, Premier League, La Liga, Bundesliga, Serie A ve Şampiyonlar Ligi maçlarını takip edin.">
-  <meta name="robots" content="index, follow">
-  <meta name="theme-color" content="#101b2d">
+  <title>SPORIX | Canlı Skorlar, Futbol Haberleri ve Maç Merkezi</title>
+  <meta name="description" content="SPORIX ile canlı futbol skorlarını, maç sonuçlarını, fikstürleri, puan durumlarını ve gol krallığını takip et.">
+  <meta name="keywords" content="SPORIX, canlı skor, futbol, maç sonuçları, fikstür, puan durumu, futbol istatistikleri">
+  <meta name="theme-color" content="#e50914">
+
+  <meta property="og:title" content="SPORIX | Sporun Nabzı Burada Atar">
+  <meta property="og:description" content="Canlı skorlar, maç sonuçları ve futbolun tüm heyecanı.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://sporix.vercel.app/">
 
   <link rel="canonical" href="https://sporix.vercel.app/">
   <link rel="icon" href="/images/logo.jpeg">
   <link rel="stylesheet" href="/assets/style.css">
 
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="SPORIX | Futbolun Takip Merkezi">
-  <meta property="og:description" content="Futbol maçlarını, saatlerini ve sonuçlarını SPORIX ile takip edin.">
-  <meta property="og:url" content="https://sporix.vercel.app/">
-  <meta property="og:image" content="https://sporix.vercel.app/images/logo.jpeg">
+  <style>
+    :root {
+      --red: #e50914;
+      --red-dark: #bd0610;
+      --ink: #17191f;
+      --muted: #777e89;
+      --line: #e9ebef;
+      --surface: #ffffff;
+      --page: #f4f5f7;
+      --green: #159b62;
+    }
 
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "SPORIX",
-    "url": "https://sporix.vercel.app/",
-    "description": "Futbol maçları ve canlı skor takip platformu."
-  }
-  </script>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .site-header {
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 1240px;
+      min-height: 76px;
+      margin: auto;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 25px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .brand img {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+    }
+
+    .brand-name {
+      font-size: 29px;
+      font-weight: 900;
+      letter-spacing: -1.5px;
+    }
+
+    .brand-name span {
+      color: var(--red);
+    }
+
+    .brand-tagline {
+      display: block;
+      margin-top: 3px;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 1.3px;
+    }
+
+    .main-nav {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .main-nav a {
+      padding: 12px 13px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #555b65;
+      transition: .2s;
+      white-space: nowrap;
+    }
+
+    .main-nav a:hover,
+    .main-nav a.active {
+      background: #fff0f1;
+      color: var(--red);
+    }
+
+    .header-live {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff0f1;
+      color: var(--red);
+      padding: 10px 13px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+      display: inline-block;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      50% { opacity: .35; }
+    }
+
+    .mobile-menu-button {
+      display: none;
+      border: 0;
+      background: #f3f4f6;
+      border-radius: 7px;
+      padding: 10px 12px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .page-container {
+      max-width: 1240px;
+      margin: 25px auto;
+      padding: 0 20px;
+    }
+
+    .welcome-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .welcome-title {
+      margin: 0;
+      font-size: 23px;
+      font-weight: 900;
+      letter-spacing: -.7px;
+    }
+
+    .welcome-title span {
+      color: var(--red);
+    }
+
+    .welcome-description {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .date-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .content-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 285px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .main-column {
+      min-width: 0;
+    }
+
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+
+    .section-heading {
+      min-height: 58px;
+      padding: 15px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .section-heading h2 span {
+      color: var(--red);
+    }
+
+    .section-heading small {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .date-strip {
+      display: flex;
+      gap: 7px;
+      padding: 13px 15px;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--line);
+      scrollbar-width: thin;
+    }
+
+    .date-strip button {
+      min-width: 75px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 9px 10px;
+      background: #fff;
+      color: #626976;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .date-strip button strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 14px;
+      color: var(--ink);
+    }
+
+    .date-strip button.active {
+      border-color: var(--red);
+      background: var(--red);
+      color: #fff;
+    }
+
+    .date-strip button.active strong {
+      color: #fff;
+    }
+
+    .match-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 13px 17px;
+      background: #fafafa;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .match-toolbar strong {
+      font-size: 12px;
+    }
+
+    .match-toolbar span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .match-list {
+      padding: 0 15px;
+    }
+
+    .match-group {
+      padding: 13px 0 5px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .match-group:last-child {
+      border-bottom: 0;
+    }
+
+    .match-group-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 0 3px 10px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .match-group-title span {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .match-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 105px minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      padding: 12px 8px;
+      border-radius: 8px;
+      transition: background .15s;
+    }
+
+    .match-row:hover {
+      background: #f8f8f9;
+    }
+
+    .match-team {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .match-team.away {
+      justify-content: flex-end;
+      text-align: right;
+    }
+
+    .match-team img {
+      width: 25px;
+      height: 25px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .match-team-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .match-score {
+      text-align: center;
+    }
+
+    .match-score strong {
+      display: block;
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: .5px;
+    }
+
+    .match-score small {
+      display: inline-block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .match-score .live-text {
+      color: var(--red);
+      font-weight: 900;
+    }
+
+    .match-empty,
+    .match-loading,
+    .match-error {
+      padding: 35px 15px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .sidebar-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      margin-bottom: 17px;
+      overflow: hidden;
+    }
+
+    .sidebar-title {
+      padding: 15px 16px;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .sidebar-links {
+      padding: 7px;
+    }
+
+    .sidebar-links a {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 10px;
+      border-radius: 7px;
+      color: #515762;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .sidebar-links a:hover {
+      background: #fff0f1;
+      color: var(--red);
+    }
+
+    .sidebar-links a span:last-child {
+      color: #a0a5ad;
+      font-size: 17px;
+    }
+
+    .sidebar-note {
+      padding: 15px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .quick-link {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 16px 12px;
+      text-align: center;
+      transition: .2s;
+    }
+
+    .quick-link:hover {
+      border-color: #f2a1a5;
+      transform: translateY(-2px);
+    }
+
+    .quick-link .quick-icon {
+      display: block;
+      font-size: 22px;
+      margin-bottom: 9px;
+    }
+
+    .quick-link strong {
+      display: block;
+      font-size: 12px;
+    }
+
+    .quick-link small {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .site-footer {
+      margin-top: 35px;
+      background: #17191f;
+      color: #fff;
+    }
+
+    .footer-inner {
+      max-width: 1240px;
+      margin: auto;
+      padding: 27px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .footer-brand {
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .footer-brand span {
+      color: var(--red);
+    }
+
+    .footer-copy {
+      margin-top: 6px;
+      color: #a7abb3;
+      font-size: 11px;
+    }
+
+    .footer-credit {
+      color: #d4d6dc;
+      font-size: 11px;
+    }
+
+    .footer-credit a {
+      color: #fff;
+      text-decoration: underline;
+      font-weight: 800;
+    }
+
+    @media (max-width: 950px) {
+      .content-layout {
+        grid-template-columns: minmax(0, 1fr) 245px;
+      }
+
+      .main-nav a {
+        padding: 10px 8px;
+        font-size: 11px;
+      }
+
+      .header-live {
+        display: none;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .header-inner {
+        min-height: 66px;
+        padding: 0 14px;
+      }
+
+      .brand img {
+        width: 48px;
+        height: 48px;
+      }
+
+      .brand-name {
+        font-size: 25px;
+      }
+
+      .mobile-menu-button {
+        display: block;
+      }
+
+      .main-nav {
+        display: none;
+        position: absolute;
+        top: 66px;
+        left: 0;
+        right: 0;
+        padding: 10px 14px 15px;
+        background: #fff;
+        border-bottom: 1px solid var(--line);
+        box-shadow: 0 8px 15px rgba(0,0,0,.06);
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .main-nav.open {
+        display: flex;
+      }
+
+      .main-nav a {
+        padding: 12px;
+        font-size: 13px;
+      }
+
+      .page-container {
+        margin: 19px auto;
+        padding: 0 12px;
+      }
+
+      .content-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .sidebar-card {
+        margin: 0;
+      }
+
+      .quick-links {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .welcome-title {
+        font-size: 20px;
+      }
+
+      .welcome-description {
+        font-size: 11px;
+      }
+
+      .date-label {
+        display: none;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .match-row {
+        grid-template-columns: minmax(0, 1fr) 76px minmax(0, 1fr);
+        gap: 5px;
+        padding: 11px 3px;
+      }
+
+      .match-team {
+        gap: 5px;
+        font-size: 10px;
+      }
+
+      .match-team img {
+        width: 21px;
+        height: 21px;
+      }
+
+      .match-score strong {
+        font-size: 15px;
+      }
+
+      .sidebar {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-inner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-  <!-- ÜST MENÜ -->
   <header class="site-header">
     <div class="header-inner">
 
       <a href="/" class="brand" aria-label="SPORIX ana sayfa">
-        <img src="/images/logo.jpeg" alt="SPORIX Logo">
-        <span>SPORIX</span>
+        <img src="/images/logo.jpeg" alt="SPORIX logo">
+        <div>
+          <div class="brand-name">SPOR<span>IX</span></div>
+          <span class="brand-tagline">SPORUN NABZI BURADA ATAR</span>
+        </div>
       </a>
 
       <button
-        class="menu-toggle"
-        id="menuToggle"
-        type="button"
-        aria-label="Menüyü aç"
+        class="mobile-menu-button"
+        id="mobileMenuButton"
+        aria-label="Menüyü aç veya kapat"
         aria-expanded="false"
-      >
-        ☰
-      </button>
+      >☰</button>
 
       <nav class="main-nav" id="mainNav" aria-label="Ana menü">
         <a href="/" class="active">Ana Sayfa</a>
-        <a href="/maclar/">Maçlar</a>
-        <a href="/puan-durumu/">Puan Durumu</a>
-        <a href="/fikstur/">Fikstür</a>
-        <a href="/haberler/">Haberler</a>
+        <a href="/#leagueSections">Maçlar</a>
+        <a href="/veri.html?view=standings">Puan Durumu</a>
+        <a href="/veri.html?view=team">Fikstür</a>
+        <a href="/veri.html?view=topscorers">Gol Krallığı</a>
+        <a href="/veri.html?view=player">Oyuncular</a>
+        <a href="/veri.html?view=bracket">Turnuva Ağacı</a>
       </nav>
+
+      <div class="header-live">
+        <span class="live-dot"></span>
+        CANLI MAÇ MERKEZİ
+      </div>
 
     </div>
   </header>
 
+  <main class="page-container">
 
-  <!-- MAÇ MERKEZİ -->
-  <main class="container">
-
-    <!-- GÜN SEÇİMİ -->
-    <section class="match-toolbar">
-
-      <div class="toolbar-title">
-        <div>
-          <h1>Maç Takvimi</h1>
-          <span id="selectedDateLabel"></span>
-        </div>
+    <section class="welcome-bar">
+      <div>
+        <h1 class="welcome-title">Futbolun merkezi <span>SPORIX</span></h1>
+        <p class="welcome-description">
+          Canlı skorlar, maç sonuçları ve futbol istatistikleri tek adreste.
+        </p>
       </div>
 
-      <div
-        class="date-strip"
-        id="dateStrip"
-        aria-label="Maç günü seç"
-      >
-        <!-- Günler home.js tarafından oluşturulur -->
-      </div>
+      <div class="date-label" id="selectedDateLabel"></div>
+    </section>
+
+    <section class="quick-links" aria-label="Hızlı bağlantılar">
+
+      <a class="quick-link" href="/#leagueSections">
+        <span class="quick-icon">⚽</span>
+        <strong>Canlı Skorlar</strong>
+        <small>Maç sonuçları</small>
+      </a>
+
+      <a class="quick-link" href="/veri.html?view=standings">
+        <span class="quick-icon">🏆</span>
+        <strong>Puan Durumu</strong>
+        <small>Lig sıralamaları</small>
+      </a>
+
+      <a class="quick-link" href="/veri.html?view=topscorers">
+        <span class="quick-icon">🥇</span>
+        <strong>Gol Krallığı</strong>
+        <small>Gol ve asist listesi</small>
+      </a>
+
+      <a class="quick-link" href="/veri.html?view=bracket">
+        <span class="quick-icon">🏅</span>
+        <strong>Turnuva Ağacı</strong>
+        <small>Eleme turları</small>
+      </a>
 
     </section>
 
+    <div class="content-layout">
 
-    <!-- TÜM LİGLER -->
-    <div id="leagueSections">
+      <section class="main-column">
 
+        <section class="section-card" id="leagueSections">
 
-      <!-- TÜRKİYE SÜPER LİG -->
-      <section
-        class="league-section"
-        data-competition="turkish-super-league"
-      >
-
-        <div class="league-heading">
-          <div class="league-identity">
-
-            <img
-              class="league-logo"
-              src=""
-              alt="Türkiye Süper Lig"
-              hidden
-            >
-
-            <span class="league-fallback">🇹🇷</span>
-
-            <h2>Türkiye Süper Lig</h2>
-
+          <div class="section-heading">
+            <h2><span>●</span> Maç Merkezi</h2>
+            <small>Futbol karşılaşmaları</small>
           </div>
-        </div>
 
-        <div
-          class="league-matches"
-          id="matches-turkish-super-league"
-        >
-          <div class="loading">Maçlar yükleniyor...</div>
-        </div>
+          <div class="date-strip" id="dateStrip">
+            <!-- Tarihler assets/home.js tarafından oluşturulur -->
+          </div>
+
+          <div class="match-toolbar">
+            <strong>Karşılaşmalar</strong>
+            <span>Veriler düzenli olarak yenilenir</span>
+          </div>
+
+          <div id="matchList" class="match-list">
+            <div class="match-loading">
+              Maçlar yükleniyor...
+            </div>
+          </div>
+
+        </section>
 
       </section>
 
+      <aside class="sidebar">
 
-      <!-- PREMIER LEAGUE -->
-      <section
-        class="league-section"
-        data-competition="english-premier-league"
-      >
+        <section class="sidebar-card">
+          <div class="sidebar-title">Futbol İstatistikleri</div>
 
-        <div class="league-heading">
-          <div class="league-identity">
+          <div class="sidebar-links">
+            <a href="/veri.html?view=standings">
+              <span>Puan Durumu</span>
+              <span>›</span>
+            </a>
 
-            <img
-              class="league-logo"
-              src=""
-              alt="Premier League"
-              hidden
-            >
+            <a href="/veri.html?view=topscorers&stat=goals">
+              <span>Gol Krallığı</span>
+              <span>›</span>
+            </a>
 
-            <span class="league-fallback">🏴</span>
+            <a href="/veri.html?view=topscorers&stat=assists">
+              <span>Asist Krallığı</span>
+              <span>›</span>
+            </a>
 
-            <h2>İngiltere Premier League</h2>
+            <a href="/veri.html?view=team">
+              <span>Takım Fikstürü</span>
+              <span>›</span>
+            </a>
 
+            <a href="/veri.html?view=player">
+              <span>Oyuncu İstatistikleri</span>
+              <span>›</span>
+            </a>
+
+            <a href="/veri.html?view=bracket">
+              <span>Turnuva Ağacı</span>
+              <span>›</span>
+            </a>
           </div>
-        </div>
+        </section>
 
-        <div
-          class="league-matches"
-          id="matches-english-premier-league"
-        >
-          <div class="loading">Maçlar yükleniyor...</div>
-        </div>
-
-      </section>
-
-
-      <!-- LA LIGA -->
-      <section
-        class="league-section"
-        data-competition="spanish-la-liga"
-      >
-
-        <div class="league-heading">
-          <div class="league-identity">
-
-            <img
-              class="league-logo"
-              src=""
-              alt="La Liga"
-              hidden
-            >
-
-            <span class="league-fallback">🇪🇸</span>
-
-            <h2>İspanya La Liga</h2>
-
+        <section class="sidebar-card">
+          <div class="sidebar-title">SPORIX Hakkında</div>
+          <div class="sidebar-note">
+            SPORIX; futbol karşılaşmalarını, maç sonuçlarını ve istatistikleri
+            tek bir yerde takip edebilmen için hazırlanmış spor portalıdır.
+            <br><br>
+            Veriler üçüncü taraf spor veri sağlayıcısından alınır.
           </div>
-        </div>
+        </section>
 
-        <div
-          class="league-matches"
-          id="matches-spanish-la-liga"
-        >
-          <div class="loading">Maçlar yükleniyor...</div>
-        </div>
-
-      </section>
-
-
-      <!-- BUNDESLIGA -->
-      <section
-        class="league-section"
-        data-competition="bundesliga"
-      >
-
-        <div class="league-heading">
-          <div class="league-identity">
-
-            <img
-              class="league-logo"
-              src=""
-              alt="Bundesliga"
-              hidden
-            >
-
-            <span class="league-fallback">🇩🇪</span>
-
-            <h2>Almanya Bundesliga</h2>
-
-          </div>
-        </div>
-
-        <div
-          class="league-matches"
-          id="matches-bundesliga"
-        >
-          <div class="loading">Maçlar yükleniyor...</div>
-        </div>
-
-      </section>
-
-
-      <!-- SERIE A -->
-      <section
-        class="league-section"
-        data-competition="italian-serie-a"
-      >
-
-        <div class="league-heading">
-          <div class="league-identity">
-
-            <img
-              class="league-logo"
-              src=""
-              alt="Serie A"
-              hidden
-            >
-
-            <span class="league-fallback">🇮🇹</span>
-
-            <h2>İtalya Serie A</h2>
-
-          </div>
-        </div>
-
-        <div
-          class="league-matches"
-          id="matches-italian-serie-a"
-        >
-          <div class="loading">Maçlar yükleniyor...</div>
-        </div>
-
-      </section>
-
-
-      <!-- ŞAMPİYONLAR LİGİ -->
-      <section
-        class="league-section"
-        data-competition="uefa-champions-league"
-      >
-
-        <div class="league-heading">
-          <div class="league-identity">
-
-            <img
-              class="league-logo"
-              src=""
-              alt="UEFA Şampiyonlar Ligi"
-              hidden
-            >
-
-            <span class="league-fallback">🏆</span>
-
-            <h2>UEFA Şampiyonlar Ligi</h2>
-
-          </div>
-        </div>
-
-        <div
-          class="league-matches"
-          id="matches-uefa-champions-league"
-        >
-          <div class="loading">Maçlar yükleniyor...</div>
-        </div>
-
-      </section>
+      </aside>
 
     </div>
 
   </main>
 
-
-  <!-- ALT BİLGİ -->
   <footer class="site-footer">
-
     <div class="footer-inner">
 
-      <strong>SPORIX</strong>
-
-      <span>Futbolun takip merkezi.</span>
-
-      <div class="footer-links">
-        <a href="/hakkimizda/">Hakkımızda</a>
-        <a href="/iletisim/">İletişim</a>
-        <a href="/gizlilik/">Gizlilik</a>
-        <a href="/kullanim-sartlari/">Kullanım Şartları</a>
+      <div>
+        <div class="footer-brand">SPOR<span>IX</span></div>
+        <div class="footer-copy">
+          © <span id="currentYear"></span> SPORIX. Tüm hakları saklıdır.
+        </div>
       </div>
 
-      <small>
-        © <span id="year">2026</span> SPORIX. Tüm hakları saklıdır.
-      </small>
-
-      <small>
-        Maç verileri: <a href="https://sportscore.com/" target="_blank" rel="noopener noreferrer">SportScore</a>
-      </small>
+      <div class="footer-credit">
+        Spor verileri:
+        <a
+          href="https://sportscore.com/"
+          target="_blank"
+          rel="dofollow"
+          title="Sports data by SportScore"
+        >Powered by SportScore</a>
+      </div>
 
     </div>
-
   </footer>
 
+  <script>
+    document.getElementById("currentYear").textContent =
+      new Date().getFullYear();
 
-  <!-- ANA SAYFA MAÇ SİSTEMİ -->
+    const menuButton = document.getElementById("mobileMenuButton");
+    const mainNav = document.getElementById("mainNav");
+
+    menuButton.addEventListener("click", function () {
+      const isOpen = mainNav.classList.toggle("open");
+      menuButton.setAttribute("aria-expanded", String(isOpen));
+      menuButton.textContent = isOpen ? "✕" : "☰";
+    });
+
+    mainNav.querySelectorAll("a").forEach(function (link) {
+      link.addEventListener("click", function () {
+        mainNav.classList.remove("open");
+        menuButton.setAttribute("aria-expanded", "false");
+        menuButton.textContent = "☰";
+      });
+    });
+  </script>
+
   <script src="/assets/home.js" defer></script>
 
 </body>
