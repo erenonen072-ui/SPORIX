@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     });
   }
 
-  const action = String(req.query.action || "");
+  const action = String(req.query.action || "").toLowerCase();
   const endpoint = ENDPOINTS[action];
 
   if (!endpoint) {
@@ -41,19 +41,30 @@ export default async function handler(req, res) {
   }
 
   const params = new URLSearchParams();
+
   params.set("sport", "football");
   params.set("src", "sporix.vercel.app");
 
   const slug = String(req.query.slug || "").trim();
   const id = String(req.query.id || "").trim();
 
-  if (["match", "team", "standings", "topscorers", "player", "bracket"].includes(action)) {
+  const slugActions = [
+    "match",
+    "team",
+    "standings",
+    "topscorers",
+    "player",
+    "bracket"
+  ];
+
+  if (slugActions.includes(action)) {
     if (!validSlug(slug)) {
       return send(res, 400, {
         success: false,
-        error: "Geçerli bir slug gönderilmelidir."
+        error: "Geçerli bir lig, takım veya maç slug değeri gönderilmelidir."
       });
     }
+
     params.set("slug", slug);
   }
 
@@ -64,21 +75,27 @@ export default async function handler(req, res) {
         error: "Geçerli bir maç ID'si gönderilmelidir."
       });
     }
+
     params.set("id", id);
   }
 
-  if (action === "matches" || action === "team" || action === "topscorers") {
+  if (["matches", "team", "topscorers"].includes(action)) {
     const max = action === "team" ? 30 : 50;
+
+    const requestedLimit = Number.parseInt(req.query.limit, 10);
     const limit = Math.min(
       max,
-      Math.max(1, Number.parseInt(req.query.limit, 10) || 20)
+      Math.max(1, Number.isFinite(requestedLimit) ? requestedLimit : 20)
     );
+
     params.set("limit", String(limit));
   }
 
   if (action === "topscorers") {
-    const stat = req.query.stat === "assists" ? "assists" : "goals";
-    params.set("stat", stat);
+    params.set(
+      "stat",
+      req.query.stat === "assists" ? "assists" : "goals"
+    );
   }
 
   const url = `${BASE_URL}${endpoint}?${params.toString()}`;
@@ -86,10 +103,14 @@ export default async function handler(req, res) {
   try {
     const response = await fetch(url, {
       method: "GET",
-      headers: { Accept: "application/json" }
+      headers: {
+        Accept: "application/json"
+      },
+      signal: AbortSignal.timeout(15000)
     });
 
     const text = await response.text();
+
     let data;
 
     try {
@@ -109,7 +130,10 @@ export default async function handler(req, res) {
       });
     }
 
-    res.setHeader("Cache-Control", "s-maxage=45, stale-while-revalidate=30");
+    res.setHeader(
+      "Cache-Control",
+      "s-maxage=45, stale-while-revalidate=30"
+    );
 
     return send(res, 200, {
       success: true,
@@ -117,12 +141,15 @@ export default async function handler(req, res) {
       data,
       updated: new Date().toISOString()
     });
+
   } catch (error) {
     console.error("SPORIX SportScore:", error);
 
     return send(res, 502, {
       success: false,
-      error: "SportScore sunucusuna şu anda ulaşılamıyor."
+      error: error.name === "TimeoutError"
+        ? "SportScore isteği zaman aşımına uğradı."
+        : "SportScore sunucusuna şu anda ulaşılamıyor."
     });
   }
 }
