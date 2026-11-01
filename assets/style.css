@@ -364,3 +364,207 @@ a{text-decoration:none;color:inherit}
     font-size: 12px;
   }
 }
+
+/* =====================================
+   SPORIX - YENİ VERİ SAYFALARI
+===================================== */
+
+.data-page {
+  max-width: 1180px;
+  margin: 32px auto;
+  min-height: 65vh;
+}
+
+.data-heading {
+  padding: 28px 0;
+  border-bottom: 1px solid #e8edf3;
+}
+
+.data-kicker {
+  color: #e50914;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.data-heading h1 {
+  margin: 10px 0;
+  color: #101b2d;
+  font-size: clamp(26px, 4vw, 38px);
+}
+
+.data-heading p {
+  color: #718096;
+  line-height: 1.6;
+}
+
+.data-search {
+  margin: 24px 0;
+  padding: 22px;
+  background: #fff;
+  border: 1px solid #e8edf3;
+  border-radius: 12px;
+}
+
+.data-search form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.data-search label {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.data-search input,
+.data-search select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #dce3ec;
+  border-radius: 7px;
+  background: #fff;
+  color: #101b2d;
+}
+
+.data-search button {
+  grid-column: 1 / -1;
+  min-height: 44px;
+  border: 0;
+  border-radius: 7px;
+  background: #e50914;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.data-result {
+  padding: 22px;
+  background: #fff;
+  border: 1px solid #e8edf3;
+  border-radius: 12px;
+}
+
+.data-result-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.data-result-top h2 {
+  margin: 0;
+  color: #101b2d;
+  font-size: 19px;
+}
+
+#resultStatus {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.data-field {
+  padding: 14px;
+  background: #f7f9fc;
+  border: 1px solid #edf0f4;
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+
+.data-label {
+  display: block;
+  margin-bottom: 7px;
+  color: #718096;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.data-value {
+  color: #17243a;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.data-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.data-card {
+  padding: 16px;
+  border: 1px solid #e8edf3;
+  border-radius: 9px;
+}
+
+.data-card h3,
+.data-nested h3 {
+  margin: 0 0 12px;
+  color: #17243a;
+  font-size: 15px;
+  text-transform: capitalize;
+}
+
+.data-nested {
+  margin-top: 18px;
+  padding-top: 15px;
+  border-top: 1px solid #edf0f4;
+}
+
+.data-attribution {
+  margin: 20px 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.data-attribution a,
+.site-footer a {
+  color: inherit;
+}
+
+.match-detail-link {
+  display: inline-block;
+  margin-top: 10px;
+  color: #e50914;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.match-detail-link:hover {
+  text-decoration: underline;
+}
+
+.empty-state,
+.loading {
+  padding: 25px 15px;
+  color: #718096;
+  text-align: center;
+}
+
+@media (max-width: 650px) {
+  .data-search form {
+    grid-template-columns: 1fr;
+  }
+
+  .data-result-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .data-search,
+  .data-result {
+    padding: 15px;
+  }
+}
