@@ -1,27 +1,14 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-BNEDMNED4M"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-BNEDMNED4M');
-</script>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>SPORIX | Canlı Skorlar, Futbol Haberleri ve Maç Merkezi</title>
-  <meta name="description" content="SPORIX ile canlı futbol skorlarını, maç sonuçlarını, fikstürleri, puan durumlarını ve gol krallığını takip et.">
-  <meta name="keywords" content="SPORIX, canlı skor, futbol, maç sonuçları, fikstür, puan durumu, futbol istatistikleri">
+  <title>SPORIX | Canlı Skorlar ve Futbol Maç Merkezi</title>
+  <meta name="description" content="SPORIX ile canlı futbol skorlarını, maç sonuçlarını, fikstürleri ve lig puan durumlarını takip et.">
+  <meta name="keywords" content="SPORIX, canlı skor, futbol, maç sonuçları, fikstür, puan durumu">
   <meta name="theme-color" content="#e50914">
-
-  <meta property="og:title" content="SPORIX | Sporun Nabzı Burada Atar">
-  <meta property="og:description" content="Canlı skorlar, maç sonuçları ve futbolun tüm heyecanı.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://sporix.vercel.app/">
 
   <link rel="canonical" href="https://sporix.vercel.app/">
   <link rel="icon" href="/images/logo.jpeg">
@@ -36,7 +23,6 @@
       --line: #e9ebef;
       --surface: #ffffff;
       --page: #f4f5f7;
-      --green: #159b62;
     }
 
     * {
@@ -55,16 +41,12 @@
       text-decoration: none;
     }
 
-    button {
-      font: inherit;
-    }
-
     .site-header {
-      background: #fff;
-      border-bottom: 1px solid var(--line);
       position: sticky;
       top: 0;
       z-index: 100;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
     }
 
     .header-inner {
@@ -75,7 +57,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 25px;
+      gap: 20px;
     }
 
     .brand {
@@ -97,7 +79,8 @@
       letter-spacing: -1.5px;
     }
 
-    .brand-name span {
+    .brand-name span,
+    .footer-brand span {
       color: var(--red);
     }
 
@@ -206,6 +189,45 @@
       white-space: nowrap;
     }
 
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .quick-link {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 17px 12px;
+      text-align: center;
+      transition: .2s;
+    }
+
+    .quick-link:hover {
+      border-color: #f2a1a5;
+      transform: translateY(-2px);
+    }
+
+    .quick-icon {
+      display: block;
+      font-size: 23px;
+      margin-bottom: 9px;
+    }
+
+    .quick-link strong {
+      display: block;
+      font-size: 12px;
+    }
+
+    .quick-link small {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
     .content-layout {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 285px;
@@ -217,8 +239,9 @@
       min-width: 0;
     }
 
-    .section-card {
-      background: var(--surface);
+    .section-card,
+    .sidebar-card {
+      background: #fff;
       border: 1px solid var(--line);
       border-radius: 11px;
       overflow: hidden;
@@ -409,14 +432,6 @@
       font-size: 13px;
     }
 
-    .sidebar-card {
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 11px;
-      margin-bottom: 17px;
-      overflow: hidden;
-    }
-
     .sidebar-title {
       padding: 15px 16px;
       border-bottom: 1px solid var(--line);
@@ -453,46 +468,7 @@
       padding: 15px;
       color: var(--muted);
       font-size: 11px;
-      line-height: 1.6;
-    }
-
-    .quick-links {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-
-    .quick-link {
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 9px;
-      padding: 16px 12px;
-      text-align: center;
-      transition: .2s;
-    }
-
-    .quick-link:hover {
-      border-color: #f2a1a5;
-      transform: translateY(-2px);
-    }
-
-    .quick-link .quick-icon {
-      display: block;
-      font-size: 22px;
-      margin-bottom: 9px;
-    }
-
-    .quick-link strong {
-      display: block;
-      font-size: 12px;
-    }
-
-    .quick-link small {
-      display: block;
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 10px;
+      line-height: 1.7;
     }
 
     .site-footer {
@@ -514,10 +490,6 @@
     .footer-brand {
       font-size: 20px;
       font-weight: 900;
-    }
-
-    .footer-brand span {
-      color: var(--red);
     }
 
     .footer-copy {
@@ -685,12 +657,9 @@
 
       <nav class="main-nav" id="mainNav" aria-label="Ana menü">
         <a href="/" class="active">Ana Sayfa</a>
-        <a href="/#leagueSections">Maçlar</a>
-        <a href="/veri.html?view=standings">Puan Durumu</a>
-        <a href="/veri.html?view=team">Fikstür</a>
-        <a href="/veri.html?view=topscorers">Gol Krallığı</a>
-        <a href="/veri.html?view=player">Oyuncular</a>
-        <a href="/veri.html?view=bracket">Turnuva Ağacı</a>
+        <a href="/maclar/">Maçlar</a>
+        <a href="/puan-durumu/">Puan Durumu</a>
+        <a href="/fikstur/">Fikstür</a>
       </nav>
 
       <div class="header-live">
@@ -716,28 +685,28 @@
 
     <section class="quick-links" aria-label="Hızlı bağlantılar">
 
-      <a class="quick-link" href="/#leagueSections">
+      <a class="quick-link" href="/maclar/">
         <span class="quick-icon">⚽</span>
         <strong>Canlı Skorlar</strong>
         <small>Maç sonuçları</small>
       </a>
 
-      <a class="quick-link" href="/veri.html?view=standings">
+      <a class="quick-link" href="/puan-durumu/">
         <span class="quick-icon">🏆</span>
         <strong>Puan Durumu</strong>
         <small>Lig sıralamaları</small>
+      </a>
+
+      <a class="quick-link" href="/fikstur/">
+        <span class="quick-icon">📅</span>
+        <strong>Fikstür</strong>
+        <small>Takım karşılaşmaları</small>
       </a>
 
       <a class="quick-link" href="/veri.html?view=topscorers">
         <span class="quick-icon">🥇</span>
         <strong>Gol Krallığı</strong>
         <small>Gol ve asist listesi</small>
-      </a>
-
-      <a class="quick-link" href="/veri.html?view=bracket">
-        <span class="quick-icon">🏅</span>
-        <strong>Turnuva Ağacı</strong>
-        <small>Eleme turları</small>
       </a>
 
     </section>
@@ -753,9 +722,7 @@
             <small>Futbol karşılaşmaları</small>
           </div>
 
-          <div class="date-strip" id="dateStrip">
-            <!-- Tarihler assets/home.js tarafından oluşturulur -->
-          </div>
+          <div class="date-strip" id="dateStrip"></div>
 
           <div class="match-toolbar">
             <strong>Karşılaşmalar</strong>
@@ -763,9 +730,7 @@
           </div>
 
           <div id="matchList" class="match-list">
-            <div class="match-loading">
-              Maçlar yükleniyor...
-            </div>
+            <div class="match-loading">Maçlar yükleniyor...</div>
           </div>
 
         </section>
@@ -778,7 +743,7 @@
           <div class="sidebar-title">Futbol İstatistikleri</div>
 
           <div class="sidebar-links">
-            <a href="/veri.html?view=standings">
+            <a href="/puan-durumu/">
               <span>Puan Durumu</span>
               <span>›</span>
             </a>
@@ -793,7 +758,7 @@
               <span>›</span>
             </a>
 
-            <a href="/veri.html?view=team">
+            <a href="/fikstur/">
               <span>Takım Fikstürü</span>
               <span>›</span>
             </a>
@@ -812,10 +777,13 @@
 
         <section class="sidebar-card">
           <div class="sidebar-title">SPORIX Hakkında</div>
+
           <div class="sidebar-note">
             SPORIX; futbol karşılaşmalarını, maç sonuçlarını ve istatistikleri
             tek bir yerde takip edebilmen için hazırlanmış spor portalıdır.
+
             <br><br>
+
             Veriler üçüncü taraf spor veri sağlayıcısından alınır.
           </div>
         </section>
