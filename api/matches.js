@@ -27,21 +27,32 @@ function getTurkeyDate() {
 
 export default async function handler(req, res) {
   const league = String(req.query.league || "");
-  const date = req.query.date || getTurkeyDate();
-  const competition = LEAGUES[league];
+  const requestedCompetition = String(req.query.competition || "");
+  const date = String(req.query.date || getTurkeyDate());
 
-  if (!league) {
-    return res.status(400).json({
-      success: false,
-      error: "Lütfen lig seç."
-    });
-  }
+  // Eski lig kodları veya API'den gelen gerçek competition slug
+  const competition =
+    requestedCompetition || LEAGUES[league];
 
   if (!competition) {
     return res.status(400).json({
       success: false,
-      error: "Bu lig henüz API listesinde tanımlı değil.",
-      league
+      error: "Geçerli bir lig veya competition slug gönder."
+    });
+  }
+
+  // Güvenli slug kontrolü
+  if (!/^[a-zA-Z0-9-]{2,100}$/.test(competition)) {
+    return res.status(400).json({
+      success: false,
+      error: "Geçersiz competition slug."
+    });
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({
+      success: false,
+      error: "Tarih YYYY-MM-DD biçiminde olmalı."
     });
   }
 
@@ -71,7 +82,7 @@ export default async function handler(req, res) {
     if (!response.ok) {
       return res.status(response.status).json({
         success: false,
-        error: "SportScore API isteği başarısız.",
+        error: "SportScore maç isteği başarısız.",
         details: data
       });
     }
@@ -88,7 +99,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       sport: "football",
-      league,
+      league: league || null,
       competition,
       date,
       count: Array.isArray(matches) ? matches.length : 0,
