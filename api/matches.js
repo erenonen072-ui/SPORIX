@@ -25,12 +25,32 @@ function getTurkeyDate() {
   return `${values.year}-${values.month}-${values.day}`;
 }
 
+function extractMatches(data) {
+  const candidates = [
+    data?.matches,
+    data?.fixtures,
+    data?.results?.matches,
+    data?.results?.fixtures,
+    data?.data?.matches,
+    data?.data?.fixtures,
+    data?.data?.results
+  ];
+
+  return candidates.find(Array.isArray) || [];
+}
+
 export default async function handler(req, res) {
+  if (req.method !== "GET") {
+    return res.status(405).json({
+      success: false,
+      error: "Sadece GET isteği destekleniyor."
+    });
+  }
+
   const league = String(req.query.league || "");
   const requestedCompetition = String(req.query.competition || "");
   const date = String(req.query.date || getTurkeyDate());
 
-  // Eski lig kodları veya API'den gelen gerçek competition slug
   const competition =
     requestedCompetition || LEAGUES[league];
 
@@ -41,7 +61,6 @@ export default async function handler(req, res) {
     });
   }
 
-  // Güvenli slug kontrolü
   if (!/^[a-zA-Z0-9-]{2,100}$/.test(competition)) {
     return res.status(400).json({
       success: false,
@@ -72,29 +91,29 @@ export default async function handler(req, res) {
 
     const apiKey = process.env.SPORTSCORE_API_KEY;
 
-    if (apiKey) {
-      headers["X-Api-Key"] = apiKey;
-    }
-
-    const response = await fetch(url, { headers });
-    const data = await response.json();
-
-    if (!response.ok) {
-      return res.status(response.status).json({
+    if (!apiKey) {
+      return res.status(500).json({
         success: false,
-        error: "SportScore maç isteği başarısız.",
-        details: data
+        error: "SPORTSCORE_API_KEY ortam değişkeni tanımlanmamış."
       });
     }
 
-    const matches =
-      data.matches ||
-      data.fixtures ||
-      data.results ||
-      data.data?.matches ||
-      data.data?.fixtures ||
-      data.data?.results ||
-      [];
+    headers["X-Api-Key"] = apiKey;
+
+    const response = await fetch(url, { headers });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("SportScore API:", response.status, data);
+
+      return res.status(response.status).json({
+        success: false,
+        error: "SportScore maç isteği başarısız."
+      });
+    }
+
+    const matches = extractMatches(data);
 
     return res.status(200).json({
       success: true,
@@ -102,8 +121,8 @@ export default async function handler(req, res) {
       league: league || null,
       competition,
       date,
-      count: Array.isArray(matches) ? matches.length : 0,
-      matches: Array.isArray(matches) ? matches : [],
+      count: matches.length,
+      matches,
       updated: data.updated || new Date().toISOString()
     });
 
@@ -112,8 +131,7 @@ export default async function handler(req, res) {
 
     return res.status(502).json({
       success: false,
-      error: "Maç verileri alınamadı.",
-      message: error.message
+      error: "Maç verileri alınamadı."
     });
   }
 }
