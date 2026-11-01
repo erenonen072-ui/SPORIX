@@ -1,26 +1,10 @@
 
 "use strict";
 
-// ========================================
-// SPORIX - FUTBOL MAÇ MERKEZİ
-// SportScore API entegrasyonu
-// ========================================
-
-const competitions = [
-  "turkish-super-league",
-  "english-premier-league",
-  "spanish-la-liga",
-  "bundesliga",
-  "italian-serie-a",
-  "uefa-champions-league"
-];
-
 let selectedDate = getTurkeyDate();
+let allMatches = [];
 let refreshTimer = null;
-
-// ========================================
-// TARİH İŞLEMLERİ
-// ========================================
+let currentRequest = 0;
 
 function getTurkeyDate(date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -30,10 +14,9 @@ function getTurkeyDate(date = new Date()) {
     day: "2-digit"
   }).formatToParts(date);
 
-  const part = type =>
-    parts.find(item => item.type === type).value;
+  const get = type => parts.find(p => p.type === type).value;
 
-  return `${part("year")}-${part("month")}-${part("day")}`;
+  return `${get("year")}-${get("month")}-${get("day")}`;
 }
 
 function dateFromString(value) {
@@ -46,14 +29,230 @@ function addDays(value, amount) {
   return getTurkeyDate(date);
 }
 
-function formatDate(value) {
-  return dateFromString(value).toLocaleDateString("tr-TR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "Europe/Istanbul"
-  });
+function parseDate(value) {
+  if (!value) return null;
+
+  const date = typeof value === "number"
+    ? new Date(value < 10000000000 ? value * 1000 : value)
+    : new Date(value);
+
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function matchDate(match) {
+  return (
+    match.time ||
+    match.startTime ||
+    match.start_time ||
+    match.datetime ||
+    match.date ||
+    match.timestamp ||
+    match.kickoff ||
+    null
+  );
+}
+
+function matchDay(match) {
+  const date = parseDate(matchDate(match));
+  return date ? getTurkeyDate(date) : "";
+}
+
+function matchTime(match) {
+  const date = parseDate(matchDate(match));
+
+  return date
+    ? date.toLocaleTimeString("tr-TR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Europe/Istanbul"
+      })
+    : "--:--";
+}
+
+function cleanUrl(value) {
+  if (typeof value !== "string") return "";
+
+  const url = value.trim();
+  return /^https?:\/\//i.test(url) ? url : "";
+}
+
+function getTeam(value, logoValue) {
+  const team = typeof value === "string"
+    ? { name: value }
+    : value || {};
+
+  return {
+    name: team.name || team.shortName || team.title || "Takım",
+    logo: cleanUrl(
+      logoValue ||
+      team.logo ||
+      team.image ||
+      team.crest ||
+      team.logoUrl ||
+      ""
+    )
+  };
+}
+
+function getTeams(match) {
+  const home = getTeam(
+    match.home || match.homeTeam || match.home_team,
+    match.home_logo || match.homeLogo
+  );
+
+  const away = getTeam(
+    match.away || match.awayTeam || match.away_team,
+    match.away_logo || match.awayLogo
+  );
+
+  return [home, away];
+}
+
+function getCompetition(match) {
+  const value = match.competition || match.league || {};
+
+  if (typeof value === "string") {
+    return {
+      name: value,
+      slug: match.competition_slug || match.league_slug || "",
+      logo: cleanUrl(match.competition_logo || match.league_logo || "")
+    };
+  }
+
+  return {
+    name:
+      value.name ||
+      value.title ||
+      match.competition_name ||
+      match.league_name ||
+      "Diğer Ligler",
+    slug:
+      value.slug ||
+      match.competition_slug ||
+      match.league_slug ||
+      "",
+    logo: cleanUrl(
+      match.competition_logo ||
+      match.league_logo ||
+      value.logo ||
+      value.image ||
+      ""
+    )
+  };
+}
+
+function getScore(match) {
+  const home =
+    match.home_score ??
+    match.homeScore ??
+    match.scores?.home ??
+    match.score?.home ??
+    null;
+
+  const away =
+    match.away_score ??
+    match.awayScore ??
+    match.scores?.away ??
+    match.score?.away ??
+    null;
+
+  return [home, away];
+}
+
+function getStatus(match) {
+  const raw = match.status?.name || match.status?.type || match.status || match.state || "";
+  const value = String(raw).toLowerCase();
+
+  if (
+    value.includes("live") ||
+    value.includes("in_play") ||
+    value.includes("progress") ||
+    value === "1h" ||
+    value === "2h"
+  ) {
+    return { text: "CANLI", live: true, finished: false };
+  }
+
+  if (
+    value.includes("finish") ||
+    value.includes("ended") ||
+    value.includes("complete")
+  ) {
+    return { text: "BİTTİ", live: false, finished: true };
+  }
+
+  if (value.includes("postponed")) {
+    return { text: "ERTELENDİ", live: false, finished: false };
+  }
+
+  if (value.includes("cancel")) {
+    return { text: "İPTAL", live: false, finished: false };
+  }
+
+  return { text: "BAŞLAMADI", live: false, finished: false };
+}
+
+function createElement(tag, className, text) {
+  const element = document.createElement(tag);
+  if (className) element.className = className;
+  if (text !== undefined) element.textContent = text;
+  return element;
+}
+
+function createTeam(team) {
+  const row = createElement("div", "match-team");
+
+  if (team.logo) {
+    const image = document.createElement("img");
+    image.src = team.logo;
+    image.alt = team.name;
+    image.loading = "lazy";
+    image.onerror = () => image.remove();
+    row.appendChild(image);
+  }
+
+  row.appendChild(createElement("span", "", team.name));
+  return row;
+}
+
+function createMatchCard(match) {
+  const [home, away] = getTeams(match);
+  const [homeScore, awayScore] = getScore(match);
+  const status = getStatus(match);
+
+  const card = createElement("article", "match-card");
+
+  if (status.live) card.classList.add("match-live");
+
+  const top = createElement("div", "match-status");
+  if (status.live) top.classList.add("live");
+
+  top.append(
+    createElement("span", "", status.text),
+    createElement("span", "match-date", matchTime(match))
+  );
+
+  const teams = createElement("div", "match-teams");
+  teams.append(createTeam(home), createTeam(away));
+
+  const score = createElement("div", "match-score");
+
+  score.append(
+    createElement("span", "", status.live || status.finished ? homeScore ?? "-" : "–"),
+    createElement("span", "", status.live || status.finished ? awayScore ?? "-" : "–")
+  );
+
+  card.append(top, teams, score);
+
+  const slug = match.slug || match.match_slug || match.url_slug;
+
+  if (slug && /^[a-z0-9-]+$/i.test(slug)) {
+    const detail = createElement("a", "match-detail-link", "Maç detayları");
+    detail.href = `/veri.html?view=match&slug=${encodeURIComponent(slug)}`;
+    card.appendChild(detail);
+  }
+
+  return card;
 }
 
 function renderDateStrip() {
@@ -66,7 +265,6 @@ function renderDateStrip() {
 
   const today = getTurkeyDate();
 
-  // Dün ve sonraki 6 gün.
   for (let offset = -1; offset <= 6; offset++) {
     const date = addDays(today, offset);
     const parsed = dateFromString(date);
@@ -80,559 +278,151 @@ function renderDateStrip() {
         timeZone: "Europe/Istanbul"
       });
 
-    const button = document.createElement("button");
-
+    const button = createElement("button", "date-button");
     button.type = "button";
-    button.className = "date-button";
     button.classList.toggle("active", date === selectedDate);
-    button.setAttribute(
-      "aria-pressed",
-      String(date === selectedDate)
+    button.setAttribute("aria-pressed", String(date === selectedDate));
+
+    button.append(
+      createElement("span", "day-name", dayName),
+      createElement("span", "day-number", parsed.toLocaleDateString("tr-TR", {
+        day: "2-digit",
+        timeZone: "Europe/Istanbul"
+      })),
+      createElement("span", "day-month", parsed.toLocaleDateString("tr-TR", {
+        month: "short",
+        timeZone: "Europe/Istanbul"
+      }))
     );
 
-    const day = document.createElement("span");
-    day.className = "day-name";
-    day.textContent = dayName;
-
-    const number = document.createElement("span");
-    number.className = "day-number";
-    number.textContent = parsed.toLocaleDateString("tr-TR", {
-      day: "2-digit",
-      timeZone: "Europe/Istanbul"
-    });
-
-    const month = document.createElement("span");
-    month.className = "day-month";
-    month.textContent = parsed.toLocaleDateString("tr-TR", {
-      month: "short",
-      timeZone: "Europe/Istanbul"
-    });
-
-    button.append(day, number, month);
-
     button.addEventListener("click", () => {
-      if (selectedDate === date) return;
-
       selectedDate = date;
-
       renderDateStrip();
-      loadAllLeagues();
+      renderMatches();
     });
 
     strip.appendChild(button);
   }
 
   if (label) {
-    label.textContent = formatDate(selectedDate);
+    label.textContent = dateFromString(selectedDate).toLocaleDateString("tr-TR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      timeZone: "Europe/Istanbul"
+    });
   }
 }
 
-// ========================================
-// GÖRSEL URL KONTROLÜ
-// ========================================
+function renderMatches() {
+  const container = document.getElementById("leagueSections");
+  if (!container) return;
 
-function cleanImageUrl(value) {
-  if (typeof value !== "string") return "";
+  container.replaceChildren();
 
-  let url = value.trim();
+  const filtered = allMatches.filter(match => matchDay(match) === selectedDate);
 
-  // Markdown bağlantısı biçiminde gelirse URL'yi ayıkla.
-  const markdown = url.match(/\]\((https?:\/\/[^)]+)\)/);
+  const groups = new Map();
 
-  if (markdown) {
-    url = markdown[1];
-  }
+  filtered.forEach(match => {
+    const competition = getCompetition(match);
+    const key = competition.slug || competition.name;
 
-  if (!/^https?:\/\//i.test(url)) return "";
-
-  return url;
-}
-
-// ========================================
-// TAKIM BİLGİLERİ
-// ========================================
-
-function getTeam(team) {
-  if (typeof team === "string") {
-    return {
-      name: team,
-      logo: ""
-    };
-  }
-
-  return {
-    name:
-      team?.name ||
-      team?.shortName ||
-      team?.title ||
-      "Takım",
-
-    logo: cleanImageUrl(
-      team?.logo ||
-      team?.image ||
-      team?.crest ||
-      team?.logoUrl ||
-      ""
-    )
-  };
-}
-
-function getTeams(match) {
-  // SportScore API'nin doğrudan gönderdiği alanlar.
-  if (match.home !== undefined && match.away !== undefined) {
-    return [
-      {
-        name: getTeam(match.home).name,
-        logo: cleanImageUrl(
-          match.home_logo || getTeam(match.home).logo
-        )
-      },
-      {
-        name: getTeam(match.away).name,
-        logo: cleanImageUrl(
-          match.away_logo || getTeam(match.away).logo
-        )
-      }
-    ];
-  }
-
-  // Alternatif API formatları.
-  const participants = Array.isArray(match.participants)
-    ? match.participants
-    : [];
-
-  const home =
-    match.homeTeam ||
-    match.home_team ||
-    participants.find(p => p?.meta?.location === "home") ||
-    participants[0] ||
-    {};
-
-  const away =
-    match.awayTeam ||
-    match.away_team ||
-    participants.find(p => p?.meta?.location === "away") ||
-    participants[1] ||
-    {};
-
-  return [
-    {
-      ...getTeam(home),
-      logo: cleanImageUrl(
-        match.home_logo || getTeam(home).logo
-      )
-    },
-    {
-      ...getTeam(away),
-      logo: cleanImageUrl(
-        match.away_logo || getTeam(away).logo
-      )
+    if (!groups.has(key)) {
+      groups.set(key, {
+        competition,
+        matches: []
+      });
     }
-  ];
-}
 
-// ========================================
-// LİG LOGOSU
-// ========================================
+    groups.get(key).matches.push(match);
+  });
 
-function getCompetitionLogo(match) {
-  return cleanImageUrl(
-    match.competition_logo ||
-    match.competitionLogo ||
-    match.league_logo ||
-    match.leagueLogo ||
-    match.competition?.logo ||
-    match.competition?.image ||
-    match.league?.logo ||
-    ""
-  );
-}
+  if (!groups.size) {
+    const empty = createElement(
+      "div",
+      "empty-state",
+      "Bu tarihte API tarafından döndürülen maç bulunamadı."
+    );
+    container.appendChild(empty);
+    return;
+  }
 
-function updateLeagueLogo(competition, match) {
-  const section = document.querySelector(
-    `[data-competition="${competition}"]`
+  const sortedGroups = [...groups.values()].sort((a, b) =>
+    a.competition.name.localeCompare(b.competition.name, "tr")
   );
 
-  if (!section) return;
+  sortedGroups.forEach(group => {
+    const section = createElement("section", "league-section");
+    const heading = createElement("div", "league-heading");
+    const identity = createElement("div", "league-identity");
 
-  const logo = section.querySelector(".league-logo");
-  const fallback = section.querySelector(".league-fallback");
+    if (group.competition.logo) {
+      const logo = document.createElement("img");
+      logo.className = "league-logo";
+      logo.src = group.competition.logo;
+      logo.alt = group.competition.name;
+      logo.loading = "lazy";
+      logo.onerror = () => logo.remove();
+      identity.appendChild(logo);
+    }
 
-  const url = getCompetitionLogo(match);
+    identity.appendChild(createElement("h2", "", group.competition.name));
+    heading.appendChild(identity);
 
-  if (!url || !logo) return;
+    const matchesBox = createElement("div", "league-matches");
 
-  if (logo.dataset.currentSrc === url) return;
+    group.matches
+      .sort((a, b) => {
+        return (parseDate(matchDate(a))?.getTime() || 0) -
+               (parseDate(matchDate(b))?.getTime() || 0);
+      })
+      .forEach(match => matchesBox.appendChild(createMatchCard(match)));
 
-  logo.dataset.currentSrc = url;
-  logo.hidden = false;
-
-  if (fallback) fallback.hidden = true;
-
-  logo.onload = () => {
-    logo.hidden = false;
-    if (fallback) fallback.hidden = true;
-  };
-
-  logo.onerror = () => {
-    logo.hidden = true;
-    logo.dataset.currentSrc = "";
-
-    if (fallback) fallback.hidden = false;
-  };
-
-  logo.src = url;
-}
-
-// ========================================
-// SKOR BİLGİLERİ
-// ========================================
-
-function getScore(match) {
-  const home =
-    match.home_score ??
-    match.homeScore ??
-    match.scores?.home ??
-    match.score?.home ??
-    match.result?.home ??
-    null;
-
-  const away =
-    match.away_score ??
-    match.awayScore ??
-    match.scores?.away ??
-    match.score?.away ??
-    match.result?.away ??
-    null;
-
-  return [home, away];
-}
-
-// ========================================
-// MAÇ TARİHİ VE SAATİ
-// ========================================
-
-function getMatchDate(match) {
-  return (
-    match.time ||
-    match.startTime ||
-    match.start_time ||
-    match.datetime ||
-    match.date ||
-    match.start_at ||
-    match.timestamp ||
-    null
-  );
-}
-
-function parseMatchDate(match) {
-  const value = getMatchDate(match);
-
-  if (!value) return null;
-
-  const date = typeof value === "number"
-    ? new Date(value < 10000000000 ? value * 1000 : value)
-    : new Date(value);
-
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function getMatchTime(match) {
-  const date = parseMatchDate(match);
-
-  if (!date) return "--:--";
-
-  return date.toLocaleTimeString("tr-TR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Europe/Istanbul"
+    section.append(heading, matchesBox);
+    container.appendChild(section);
   });
 }
 
-// ========================================
-// MAÇ DURUMU
-// ========================================
+async function loadAllMatches() {
+  const request = ++currentRequest;
+  const container = document.getElementById("leagueSections");
 
-function getMatchStatus(match) {
-  const raw =
-    match.status?.name ||
-    match.status?.type ||
-    match.status ||
-    match.state ||
-    "";
-
-  const status = String(raw).toLowerCase();
-
-  if (
-    status.includes("live") ||
-    status.includes("in_play") ||
-    status.includes("progress") ||
-    status.includes("1h") ||
-    status.includes("2h")
-  ) {
-    return {
-      text: "CANLI",
-      live: true,
-      finished: false
-    };
-  }
-
-  if (
-    status.includes("finish") ||
-    status.includes("ended") ||
-    status.includes("complete")
-  ) {
-    return {
-      text: "BİTTİ",
-      live: false,
-      finished: true
-    };
-  }
-
-  if (
-    status.includes("postponed") ||
-    status.includes("cancelled") ||
-    status.includes("abandoned")
-  ) {
-    return {
-      text: match.status_text || "ERTELENDİ",
-      live: false,
-      finished: false
-    };
-  }
-
-  return {
-    text: "MAÇ SAATİ",
-    live: false,
-    finished: false
-  };
-}
-
-// ========================================
-// TAKIM TASARIMI
-// ========================================
-
-function createTeam(team) {
-  const row = document.createElement("div");
-  row.className = "match-team";
-
-  if (team.logo) {
-    const img = document.createElement("img");
-
-    img.src = team.logo;
-    img.alt = team.name;
-    img.loading = "lazy";
-
-    img.onerror = () => {
-      img.remove();
-    };
-
-    row.appendChild(img);
-  }
-
-  const name = document.createElement("span");
-  name.textContent = team.name;
-
-  row.appendChild(name);
-
-  return row;
-}
-
-// ========================================
-// MAÇ KARTI
-// ========================================
-
-function createMatchCard(match) {
-  const [home, away] = getTeams(match);
-  const [homeScore, awayScore] = getScore(match);
-
-  const status = getMatchStatus(match);
-  const time = getMatchTime(match);
-
-  const card = document.createElement("article");
-  card.className = "match-card";
-
-  if (status.live) {
-    card.classList.add("match-live");
-  }
-
-  const statusBox = document.createElement("div");
-  statusBox.className = "match-status";
-
-  if (status.live) {
-    statusBox.classList.add("live");
-  }
-
-  const statusText = document.createElement("span");
-  statusText.textContent = status.text;
-
-  const dateText = document.createElement("span");
-  dateText.className = "match-date";
-  dateText.textContent = time;
-
-  statusBox.append(statusText, dateText);
-
-  const teams = document.createElement("div");
-  teams.className = "match-teams";
-
-  teams.append(
-    createTeam(home),
-    createTeam(away)
-  );
-
-  const score = document.createElement("div");
-  score.className = "match-score";
-
-  const first = document.createElement("span");
-  const second = document.createElement("span");
-
-  if (status.finished || status.live) {
-    first.textContent = homeScore ?? "-";
-    second.textContent = awayScore ?? "-";
-  } else {
-    first.textContent = "–";
-    second.textContent = "–";
-  }
-
-  score.append(first, second);
-
-  card.append(statusBox, teams, score);
-
-  return card;
-}
-
-// ========================================
-// API VERİSİNİ OKU
-// ========================================
-
-function getMatches(data) {
-  if (Array.isArray(data)) return data;
-
-  const candidates = [
-    data?.matches,
-    data?.fixtures,
-    data?.results?.matches,
-    data?.results?.fixtures,
-    data?.data?.matches,
-    data?.data?.fixtures,
-    data?.data?.results
-  ];
-
-  return candidates.find(Array.isArray) || [];
-}
-
-// ========================================
-// MAÇLARI SIRALA
-// ========================================
-
-function sortMatches(matches) {
-  return [...matches].sort((a, b) => {
-    const dateA = parseMatchDate(a)?.getTime() || 0;
-    const dateB = parseMatchDate(b)?.getTime() || 0;
-
-    return dateA - dateB;
-  });
-}
-
-// ========================================
-// LİG MAÇLARINI YÜKLE
-// ========================================
-
-async function loadLeague(competition) {
-  const element = document.getElementById(
-    `matches-${competition}`
-  );
-
-  if (!element) return;
-
-  // Eski isteklerin yeni sonuçları ezmesini engelle.
-  const requestId = String(
-    Number(element.dataset.requestId || 0) + 1
-  );
-
-  element.dataset.requestId = requestId;
-
-  if (!element.querySelector(".match-card")) {
-    element.innerHTML =
-      '<div class="loading">Maçlar yükleniyor...</div>';
+  if (container && !allMatches.length) {
+    container.replaceChildren(
+      createElement("div", "loading", "Maçlar yükleniyor...")
+    );
   }
 
   try {
-    const url =
-      `/api/matches?competition=${encodeURIComponent(competition)}` +
-      `&date=${encodeURIComponent(selectedDate)}`;
-
-    const response = await fetch(url, {
-      method: "GET",
+    const response = await fetch("/api/matches?limit=50", {
       cache: "no-store"
     });
 
-    if (!response.ok) {
-      throw new Error(`API hatası: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-    const data = await response.json();
+    const result = await response.json();
 
-    if (element.dataset.requestId !== requestId) return;
+    if (request !== currentRequest) return;
+    if (!result.success) throw new Error(result.error || "API hatası");
 
-    if (data.success === false) {
-      throw new Error(data.error || "API başarısız.");
-    }
-
-    const matches = getMatches(data);
-
-    element.replaceChildren();
-
-    if (matches.length === 0) {
-      const empty = document.createElement("div");
-
-      empty.className = "empty-state";
-      empty.textContent = "Bu tarihte maç bulunmuyor.";
-
-      element.appendChild(empty);
-      return;
-    }
-
-    const sortedMatches = sortMatches(matches);
-
-    sortedMatches.forEach(match => {
-      updateLeagueLogo(competition, match);
-
-      element.appendChild(
-        createMatchCard(match)
-      );
-    });
-
+    allMatches = Array.isArray(result.matches) ? result.matches : [];
+    renderMatches();
   } catch (error) {
-    if (element.dataset.requestId !== requestId) return;
+    console.error("SPORIX maç yükleme:", error);
 
-    console.error(`SPORIX ${competition}:`, error);
-
-    element.innerHTML =
-      '<div class="empty-state">Maç bilgileri şu anda alınamadı.</div>';
+    if (container) {
+      container.replaceChildren(
+        createElement("div", "empty-state", "Maç verileri şu anda alınamıyor. Lütfen daha sonra tekrar deneyin.")
+      );
+    }
   }
 }
 
-// ========================================
-// TÜM LİGLERİ YÜKLE
-// ========================================
-
-async function loadAllLeagues() {
-  await Promise.all(
-    competitions.map(competition =>
-      loadLeague(competition)
-    )
-  );
-}
-
-// ========================================
-// MOBİL MENÜ VE BAŞLANGIÇ
-// ========================================
-
 document.addEventListener("DOMContentLoaded", () => {
   renderDateStrip();
-
-  loadAllLeagues();
+  loadAllMatches();
 
   const menuToggle = document.getElementById("menuToggle");
   const mainNav = document.getElementById("mainNav");
@@ -641,26 +431,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!mainNav) return;
 
     const open = mainNav.classList.toggle("open");
-
-    menuToggle.setAttribute(
-      "aria-expanded",
-      String(open)
-    );
+    menuToggle.setAttribute("aria-expanded", String(open));
   });
 
   const year = document.getElementById("year");
+  if (year) year.textContent = new Date().getFullYear();
 
-  if (year) {
-    year.textContent = new Date().getFullYear();
-  }
+  if (refreshTimer) clearInterval(refreshTimer);
 
-  // Önceki zamanlayıcı varsa temizle.
-  if (refreshTimer) {
-    clearInterval(refreshTimer);
-  }
-
-  // Her 60 saniyede otomatik güncelle.
-  refreshTimer = setInterval(() => {
-    loadAllLeagues();
-  }, 60000);
+  refreshTimer = setInterval(loadAllMatches, 60000);
 });
