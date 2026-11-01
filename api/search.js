@@ -1,4 +1,4 @@
-"use strict";
+ "use strict";
 
 export default async function handler(req, res) {
   const q = String(req.query.q || "").trim();
