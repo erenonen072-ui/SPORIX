@@ -770,3 +770,179 @@ button { cursor: pointer; }
     font-size: 12px;
   }
 }
+
+/* ========================================
+   SPORIX - DÜNYA LİGLERİ
+======================================== */
+
+.world-league-search {
+  position: relative;
+  padding: 20px;
+  margin: 18px 0;
+  background: #f7f9fc;
+  border: 1px solid #e8edf3;
+  border-radius: 12px;
+}
+
+.world-search-heading h3 {
+  margin: 0 0 5px;
+  font-size: 17px;
+  color: #172033;
+}
+
+.world-search-heading p {
+  margin: 0 0 14px;
+  color: #778195;
+  font-size: 13px;
+}
+
+.world-search-input {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #dce3ed;
+  border-radius: 9px;
+  overflow: hidden;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.world-search-input:focus-within {
+  border-color: #1769e0;
+  box-shadow: 0 0 0 3px rgba(23, 105, 224, .09);
+}
+
+.world-search-input input {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  padding: 0 15px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #172033;
+  font-size: 14px;
+}
+
+.world-search-input button {
+  width: 45px;
+  height: 45px;
+  border: 0;
+  background: transparent;
+  color: #778195;
+  font-size: 23px;
+  cursor: pointer;
+}
+
+.search-help {
+  margin: 10px 0 0;
+  color: #8993a3;
+  font-size: 12px;
+}
+
+.competition-results {
+  position: relative;
+  z-index: 10;
+  max-height: 320px;
+  overflow-y: auto;
+  margin-top: 10px;
+  background: #fff;
+  border: 1px solid #e5eaf0;
+  border-radius: 9px;
+  box-shadow: 0 8px 25px rgba(20, 35, 60, .07);
+}
+
+.competition-results[hidden] {
+  display: none;
+}
+
+.competition-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 58px;
+  padding: 10px 14px;
+  text-align: left;
+  background: #fff;
+  border: 0;
+  border-bottom: 1px solid #edf0f4;
+  color: #172033;
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.competition-result:last-child {
+  border-bottom: 0;
+}
+
+.competition-result:hover {
+  background: #f3f7ff;
+}
+
+.competition-result img,
+.competition-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  font-size: 22px;
+}
+
+.competition-result-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.competition-result b {
+  color: #1769e0;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.competition-message {
+  padding: 18px;
+  text-align: center;
+  color: #687487;
+  font-size: 13px;
+}
+
+.date-select {
+  min-height: 40px;
+  padding: 0 9px;
+  border: 1px solid #e1e6ed;
+  border-radius: 7px;
+  background: #fff;
+  color: #172033;
+  font-size: 13px;
+}
+
+@media (max-width: 650px) {
+  .world-league-search {
+    padding: 14px;
+  }
+
+  .toolbar-actions {
+    flex-wrap: wrap;
+  }
+
+  .date-select {
+    flex: 1;
+    min-width: 130px;
+  }
+
+  .league-select {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .competition-result {
+    gap: 9px;
+    padding: 10px;
+  }
+}
