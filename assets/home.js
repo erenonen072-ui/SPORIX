@@ -25,6 +25,20 @@
   let selectedLeague = "";
   let loading = false;
   let standingsLoading = false;
+  let standingsRequestId = 0;
+
+  // ==========================================
+  // TÜRKİYE LİGLERİ
+  // ==========================================
+
+  const TURKISH_LEAGUES = [
+    { name: "Süper Lig", aliases: ["turkish super league"] },
+    { name: "1. Lig", aliases: ["turkish first league", "1st league"] },
+    { name: "2. Lig", aliases: ["turkish second league", "2nd league"] },
+    { name: "3. Lig", aliases: ["turkish third league", "3rd league"] },
+    { name: "Türkiye Kupası", aliases: ["turkish cup", "turkiye cup"] },
+    { name: "Süper Kupa", aliases: ["turkish super cup", "super cup"] }
+  ];
 
   // ==========================================
   // TARİH
@@ -39,7 +53,7 @@
     }).formatToParts(date);
 
     const get = type =>
-      parts.find(p => p.type === type).value;
+      parts.find(part => part.type === type).value;
 
     return `${get("year")}-${get("month")}-${get("day")}`;
   }
@@ -116,14 +130,31 @@
 
     const candidates = [
       match?.[`${side}_logo`],
-      typeof team === "object" ? team.logo : "",
-      typeof team === "object" ? team.image : ""
+      typeof team === "object" ? team?.logo : "",
+      typeof team === "object" ? team?.image : ""
     ];
 
     return cleanURL(candidates.find(Boolean));
   }
 
+  // ==========================================
+  // LİG ADI - DÜZELTİLDİ
+  // ==========================================
+
+  function normalizeLeague(value) {
+    return String(value || "")
+      .toLocaleLowerCase("tr-TR")
+      .replace(/[ıİ]/g, "i")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
   function getLeague(match) {
+    // API'nin Türkçe lig adı varsa öncelikle onu kullan.
+    if (match?.competition_name) {
+      return match.competition_name;
+    }
+
     const league =
       match?.competition ||
       match?.league ||
@@ -131,7 +162,9 @@
 
     return typeof league === "string"
       ? league
-      : league?.name || league?.title || "Diğer Maçlar";
+      : league?.name ||
+        league?.title ||
+        "Diğer Maçlar";
   }
 
   function getLeagueLogo(match) {
@@ -157,6 +190,32 @@
     }
 
     return "";
+  }
+
+  // ==========================================
+  // LİG EŞLEŞTİRME
+  // ==========================================
+
+  function matchesSelectedLeague(match) {
+    if (!selectedLeague) return true;
+
+    const selected = normalizeLeague(selectedLeague);
+
+    const leagueName = normalizeLeague(getLeague(match));
+
+    if (leagueName === selected) return true;
+
+    const league = TURKISH_LEAGUES.find(
+      item => normalizeLeague(item.name) === selected
+    );
+
+    if (!league) {
+      return leagueName.includes(selected);
+    }
+
+    return league.aliases.some(alias =>
+      leagueName.includes(normalizeLeague(alias))
+    );
   }
 
   // ==========================================
@@ -353,7 +412,7 @@
   }
 
   // ==========================================
-  // YENİ YATAY MAÇ KARTI
+  // MAÇ KARTI
   // ==========================================
 
   function renderMatch(match) {
@@ -384,7 +443,6 @@
         <article class="match-row">
 
           <div class="match-card-top">
-
             <span class="match-league-name">
               ${escapeHTML(getLeague(match))}
             </span>
@@ -396,13 +454,11 @@
                   : ""
               }
             </span>
-
           </div>
 
           <div class="match-card-content">
 
             <div class="match-side home-side">
-
               ${
                 homeLogo
                   ? `<img
@@ -417,11 +473,9 @@
               <span class="team-name">
                 ${escapeHTML(home)}
               </span>
-
             </div>
 
             <div class="match-center">
-
               <strong class="score">
                 ${escapeHTML(score || "–")}
               </strong>
@@ -441,11 +495,9 @@
                       : "VS"
                 }
               </span>
-
             </div>
 
             <div class="match-side away-side">
-
               <span class="team-name">
                 ${escapeHTML(away)}
               </span>
@@ -460,7 +512,6 @@
                     >`
                   : ""
               }
-
             </div>
 
           </div>
@@ -482,13 +533,7 @@
     let matches = allMatches.filter(isSelectedDate);
 
     if (selectedLeague) {
-      matches = matches.filter(match =>
-        getLeague(match)
-          .toLocaleLowerCase("tr-TR")
-          .includes(
-            selectedLeague.toLocaleLowerCase("tr-TR")
-          )
-      );
+      matches = matches.filter(matchesSelectedLeague);
     }
 
     if (statusValue !== "all") {
@@ -553,7 +598,6 @@
           <section class="league-group">
 
             <div class="league-title">
-
               ${
                 logo
                   ? `<img
@@ -568,7 +612,6 @@
               <span>${escapeHTML(league)}</span>
 
               <small>${items.length} MAÇ</small>
-
             </div>
 
             ${items.map(renderMatch).join("")}
@@ -619,10 +662,15 @@
     loading = true;
 
     try {
-      const response = await fetch(
-        `${API_URL}?date=${encodeURIComponent(selectedDate)}&limit=200`,
-        { cache: "no-store" }
-      );
+      const url = new URL(API_URL, location.origin);
+
+      url.searchParams.set("date", selectedDate);
+      url.searchParams.set("limit", "200");
+
+      // Tüm liglerin maçları tek seferde alınır.
+      const response = await fetch(url, {
+        cache: "no-store"
+      });
 
       if (!response.ok) {
         throw new Error(
@@ -644,16 +692,23 @@
 
       allMatches = matches;
 
+      console.log("SPORIX ana sayfa API:", {
+        tarih: selectedDate,
+        macSayisi: allMatches.length,
+        ligler: [...new Set(allMatches.map(getLeague))],
+        maclar: allMatches
+      });
+
       renderMatches();
 
     } catch (error) {
       console.error("SPORIX maç API:", error);
 
-      if (!allMatches.length && matchList) {
+      if (matchList) {
         matchList.innerHTML = `
           <div class="error-state">
             <strong>Maç verileri alınamadı.</strong>
-            <span>API bağlantısını kontrol et.</span>
+            <span>${escapeHTML(error.message)}</span>
           </div>
         `;
       }
@@ -664,7 +719,7 @@
   }
 
   // ==========================================
-  // PUAN DURUMU
+  // PUAN DURUMU HATA
   // ==========================================
 
   function renderStandingsError(message) {
@@ -678,6 +733,10 @@
       </tr>
     `;
   }
+
+  // ==========================================
+  // PUAN DURUMU
+  // ==========================================
 
   function renderStandings(data) {
     if (!standingsTable) return;
@@ -769,13 +828,12 @@
   async function loadStandings() {
     if (
       !standingsTable ||
-      !standingsLeague ||
-      standingsLoading
+      !standingsLeague
     ) {
       return;
     }
 
-    standingsLoading = true;
+    const thisRequest = ++standingsRequestId;
 
     const league = standingsLeague.value;
 
@@ -801,17 +859,18 @@
 
       const data = await response.json();
 
+      if (thisRequest !== standingsRequestId) return;
+
       renderStandings(data);
 
     } catch (error) {
+      if (thisRequest !== standingsRequestId) return;
+
       console.error("SPORIX standings API:", error);
 
       renderStandingsError(
-        "Puan durumu alınamadı. API bağlantısı gerekli."
+        "Puan durumu alınamadı. API bağlantısını kontrol et."
       );
-
-    } finally {
-      standingsLoading = false;
     }
   }
 
@@ -889,12 +948,14 @@
     setupLeagueButtons();
 
     renderDates();
-
     loadMatches();
     loadStandings();
 
-    // Maç verilerini 60 saniyede bir yenile.
-    setInterval(loadMatches, REFRESH_MS);
+    setInterval(() => {
+      if (!document.hidden) {
+        loadMatches();
+      }
+    }, REFRESH_MS);
   }
 
   initialize();
