@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -6,78 +7,114 @@
   <title>Puan Durumu | SPORIX</title>
   <meta name="description" content="Futbol liglerinin güncel puan durumlarını SPORIX ile takip et.">
   <meta name="theme-color" content="#e50914">
+
   <link rel="icon" href="/images/logo.jpeg">
   <link rel="stylesheet" href="/assets/style.css">
   <link rel="stylesheet" href="/assets/pages.css">
+
   <script src="/assets/pages.js" defer></script>
 </head>
+
 <body data-page="standings">
-  <header class="site-header">
-    <div class="header-inner">
-      <a href="/" class="brand">
-        <img src="/images/logo.jpeg" alt="SPORIX">
-        <div>
-          <div class="brand-name">SPOR<span>IX</span></div>
-          <span class="brand-tagline">SPORUN NABZI BURADA ATAR</span>
-        </div>
-      </a>
-      <button class="mobile-menu-button" id="mobileMenuButton" aria-label="Menüyü aç">☰</button>
-      <nav class="main-nav" id="mainNav">
-        <a href="/">Ana Sayfa</a>
-        <a href="/maclar/">Maçlar</a>
-        <a href="/puan-durumu/" class="active">Puan Durumu</a>
-        <a href="/fikstur/">Fikstür</a>
-      </nav>
-    </div>
-  </header>
 
-  <main class="sp-page">
-    <div class="sp-page-heading">
+<header class="site-header">
+  <div class="header-inner">
+
+    <a href="/" class="brand">
+      <img src="/images/logo.jpeg" alt="SPORIX">
       <div>
-        <span class="sp-eyebrow">LİG SIRALAMALARI</span>
-        <h1>Puan <span>Durumu</span></h1>
-        <p>Takımların ligdeki sıralamalarını ve puanlarını incele.</p>
+        <div class="brand-name">SPOR<span>IX</span></div>
+        <span class="brand-tagline">SPORUN NABZI BURADA ATAR</span>
+      </div>
+    </a>
+
+    <button class="mobile-menu-button" id="mobileMenuButton" aria-label="Menüyü aç">☰</button>
+
+    <nav class="main-nav" id="mainNav">
+      <a href="/">Ana Sayfa</a>
+      <a href="/maclar/">Maçlar</a>
+      <a href="/puan-durumu/" class="active">Puan Durumu</a>
+      <a href="/fikstur/">Fikstür</a>
+    </nav>
+
+  </div>
+</header>
+
+<main class="sp-page">
+
+  <div class="sp-page-heading">
+    <div>
+      <span class="sp-eyebrow">LİG SIRALAMALARI</span>
+      <h1>Puan <span>Durumu</span></h1>
+      <p>Takımların ligdeki sıralamalarını ve puanlarını incele.</p>
+    </div>
+  </div>
+
+  <section class="sp-panel">
+
+    <div class="sp-filter">
+      <label for="competitionSelect">Lig seç</label>
+
+      <select id="competitionSelect">
+
+        <optgroup label="🇹🇷 Türkiye">
+          <option value="turkish-super-league">Süper Lig</option>
+          <option value="turkish-first-league">1. Lig</option>
+          <option value="turkish-second-league">2. Lig</option>
+          <option value="turkish-third-league">3. Lig</option>
+        </optgroup>
+
+        <optgroup label="🌍 Avrupa">
+          <option value="english-premier-league">Premier League</option>
+          <option value="spanish-la-liga">La Liga</option>
+          <option value="bundesliga">Bundesliga</option>
+          <option value="italian-serie-a">Serie A</option>
+          <option value="french-ligue-1">Ligue 1</option>
+        </optgroup>
+
+      </select>
+
+      <button class="sp-primary-button" id="loadButton">
+        Tabloyu Getir
+      </button>
+    </div>
+
+    <div class="sp-panel-heading">
+      <h2 id="tableTitle">Lig Puan Tablosu</h2>
+      <span class="sp-small-label">Güncel veriler</span>
+    </div>
+
+    <div id="pageResults" class="sp-results">
+      <div class="sp-loading">Lig tablosu yükleniyor...</div>
+    </div>
+
+  </section>
+
+  <p class="sp-provider">
+    Spor verileri:
+    <a href="https://sportscore.com/" rel="dofollow" target="_blank">
+      Powered by SportScore
+    </a>
+  </p>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+
+    <div>
+      <div class="footer-brand">SPOR<span>IX</span></div>
+      <div class="footer-copy">
+        © <span id="currentYear"></span> SPORIX. Tüm hakları saklıdır.
       </div>
     </div>
 
-    <section class="sp-panel">
-      <div class="sp-filter">
-        <label for="competitionSelect">Lig seç</label>
-        <select id="competitionSelect">
-          <option value="turkish-super-league">Türkiye Süper Lig</option>
-          <option value="english-premier-league">İngiltere Premier League</option>
-          <option value="spanish-la-liga">İspanya La Liga</option>
-          <option value="bundesliga">Almanya Bundesliga</option>
-          <option value="italian-serie-a">İtalya Serie A</option>
-          <option value="uefa-champions-league">UEFA Şampiyonlar Ligi</option>
-        </select>
-        <button class="sp-primary-button" id="loadButton">Tabloyu Getir</button>
-      </div>
-
-      <div class="sp-panel-heading">
-        <h2 id="tableTitle">Lig Puan Tablosu</h2>
-        <span class="sp-small-label">Güncel veriler</span>
-      </div>
-
-      <div id="pageResults" class="sp-results">
-        <div class="sp-loading">Lig tablosu yükleniyor...</div>
-      </div>
-    </section>
-
-    <p class="sp-provider">
-      Spor verileri:
-      <a href="https://sportscore.com/" rel="dofollow" target="_blank">Powered by SportScore</a>
-    </p>
-  </main>
-
-  <footer class="site-footer">
-    <div class="footer-inner">
-      <div>
-        <div class="footer-brand">SPOR<span>IX</span></div>
-        <div class="footer-copy">© <span id="currentYear"></span> SPORIX. Tüm hakları saklıdır.</div>
-      </div>
-      <div class="footer-credit">Sporun nabzı burada atar.</div>
+    <div class="footer-credit">
+      Sporun nabzı burada atar.
     </div>
-  </footer>
+
+  </div>
+</footer>
+
 </body>
 </html>
