@@ -4,88 +4,335 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SPORIX | Futbol Merkezi</title>
-  <meta name="description" content="SPORIX futbol maç detayları, puan durumları, oyuncu istatistikleri ve fikstür merkezi.">
-  <meta name="theme-color" content="#101b2d">
+
+  <title>SPORIX | Maç ve Takım Detayları</title>
+
+  <meta
+    name="description"
+    content="SPORIX maç detayları, canlı skorlar, takım profilleri, futbol kadroları ve maç istatistikleri."
+  >
+
+  <meta name="theme-color" content="#101827">
+
   <link rel="icon" href="/images/logo.jpeg">
+
   <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="/assets/veri.css">
+
+  <style>
+    .data-page {
+      width: min(1100px, 94%);
+      margin: 30px auto 60px;
+      min-height: 65vh;
+    }
+
+    .data-heading {
+      margin-bottom: 24px;
+    }
+
+    .data-heading h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .data-heading p {
+      color: var(--muted, #aebbd0);
+      font-size: 14px;
+    }
+
+    .data-search {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 12px;
+      background: var(--card, #172438);
+      border: 1px solid var(--border, #293b53);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 25px;
+    }
+
+    .data-search .form-group {
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .data-search label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 7px;
+      font-weight: 600;
+    }
+
+    .data-search input,
+    .data-search select {
+      width: 100%;
+      min-height: 43px;
+      padding: 10px 12px;
+      border: 1px solid #35465d;
+      border-radius: 8px;
+      background: #101827;
+      color: #fff;
+      outline: none;
+    }
+
+    .data-search input:focus,
+    .data-search select:focus {
+      border-color: #e50914;
+    }
+
+    .data-search button {
+      min-height: 43px;
+      padding: 0 22px;
+      border: none;
+      border-radius: 8px;
+      background: #e50914;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .data-search button:hover {
+      background: #c9000b;
+    }
+
+    .data-result {
+      background: var(--card, #172438);
+      border: 1px solid var(--border, #293b53);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .data-result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 17px 20px;
+      border-bottom: 1px solid var(--border, #293b53);
+    }
+
+    .data-result-header h2 {
+      font-size: 17px;
+      margin: 0;
+    }
+
+    #resultStatus {
+      font-size: 12px;
+      color: #aebbd0;
+    }
+
+    #resultStatus[data-type="success"] {
+      color: #42cf8a;
+    }
+
+    #resultStatus[data-type="error"] {
+      color: #ff6570;
+    }
+
+    .data-output {
+      padding: 18px;
+      min-height: 150px;
+    }
+
+    .is-hidden {
+      display: none !important;
+    }
+
+    .data-footer {
+      border-top: 1px solid #293b53;
+      padding: 24px 15px;
+      text-align: center;
+      color: #aebbd0;
+      font-size: 13px;
+    }
+
+    .data-footer a {
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .data-footer a:hover {
+      color: #e50914;
+    }
+
+    .data-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 18px;
+      color: #aebbd0;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .data-back:hover {
+      color: #e50914;
+    }
+
+    @media (max-width: 600px) {
+      .data-page {
+        margin-top: 20px;
+      }
+
+      .data-heading h1 {
+        font-size: 23px;
+      }
+
+      .data-search {
+        padding: 13px;
+      }
+
+      .data-search .form-group {
+        min-width: 100%;
+      }
+
+      .data-search button {
+        width: 100%;
+      }
+
+      .data-output {
+        padding: 10px;
+      }
+
+      .data-result-header {
+        padding: 14px;
+      }
+    }
+  </style>
 </head>
+
 <body>
+
+  <!-- HEADER -->
   <header class="site-header">
-    <div class="header-inner">
-      <a href="/" class="brand">
-        <img src="/images/logo.jpeg" alt="SPORIX">
-        <span>SPORIX</span>
+    <div class="container header-inner">
+
+      <a href="/" class="logo" aria-label="SPORIX ana sayfa">
+        <img
+          src="/images/logo.jpeg"
+          alt="SPORIX"
+          style="max-height:55px;width:auto;object-fit:contain;"
+        >
       </a>
-      <button class="menu-toggle" id="menuToggle" type="button"
-        aria-label="Menüyü aç" aria-expanded="false">☰</button>
-      <nav class="main-nav" id="mainNav">
+
+      <button
+        type="button"
+        id="menuToggle"
+        class="menu-toggle"
+        aria-label="Menüyü aç"
+        aria-expanded="false"
+      >
+        ☰
+      </button>
+
+      <nav id="mainNav" class="main-nav">
         <a href="/">Ana Sayfa</a>
-        <a href="/#leagueSections">Maçlar</a>
+        <a href="/maclar/">Maçlar</a>
+        <a href="/haberler/">Haberler</a>
         <a href="/veri.html?view=standings">Puan Durumu</a>
-        <a href="/veri.html?view=team">Takım Fikstürü</a>
         <a href="/veri.html?view=topscorers">Gol Krallığı</a>
-        <a href="/veri.html?view=player">Oyuncular</a>
       </nav>
+
     </div>
   </header>
 
+  <!-- MAIN -->
   <main class="container data-page">
-    <section class="data-heading">
-      <span class="data-kicker">SPORIX FUTBOL MERKEZİ</span>
-      <h1 id="pageTitle">Futbol Verileri</h1>
-      <p id="pageDescription">SportScore verileri yükleniyor.</p>
-    </section>
 
-    <section class="data-search">
-      <form id="dataForm">
-        <label for="slugInput">Takım, lig, oyuncu veya maç slug</label>
-        <input id="slugInput" name="slug" placeholder="Örnek: premier-league">
-        <label for="idInput">Maç ID (canlı takip için)</label>
-        <input id="idInput" name="id" placeholder="Örnek: 7420812">
-        <label for="statInput">İstatistik türü</label>
+    <a href="/" class="data-back">
+      ← SPORIX ana sayfasına dön
+    </a>
+
+    <div class="data-heading">
+      <h1 id="pageTitle">Maç ve Takım Detayları</h1>
+
+      <p id="pageDescription">
+        Futbol karşılaşmalarını ve takımları detaylı incele.
+      </p>
+    </div>
+
+    <!-- SEARCH FORM -->
+    <form id="dataForm" class="data-search">
+
+      <div class="form-group">
+        <label for="slugInput">Takım veya maç kodu</label>
+
+        <input
+          type="text"
+          id="slugInput"
+          name="slug"
+          placeholder="Örnek: coban-imperial-vs-guastatoya"
+          autocomplete="off"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="idInput">Maç ID</label>
+
+        <input
+          type="text"
+          id="idInput"
+          name="id"
+          placeholder="Maç ID girin"
+          autocomplete="off"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="statInput">Gol / Asist</label>
+
         <select id="statInput" name="stat">
           <option value="goals">Gol krallığı</option>
           <option value="assists">Asist krallığı</option>
         </select>
-        <button type="submit">Verileri Getir</button>
-      </form>
-    </section>
+      </div>
 
+      <button type="submit">
+        Verileri Göster
+      </button>
+
+    </form>
+
+    <!-- DATA RESULT -->
     <section class="data-result">
-      <div class="data-result-top">
-        <h2 id="resultTitle">Sonuçlar</h2>
-        <span id="resultStatus">Hazırlanıyor</span>
+
+      <div class="data-result-header">
+        <h2 id="resultTitle">Maç Bilgileri</h2>
+
+        <span id="resultStatus" role="status" aria-live="polite">
+          Hazır
+        </span>
       </div>
-      <div id="dataOutput">
-        <div class="loading">Veriler yükleniyor...</div>
+
+      <div
+        id="dataOutput"
+        class="data-output"
+        aria-live="polite"
+      >
+        <div class="sx-empty">
+          Veriler yükleniyor...
+        </div>
       </div>
+
     </section>
 
-    <p class="data-attribution">
-      Veriler:
-      <a href="https://sportscore.com/" rel="dofollow"
-        title="Sports data by SportScore">SportScore</a>
-    </p>
   </main>
 
-  <footer class="site-footer">
-    <div class="footer-inner">
-      <strong>SPORIX</strong>
-      <span>Futbolun takip merkezi.</span>
-      <div class="footer-links">
-        <a href="/">Ana Sayfa</a>
-        <a href="/hakkimizda/">Hakkımızda</a>
-        <a href="/iletisim/">İletişim</a>
-        <a href="/gizlilik/">Gizlilik</a>
-      </div>
-      <small>© <span id="year">2026</span> SPORIX</small>
-      <small>
-        <a href="https://sportscore.com/" rel="dofollow">Powered by SportScore</a>
-      </small>
-    </div>
+  <!-- FOOTER -->
+  <footer class="data-footer">
+    <p>
+      © <span id="year"></span>
+      <a href="/">SPORIX</a> – SPORUN NABZI BURADA ATAR
+    </p>
+
+    <p>
+      Canlı skorlar, futbol haberleri ve maç detayları.
+    </p>
   </footer>
 
   <script src="/assets/veri.js" defer></script>
+
 </body>
 </html>
