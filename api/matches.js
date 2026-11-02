@@ -1,4 +1,6 @@
 
+"use strict";
+
 const API_URL = "https://sportscore.com/api/v1/fixtures/";
 
 const TURKISH_LEAGUES = [
@@ -10,7 +12,6 @@ const TURKISH_LEAGUES = [
   { name: "Süper Kupa", slug: "turkish-super-cup" }
 ];
 
-// Türkiye tarihini al.
 function getTurkeyDate() {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Istanbul",
@@ -19,28 +20,23 @@ function getTurkeyDate() {
     day: "2-digit"
   }).formatToParts(new Date());
 
-  const values = {};
-
-  for (const part of parts) {
-    values[part.type] = part.value;
-  }
+  const values = Object.fromEntries(
+    parts.map(part => [part.type, part.value])
+  );
 
   return `${values.year}-${values.month}-${values.day}`;
 }
 
-// JSON içinden maç listesini bul.
 function getMatches(data, depth = 0) {
   if (Array.isArray(data)) {
-    return data.filter(item =>
-      item && typeof item === "object"
-    );
+    return data.filter(item => item && typeof item === "object");
   }
 
   if (!data || typeof data !== "object" || depth > 8) {
     return [];
   }
 
-  const keys = [
+  for (const key of [
     "matches",
     "fixtures",
     "results",
@@ -48,22 +44,16 @@ function getMatches(data, depth = 0) {
     "items",
     "data",
     "response"
-  ];
-
-  for (const key of keys) {
+  ]) {
     if (data[key] !== undefined && data[key] !== null) {
       const result = getMatches(data[key], depth + 1);
-
-      if (result.length) {
-        return result;
-      }
+      if (result.length) return result;
     }
   }
 
   return [];
 }
 
-// API URL oluştur.
 function makeUrl(date, competition) {
   const url = new URL(API_URL);
 
@@ -78,250 +68,235 @@ function makeUrl(date, competition) {
   return url.toString();
 }
 
-// API'den maçları çek.
 async function fetchMatches(date, competition) {
-  const url = makeUrl(date, competition);
-
-  const response = await fetch(url, {
-    method: "GET",
+  const response = await fetch(makeUrl(date, competition), {
     headers: {
       Accept: "application/json"
     }
   });
 
-  const responseText = await response.text();
+  const body = await response.text();
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${responseText.slice(0, 200)}`);
+    throw new Error(`SportScore HTTP ${response.status}`);
   }
 
   let data;
 
   try {
-    data = JSON.parse(responseText);
+    data = JSON.parse(body);
   } catch {
-    throw new Error("SportScore geçerli JSON döndürmedi.");
+    throw new Error("SportScore geçersiz JSON döndürdü.");
   }
 
-  const matches = getMatches(data);
-
   return {
-    matches,
-    raw: data,
-    rawKeys:
-      data && typeof data === "object" && !Array.isArray(data)
-        ? Object.keys(data)
-        : [],
-    apiMessage:
-      data?.message ||
-      data?.error ||
-      null,
-    apiSuccess: data?.success
+    matches: getMatches(data),
+    raw: data
   };
 }
 
-// Maçın benzersiz anahtarını oluştur.
-function getMatchKey(match) {
-  const id =
+function getCompetitionSlug(match) {
+  const competition =
+    match.competition ||
+    match.league ||
+    match.tournament ||
+    {};
+
+  if (typeof competition === "string") {
+    return competition.toLowerCase().replace(/\s+/g, "-");
+  }
+
+  return (
+    match.competition_slug ||
+    match.league_slug ||
+    competition.slug ||
+    competition.url?.split("/").filter(Boolean).slice(-2, -1)[0] ||
+    ""
+  ).toLowerCase();
+}
+
+function getMatchId(match) {
+  return String(
     match.id ||
     match.fixture_id ||
     match.event_id ||
-    match.slug;
-
-  if (id) {
-    return String(id);
-  }
-
-  const home =
-    match.home ||
-    match.home_team?.name ||
-    match.homeTeam?.name ||
-    "";
-
-  const away =
-    match.away ||
-    match.away_team?.name ||
-    match.awayTeam?.name ||
-    "";
-
-  const time =
-    match.time ||
-    match.start_time ||
-    match.date ||
-    "";
-
-  if (home || away || time) {
-    return `${home}-${away}-${time}`;
-  }
-
-  return JSON.stringify(match);
+    match.slug ||
+    [
+      match.home,
+      match.away,
+      match.start_time || match.time || match.date
+    ].join("-")
+  );
 }
 
-// Tekrar eden maçları birleştir.
-// Lig bilgisini kaybetmez.
 function uniqueMatches(matches) {
   const map = new Map();
 
   for (const match of matches) {
-    const key = getMatchKey(match);
-    const existing = map.get(key);
+    const key = getMatchId(match);
 
-    if (!existing) {
+    if (!map.has(key)) {
       map.set(key, match);
-      continue;
+    } else {
+      map.set(key, {
+        ...map.get(key),
+        ...match
+      });
     }
-
-    map.set(key, {
-      ...existing,
-      ...match,
-      competition_name:
-        match.competition_name ||
-        existing.competition_name,
-      competition_slug:
-        match.competition_slug ||
-        existing.competition_slug
-    });
   }
 
-  return Array.from(map.values());
+  return [...map.values()];
 }
 
-// Maçları tarihe göre sırala.
 function sortMatches(matches) {
   return matches.sort((a, b) => {
     const dateA = new Date(
-      a.time || a.start_time || a.date || 0
+      a.start_time || a.startTime || a.time || a.date || 0
     ).getTime();
 
     const dateB = new Date(
-      b.time || b.start_time || b.date || 0
+      b.start_time || b.startTime || b.time || b.date || 0
     ).getTime();
 
     return dateA - dateB;
   });
 }
 
-// API ana fonksiyonu.
 module.exports = async (req, res) => {
   res.setHeader(
     "Cache-Control",
-    "s-maxage=30, stale-while-revalidate=60"
+    "no-store, no-cache, must-revalidate"
   );
 
   try {
-    const date = String(
-      req.query.date || getTurkeyDate()
+    const date = String(req.query.date || getTurkeyDate());
+    const selectedCompetition = String(
+      req.query.competition || ""
     );
 
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return res.status(400).json({
         success: false,
-        error: "Geçersiz tarih. YYYY-MM-DD kullan.",
+        error: "Geçersiz tarih.",
         matches: [],
         leagues: []
       });
     }
 
-    // Genel maçlar ve 6 Türkiye organizasyonu.
-    const requests = [
-      fetchMatches(date, null),
-      ...TURKISH_LEAGUES.map(league =>
-        fetchMatches(date, league.slug)
-      )
-    ];
+    const selectedLeague = TURKISH_LEAGUES.find(
+      league => league.slug === selectedCompetition
+    );
 
-    const results = await Promise.allSettled(requests);
-
-    const allMatches = [];
-    const leagueResults = [];
-
-    const generalResult = results[0];
-
-    if (generalResult.status === "fulfilled") {
-      allMatches.push(...generalResult.value.matches);
+    // Belirli lig seçildiyse sadece o lig sorgulanır.
+    if (selectedCompetition && !selectedLeague) {
+      return res.status(400).json({
+        success: false,
+        error: "Geçersiz Türkiye ligi.",
+        matches: [],
+        leagues: []
+      });
     }
 
-    TURKISH_LEAGUES.forEach((league, index) => {
-      const result = results[index + 1];
+    if (selectedLeague) {
+      try {
+        const result = await fetchMatches(
+          date,
+          selectedLeague.slug
+        );
 
-      if (result.status === "fulfilled") {
-        const matches = result.value.matches.map(match => ({
+        const matches = result.matches.map(match => ({
           ...match,
-          competition_name:
-            match.competition_name || league.name,
-          competition_slug:
-            match.competition_slug || league.slug
+          competition_name: selectedLeague.name,
+          competition_slug: selectedLeague.slug
         }));
 
-        allMatches.push(...matches);
-
-        leagueResults.push({
-          name: league.name,
-          slug: league.slug,
-          status: matches.length ? "ok" : "empty",
+        return res.status(200).json({
+          success: true,
+          source: "SportScore",
+          date,
+          selectedCompetition: selectedLeague.slug,
           count: matches.length,
-          apiMessage: result.value.apiMessage,
-          apiSuccess: result.value.apiSuccess,
-          responseKeys: result.value.rawKeys
+          matches: sortMatches(uniqueMatches(matches)),
+          leagues: [{
+            name: selectedLeague.name,
+            slug: selectedLeague.slug,
+            status: matches.length ? "ok" : "empty",
+            count: matches.length
+          }]
         });
-      } else {
-        leagueResults.push({
+      } catch (error) {
+        return res.status(502).json({
+          success: false,
+          error: error.message,
+          matches: [],
+          leagues: [{
+            name: selectedLeague.name,
+            slug: selectedLeague.slug,
+            status: "error",
+            count: 0
+          }]
+        });
+      }
+    }
+
+    // Lig seçilmemişse altı organizasyonu birlikte sorgula.
+    const results = await Promise.allSettled(
+      TURKISH_LEAGUES.map(league =>
+        fetchMatches(date, league.slug)
+      )
+    );
+
+    const allMatches = [];
+    const leagues = [];
+
+    TURKISH_LEAGUES.forEach((league, index) => {
+      const result = results[index];
+
+      if (result.status === "rejected") {
+        leagues.push({
           name: league.name,
           slug: league.slug,
           status: "error",
           count: 0,
-          error:
-            result.reason?.message ||
-            "Bilinmeyen API hatası"
+          error: result.reason?.message
         });
+        return;
       }
+
+      const matches = result.value.matches.map(match => ({
+        ...match,
+        competition_name: league.name,
+        competition_slug: league.slug
+      }));
+
+      allMatches.push(...matches);
+
+      leagues.push({
+        name: league.name,
+        slug: league.slug,
+        status: matches.length ? "ok" : "empty",
+        count: matches.length
+      });
     });
 
-    const successfulRequests = results.filter(
-      result => result.status === "fulfilled"
-    ).length;
-
-    if (successfulRequests === 0) {
-      throw new Error("SportScore servislerinden yanıt alınamadı.");
-    }
-
-    const matches = sortMatches(
-      uniqueMatches(allMatches)
-    );
-
-    const totalTurkishMatches = leagueResults.reduce(
-      (total, league) => total + league.count,
-      0
-    );
+    const matches = sortMatches(uniqueMatches(allMatches));
 
     return res.status(200).json({
       success: true,
       source: "SportScore",
       date,
       count: matches.length,
-      turkishCount: totalTurkishMatches,
+      turkishCount: matches.length,
       matches,
-      leagues: leagueResults,
-      diagnostics: {
-        successfulRequests,
-        totalRequests: requests.length,
-        generalStatus:
-          generalResult.status === "fulfilled"
-            ? "ok"
-            : "error",
-        generalError:
-          generalResult.status === "rejected"
-            ? generalResult.reason?.message
-            : null
-      }
+      leagues
     });
 
   } catch (error) {
-    console.error("SPORIX MATCH API ERROR:", error);
+    console.error("SPORIX API ERROR:", error);
 
     return res.status(500).json({
       success: false,
-      error: error.message || "Maç verileri alınamadı.",
+      error: error.message,
       matches: [],
       leagues: []
     });
