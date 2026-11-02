@@ -1102,3 +1102,144 @@ button {
   }
 
 }
+
+/* =====================================
+   SPORIX YENİ MAÇ KARTI TASARIMI
+===================================== */
+
+.match-row-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.match-row {
+  display: block;
+  padding: 13px 16px;
+  margin-bottom: 8px;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e7eaf0);
+  border-radius: 10px;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.match-row-link:hover .match-row {
+  border-color: #d71920;
+  box-shadow: 0 3px 12px rgba(0,0,0,.05);
+}
+
+.match-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-color, #edf0f4);
+  color: var(--muted, #777f8c);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.match-start-time {
+  color: #687386;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.match-card-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.match-side {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.home-side {
+  justify-content: flex-start;
+}
+
+.away-side {
+  justify-content: flex-end;
+}
+
+.match-side img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.match-side .team-name {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.match-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.match-center .score {
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--text-color, #172033);
+}
+
+.match-center .status {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .4px;
+  color: #758093;
+}
+
+.match-center .status.live {
+  color: #e21b2d;
+}
+
+.match-center .status.finished {
+  color: #758093;
+}
+
+/* Mobil görünüm */
+@media (max-width: 480px) {
+  .match-row {
+    padding: 12px 10px;
+  }
+
+  .match-card-content {
+    grid-template-columns: minmax(0, 1fr) 62px minmax(0, 1fr);
+    gap: 5px;
+  }
+
+  .match-side {
+    gap: 5px;
+  }
+
+  .match-side img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .match-side .team-name {
+    font-size: 11px;
+  }
+
+  .match-center .score {
+    font-size: 18px;
+  }
+}
