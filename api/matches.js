@@ -1,4 +1,4 @@
-
+ 
 "use strict";
 
 const WIDGET_URL = "https://sportscore.com/api/widget/matches/";
