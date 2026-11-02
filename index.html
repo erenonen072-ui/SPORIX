@@ -1,181 +1,154 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-BNEDMNED4M"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-BNEDMNED4M');
-  </script>
-
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SPORIX | Canlı Skorlar ve Futbol</title>
-  <meta name="description" content="SPORIX ile canlı futbol skorlarını, maç sonuçlarını, fikstürleri ve ligleri takip et.">
-  <meta name="theme-color" content="#e50914">
-  <link rel="canonical" href="https://sporix.vercel.app/">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPORIX | Canlı Skorlar ve Spor Haberleri</title>
+  <meta name="description" content="SPORIX ile canlı skorları, futbol maçlarını, fikstürleri ve spor haberlerini takip et.">
+  <meta name="theme-color" content="#101827">
   <link rel="icon" href="/images/logo.jpeg">
   <link rel="stylesheet" href="/assets/style.css">
+  <script src="/assets/home.js" defer></script>
 </head>
-
 <body>
-  <header class="site-header">
-    <div class="header-inner">
-      <a href="/" class="brand">
-        <img src="/images/logo.jpeg" alt="SPORIX logo">
+  <div class="topline">
+    <div class="container topline-inner">
+      <span>SPORUN NABZI BURADA ATAR</span>
+      <span id="todayText"></span>
+    </div>
+  </div>
+
+  <header class="header">
+    <div class="container header-inner">
+      <a class="brand" href="/">
+        <img src="/images/logo.jpeg" alt="SPORIX">
         <span>SPOR<span class="brand-red">IX</span></span>
       </a>
 
-      <button class="menu-toggle" id="mobileMenuButton" aria-label="Menüyü aç" aria-expanded="false">☰</button>
+      <button class="menu-toggle" id="menuToggle" aria-label="Menüyü aç">☰</button>
 
-      <nav class="main-nav" id="mainNav">
-        <a href="/" class="nav-link active">Ana Sayfa</a>
-        <a href="/maclar/" class="nav-link">Maçlar</a>
-        <a href="/puan-durumu/" class="nav-link">Puan Durumu</a>
-        <a href="/fikstur/" class="nav-link">Fikstür</a>
-        <a href="/haberler/" class="nav-link">Haberler</a>
-      </nav>
-
-      <a href="/maclar/" class="header-live">
-        <span class="live-dot"></span>
-        CANLI SKOR
-      </a>
-    </div>
-  </header>
-
-  <main class="page-container">
-    <div class="page-heading">
-      <div>
-        <div class="heading-kicker">SPORUN NABZI BURADA ATAR</div>
-        <h1>Maç Merkezi</h1>
-        <p>Futbol karşılaşmaları, canlı skorlar ve maç sonuçları</p>
-      </div>
-      <div class="today-label" id="selectedDateLabel"></div>
-    </div>
-
-    <section class="match-center">
-      <div class="match-center-header">
-        <div class="match-center-title">
-          <span class="title-live-indicator"></span>
-          <div>
-            <h2>Karşılaşmalar</h2>
-            <span>Günün maç programı</span>
-          </div>
-        </div>
-
-        <div class="data-status">
-          <span class="status-dot"></span>
-          <span>Veriler güncellenir</span>
-        </div>
-      </div>
-
-      <div class="date-strip" id="dateStrip"></div>
-
-      <div class="filter-bar">
-        <div class="filter-label">
-          <span class="filter-icon">⚽</span>
-          <span>FUTBOL</span>
-        </div>
-
-        <div class="filter-controls">
-          <select id="leagueFilter" aria-label="Lig seç">
-            <option value="all">Tüm Ligler</option>
-          </select>
-
-          <select id="statusFilter" aria-label="Maç durumu seç">
-            <option value="all">Tüm Maçlar</option>
-            <option value="live">Canlı</option>
-            <option value="finished">Bitenler</option>
-            <option value="upcoming">Başlamayanlar</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="match-list" id="matchList">
-        <div class="loading-state">
-          <span class="loading-spinner"></span>
-          <strong>Maçlar yükleniyor...</strong>
-          <span>Güncel karşılaşmalar getiriliyor.</span>
-        </div>
-      </div>
-
-      <div class="match-list-footer">
-        <span id="matchCount">Maç verileri bekleniyor</span>
-        <span>SPOR<span class="brand-red">IX</span></span>
-      </div>
-    </section>
-
-    <section class="below-links">
-      <a href="/maclar/">
-        <span class="below-icon">⚽</span>
-        <span><strong>Tüm Maçlar</strong><small>Karşılaşma merkezi</small></span>
-        <span class="below-arrow">›</span>
-      </a>
-      <a href="/puan-durumu/">
-        <span class="below-icon">▤</span>
-        <span><strong>Puan Durumu</strong><small>Lig sıralamaları</small></span>
-        <span class="below-arrow">›</span>
-      </a>
-      <a href="/fikstur/">
-        <span class="below-icon">▦</span>
-        <span><strong>Fikstür</strong><small>Maç takvimi</small></span>
-        <span class="below-arrow">›</span>
-      </a>
-      <a href="/haberler/">
-        <span class="below-icon">▣</span>
-        <span><strong>Spor Haberleri</strong><small>Son gelişmeler</small></span>
-        <span class="below-arrow">›</span>
-      </a>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="footer-inner">
-      <div class="footer-main">
-        <a href="/" class="footer-brand">
-          <img src="/images/logo.jpeg" alt="">
-          <span>SPOR<span class="brand-red">IX</span></span>
-        </a>
-        <p>SPORUN NABZI BURADA ATAR.</p>
-      </div>
-
-      <div class="footer-nav">
+      <nav class="nav" id="mainNav">
+        <a class="active" href="/">Ana Sayfa</a>
         <a href="/maclar/">Maçlar</a>
         <a href="/puan-durumu/">Puan Durumu</a>
         <a href="/fikstur/">Fikstür</a>
         <a href="/haberler/">Haberler</a>
+      </nav>
+
+      <a class="header-live" href="/maclar/">
+        <span class="live-dot"></span> CANLI MAÇLAR
+      </a>
+    </div>
+  </header>
+
+  <main class="container page-layout">
+    <aside class="sidebar left-sidebar">
+      <div class="side-heading">SPORLAR</div>
+      <a class="sport-link selected" href="/maclar/?sport=football">⚽ <span>Futbol</span></a>
+      <a class="sport-link" href="/basketbol/">🏀 <span>Basketbol</span></a>
+      <a class="sport-link" href="/tenis/">🎾 <span>Tenis</span></a>
+      <a class="sport-link" href="/voleybol/">🏐 <span>Voleybol</span></a>
+      <a class="sport-link" href="/at-yarisi/">🏇 <span>At Yarışı</span></a>
+
+      <div class="side-heading league-heading">POPÜLER LİGLER</div>
+      <div id="leagueSidebar" class="league-sidebar">
+        <button class="league-link active" data-league="">🌍 Tüm Ligler</button>
+        <button class="league-link" data-league="Süper Lig">🇹🇷 Süper Lig</button>
+        <button class="league-link" data-league="Premier League">🏴 Premier League</button>
+        <button class="league-link" data-league="La Liga">🇪🇸 La Liga</button>
+        <button class="league-link" data-league="Serie A">🇮🇹 Serie A</button>
+        <button class="league-link" data-league="Bundesliga">🇩🇪 Bundesliga</button>
+        <button class="league-link" data-league="Ligue 1">🇫🇷 Ligue 1</button>
+      </div>
+    </aside>
+
+    <section class="main-content">
+      <div class="section-title">
+        <div>
+          <span class="eyebrow">SPORIX MAÇ MERKEZİ</span>
+          <h1>Futbol Maçları</h1>
+          <p>Canlı skorlar ve maç sonuçları</p>
+        </div>
+        <span class="live-label"><i></i> CANLI TAKİP</span>
       </div>
 
-      <div class="footer-bottom">
-        <span>© <span id="currentYear"></span> SPORIX</span>
-        <span>Sports data by <a href="https://sportscore.com/" target="_blank" rel="dofollow">SportScore</a></span>
+      <div class="match-toolbar">
+        <div class="toolbar-title">MAÇ PROGRAMI</div>
+        <select id="statusFilter" aria-label="Maç durumu">
+          <option value="all">Tüm maçlar</option>
+          <option value="live">Canlı</option>
+          <option value="upcoming">Yaklaşan</option>
+          <option value="finished">Tamamlanan</option>
+        </select>
       </div>
+
+      <div class="date-strip" id="dateStrip"></div>
+
+      <div class="match-summary">
+        <strong id="selectedDateLabel">Maçlar yükleniyor...</strong>
+        <span id="matchCount">0 maç</span>
+      </div>
+
+      <div id="matchList" class="match-list">
+        <div class="loading-state">
+          <div class="loader"></div>
+          <span>Maçlar yükleniyor...</span>
+        </div>
+      </div>
+
+      <div class="data-note">
+        Maç bilgileri SportScore verileri kullanılarak gösterilir.
+      </div>
+    </section>
+
+    <aside class="sidebar right-sidebar">
+      <div class="widget">
+        <div class="widget-title">MAÇ DURUMU</div>
+        <div class="status-stat">
+          <span class="stat-dot red"></span>
+          <span>Canlı maçlar</span>
+          <strong id="liveCount">—</strong>
+        </div>
+        <div class="status-stat">
+          <span class="stat-dot green"></span>
+          <span>Tamamlanan</span>
+          <strong id="finishedCount">—</strong>
+        </div>
+        <div class="status-stat">
+          <span class="stat-dot blue"></span>
+          <span>Yaklaşan</span>
+          <strong id="upcomingCount">—</strong>
+        </div>
+      </div>
+
+      <div class="widget">
+        <div class="widget-title">SPORIX</div>
+        <div class="right-promo">
+          <div class="promo-logo">S<span>IX</span></div>
+          <strong>Sporun merkezi</strong>
+          <p>Maçları, sonuçları ve spor gündemini tek yerde takip et.</p>
+          <a href="/haberler/">Spor haberleri <span>→</span></a>
+        </div>
+      </div>
+
+      <div class="widget">
+        <div class="widget-title">HIZLI ERİŞİM</div>
+        <a class="quick-link" href="/maclar/">Tüm maçlar <span>→</span></a>
+        <a class="quick-link" href="/puan-durumu/">Puan durumu <span>→</span></a>
+        <a class="quick-link" href="/fikstur/">Fikstür <span>→</span></a>
+        <a class="quick-link" href="/haberler/">Spor haberleri <span>→</span></a>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">SPOR<span>IX</span></div>
+      <p>SPORUN NABZI BURADA ATAR</p>
+      <small>Veri sağlayıcı: <a href="https://sportscore.com/" target="_blank" rel="noopener">SportScore</a></small>
+      <small>© <span id="year"></span> SPORIX. Tüm hakları saklıdır.</small>
     </div>
   </footer>
-
-  <script>
-    document.getElementById("currentYear").textContent = new Date().getFullYear();
-
-    const menuButton = document.getElementById("mobileMenuButton");
-    const mainNav = document.getElementById("mainNav");
-
-    menuButton.addEventListener("click", () => {
-      const opened = mainNav.classList.toggle("open");
-      menuButton.textContent = opened ? "✕" : "☰";
-      menuButton.setAttribute("aria-expanded", String(opened));
-    });
-
-    mainNav.querySelectorAll("a").forEach(link => {
-      link.addEventListener("click", () => {
-        mainNav.classList.remove("open");
-        menuButton.textContent = "☰";
-        menuButton.setAttribute("aria-expanded", "false");
-      });
-    });
-  </script>
-
-  <script src="/assets/home.js" defer></script>
 </body>
 </html>
