@@ -1,12 +1,12 @@
 const BASE_URL = "https://sportscore.com/api/v1/fixtures/";
 
 const leagues = [
-  { name: "Süper Lig", id: "8y39mp1h6jmojxg" },
-  { name: "1. Lig", id: "9k82rekhgorepzj" },
-  { name: "2. Lig", id: "z318q66hxjqo9jd" },
-  { name: "3. Lig", id: "9dn1m1ghl1moepl" },
-  { name: "Türkiye Kupası", id: "z8yomo4h11q0j6l" },
-  { name: "Süper Kupa", id: "p3glrw7hngqdyjv" }
+  { name: "Süper Lig", slug: "turkish-super-league" },
+  { name: "1. Lig", slug: "turkish-first-league" },
+  { name: "2. Lig", slug: "turkish-second-league" },
+  { name: "3. Lig", slug: "turkish-third-league" },
+  { name: "Türkiye Kupası", slug: "turkish-cup" },
+  { name: "Süper Kupa", slug: "turkish-super-cup" }
 ];
 
 module.exports = async (req, res) => {
@@ -20,26 +20,26 @@ module.exports = async (req, res) => {
         url.searchParams.set("sport", "football");
         url.searchParams.set("date", date);
         url.searchParams.set("limit", "100");
-        url.searchParams.set("competition", league.id);
+        url.searchParams.set("competition", league.slug);
 
         const response = await fetch(url);
 
         if (!response.ok) {
           return {
             league: league.name,
-            error: response.status
+            status: response.status
           };
         }
 
         const data = await response.json();
 
-        const matches =
-          Array.isArray(data) ? data :
-          data.fixtures || data.data || data.results || [];
+        const matches = Array.isArray(data)
+          ? data
+          : data.fixtures || data.data || data.results || [];
 
         return {
           league: league.name,
-          id: league.id,
+          slug: league.slug,
           count: matches.length,
           matches: matches.slice(0, 5)
         };
@@ -51,7 +51,6 @@ module.exports = async (req, res) => {
       date,
       results
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
