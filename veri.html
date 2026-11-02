@@ -3,336 +3,197 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>SPORIX | Maç ve Takım Detayları</title>
-
-  <meta
-    name="description"
-    content="SPORIX maç detayları, canlı skorlar, takım profilleri, futbol kadroları ve maç istatistikleri."
-  >
-
-  <meta name="theme-color" content="#101827">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1268d5">
+  <meta name="description" content="SPORIX maç merkezi - canlı skorlar, maç kadroları ve istatistikler.">
+  <title>Maç Detayı | SPORIX</title>
   <link rel="icon" href="/images/logo.jpeg">
-
-  <link rel="stylesheet" href="/assets/style.css">
   <link rel="stylesheet" href="/assets/veri.css">
-
-  <style>
-    .data-page {
-      width: min(1100px, 94%);
-      margin: 30px auto 60px;
-      min-height: 65vh;
-    }
-
-    .data-heading {
-      margin-bottom: 24px;
-    }
-
-    .data-heading h1 {
-      font-size: 28px;
-      margin-bottom: 8px;
-    }
-
-    .data-heading p {
-      color: var(--muted, #aebbd0);
-      font-size: 14px;
-    }
-
-    .data-search {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: end;
-      gap: 12px;
-      background: var(--card, #172438);
-      border: 1px solid var(--border, #293b53);
-      border-radius: 14px;
-      padding: 18px;
-      margin-bottom: 25px;
-    }
-
-    .data-search .form-group {
-      flex: 1;
-      min-width: 180px;
-    }
-
-    .data-search label {
-      display: block;
-      font-size: 13px;
-      margin-bottom: 7px;
-      font-weight: 600;
-    }
-
-    .data-search input,
-    .data-search select {
-      width: 100%;
-      min-height: 43px;
-      padding: 10px 12px;
-      border: 1px solid #35465d;
-      border-radius: 8px;
-      background: #101827;
-      color: #fff;
-      outline: none;
-    }
-
-    .data-search input:focus,
-    .data-search select:focus {
-      border-color: #e50914;
-    }
-
-    .data-search button {
-      min-height: 43px;
-      padding: 0 22px;
-      border: none;
-      border-radius: 8px;
-      background: #e50914;
-      color: #fff;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .data-search button:hover {
-      background: #c9000b;
-    }
-
-    .data-result {
-      background: var(--card, #172438);
-      border: 1px solid var(--border, #293b53);
-      border-radius: 14px;
-      overflow: hidden;
-    }
-
-    .data-result-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      padding: 17px 20px;
-      border-bottom: 1px solid var(--border, #293b53);
-    }
-
-    .data-result-header h2 {
-      font-size: 17px;
-      margin: 0;
-    }
-
-    #resultStatus {
-      font-size: 12px;
-      color: #aebbd0;
-    }
-
-    #resultStatus[data-type="success"] {
-      color: #42cf8a;
-    }
-
-    #resultStatus[data-type="error"] {
-      color: #ff6570;
-    }
-
-    .data-output {
-      padding: 18px;
-      min-height: 150px;
-    }
-
-    .is-hidden {
-      display: none !important;
-    }
-
-    .data-footer {
-      border-top: 1px solid #293b53;
-      padding: 24px 15px;
-      text-align: center;
-      color: #aebbd0;
-      font-size: 13px;
-    }
-
-    .data-footer a {
-      color: #fff;
-      text-decoration: none;
-    }
-
-    .data-footer a:hover {
-      color: #e50914;
-    }
-
-    .data-back {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      margin-bottom: 18px;
-      color: #aebbd0;
-      text-decoration: none;
-      font-size: 13px;
-    }
-
-    .data-back:hover {
-      color: #e50914;
-    }
-
-    @media (max-width: 600px) {
-      .data-page {
-        margin-top: 20px;
-      }
-
-      .data-heading h1 {
-        font-size: 23px;
-      }
-
-      .data-search {
-        padding: 13px;
-      }
-
-      .data-search .form-group {
-        min-width: 100%;
-      }
-
-      .data-search button {
-        width: 100%;
-      }
-
-      .data-output {
-        padding: 10px;
-      }
-
-      .data-result-header {
-        padding: 14px;
-      }
-    }
-  </style>
+  <script src="/assets/veri.js" defer></script>
 </head>
-
 <body>
-
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="container header-inner">
-
-      <a href="/" class="logo" aria-label="SPORIX ana sayfa">
-        <img
-          src="/images/logo.jpeg"
-          alt="SPORIX"
-          style="max-height:55px;width:auto;object-fit:contain;"
-        >
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/">
+        <img src="/images/logo.jpeg" alt="SPORIX">
+        <span>SPORIX</span>
       </a>
-
-      <button
-        type="button"
-        id="menuToggle"
-        class="menu-toggle"
-        aria-label="Menüyü aç"
-        aria-expanded="false"
-      >
-        ☰
-      </button>
-
-      <nav id="mainNav" class="main-nav">
+      <nav>
         <a href="/">Ana Sayfa</a>
         <a href="/maclar/">Maçlar</a>
         <a href="/haberler/">Haberler</a>
-        <a href="/veri.html?view=standings">Puan Durumu</a>
-        <a href="/veri.html?view=topscorers">Gol Krallığı</a>
+        <a href="/puan-durumu/">Puan Durumu</a>
       </nav>
-
     </div>
   </header>
 
-  <!-- MAIN -->
-  <main class="container data-page">
-
-    <a href="/" class="data-back">
-      ← SPORIX ana sayfasına dön
-    </a>
-
-    <div class="data-heading">
-      <h1 id="pageTitle">Maç ve Takım Detayları</h1>
-
-      <p id="pageDescription">
-        Futbol karşılaşmalarını ve takımları detaylı incele.
-      </p>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href="/">Ana Sayfa</a><span>/</span>
+      <a href="/maclar/">Maçlar</a><span>/</span>
+      <strong>Maç Merkezi</strong>
     </div>
 
-    <!-- SEARCH FORM -->
-    <form id="dataForm" class="data-search">
+    <div id="loading" class="notice">
+      <span class="loader"></span>
+      <p>Maç bilgileri yükleniyor...</p>
+    </div>
 
-      <div class="form-group">
-        <label for="slugInput">Takım veya maç kodu</label>
+    <div id="error" class="notice error hidden">
+      <h2>Maç bilgileri yüklenemedi</h2>
+      <p id="errorText">Lütfen daha sonra tekrar deneyin.</p>
+      <button id="retryButton" class="primary-button">Tekrar dene</button>
+    </div>
 
-        <input
-          type="text"
-          id="slugInput"
-          name="slug"
-          placeholder="Örnek: coban-imperial-vs-guastatoya"
-          autocomplete="off"
-        >
-      </div>
-
-      <div class="form-group">
-        <label for="idInput">Maç ID</label>
-
-        <input
-          type="text"
-          id="idInput"
-          name="id"
-          placeholder="Maç ID girin"
-          autocomplete="off"
-        >
-      </div>
-
-      <div class="form-group">
-        <label for="statInput">Gol / Asist</label>
-
-        <select id="statInput" name="stat">
-          <option value="goals">Gol krallığı</option>
-          <option value="assists">Asist krallığı</option>
-        </select>
-      </div>
-
-      <button type="submit">
-        Verileri Göster
-      </button>
-
-    </form>
-
-    <!-- DATA RESULT -->
-    <section class="data-result">
-
-      <div class="data-result-header">
-        <h2 id="resultTitle">Maç Bilgileri</h2>
-
-        <span id="resultStatus" role="status" aria-live="polite">
-          Hazır
-        </span>
-      </div>
-
-      <div
-        id="dataOutput"
-        class="data-output"
-        aria-live="polite"
-      >
-        <div class="sx-empty">
-          Veriler yükleniyor...
+    <div id="matchPage" class="hidden">
+      <section class="match-hero">
+        <div class="competition">
+          <img id="competitionLogo" src="" alt="" class="competition-logo hidden">
+          <span id="competitionName">Karşılaşma</span>
         </div>
+
+        <div class="match-status">
+          <span id="statusDot" class="status-dot"></span>
+          <span id="matchStatus">Maç bilgisi</span>
+        </div>
+
+        <div class="scoreboard">
+          <div class="team-block">
+            <img id="homeLogo" class="team-logo" src="" alt="">
+            <h2 id="homeName">Ev Sahibi</h2>
+          </div>
+
+          <div class="score-block">
+            <div class="score" id="score">- : -</div>
+            <div id="matchTime" class="match-time">--</div>
+            <div id="halfScore" class="half-score"></div>
+          </div>
+
+          <div class="team-block">
+            <img id="awayLogo" class="team-logo" src="" alt="">
+            <h2 id="awayName">Deplasman</h2>
+          </div>
+        </div>
+
+        <div class="match-meta">
+          <span id="matchDate">Tarih bilgisi yok</span>
+          <span id="matchVenue"></span>
+          <span id="matchReferee"></span>
+        </div>
+      </section>
+
+      <nav class="tabbar" aria-label="Maç detayları">
+        <a href="#summary" class="tab active">Maç Özeti</a>
+        <a href="#events" class="tab">Maç Olayları</a>
+        <a href="#lineups" class="tab">Kadrolar</a>
+        <a href="#statistics" class="tab">İstatistikler</a>
+      </nav>
+
+      <div class="content-grid">
+        <div class="main-column">
+          <section id="summary" class="panel">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">SPORIX MAÇ MERKEZİ</span>
+                <h2>Karşılaşma özeti</h2>
+              </div>
+              <span class="heading-mark"></span>
+            </div>
+            <div id="summaryContent" class="summary-content">
+              Maç özeti bilgileri yükleniyor.
+            </div>
+          </section>
+
+          <section id="events" class="panel">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">DAKİKA DAKİKA</span>
+                <h2>Maç olayları</h2>
+              </div>
+            </div>
+            <div id="eventsList" class="events-list">
+              <div class="empty-state">Maç olayları bekleniyor.</div>
+            </div>
+          </section>
+
+          <section id="lineups" class="panel">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">TAKIMLAR</span>
+                <h2>Maç kadroları</h2>
+              </div>
+            </div>
+            <div class="lineup-columns">
+              <div class="lineup-team">
+                <h3 id="homeLineupTitle">Ev sahibi</h3>
+                <div id="homeLineup" class="player-list">
+                  <div class="empty-state">Kadro bilgisi bulunamadı.</div>
+                </div>
+                <h4>Yedekler</h4>
+                <div id="homeSubs" class="player-list"></div>
+              </div>
+              <div class="lineup-team">
+                <h3 id="awayLineupTitle">Deplasman</h3>
+                <div id="awayLineup" class="player-list">
+                  <div class="empty-state">Kadro bilgisi bulunamadı.</div>
+                </div>
+                <h4>Yedekler</h4>
+                <div id="awaySubs" class="player-list"></div>
+              </div>
+            </div>
+          </section>
+
+          <section id="statistics" class="panel">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">KARŞILAŞTIRMA</span>
+                <h2>Maç istatistikleri</h2>
+              </div>
+            </div>
+            <div id="statisticsList">
+              <div class="empty-state">İstatistik bilgisi bulunamadı.</div>
+            </div>
+          </section>
+        </div>
+
+        <aside class="side-column">
+          <section class="panel side-panel">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">MAÇ BİLGİLERİ</span>
+                <h2>Karşılaşma detayları</h2>
+              </div>
+            </div>
+            <div class="info-list">
+              <div><span>Organizasyon</span><strong id="infoCompetition">-</strong></div>
+              <div><span>Tarih</span><strong id="infoDate">-</strong></div>
+              <div><span>Durum</span><strong id="infoStatus">-</strong></div>
+              <div><span>Stadyum</span><strong id="infoVenue">-</strong></div>
+              <div><span>Hakem</span><strong id="infoReferee">-</strong></div>
+            </div>
+          </section>
+
+          <section class="panel side-panel">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">SPORIX</span>
+                <h2>Maç merkezi</h2>
+              </div>
+            </div>
+            <p class="side-description">
+              Karşılaşmanın kadro, olay ve istatistik bilgileri veri sağlayıcısından alınır.
+              Sağlanmayan bilgiler gösterilmez.
+            </p>
+            <a href="/maclar/" class="back-link">← Tüm maçlara dön</a>
+          </section>
+        </aside>
       </div>
-
-    </section>
-
+    </div>
   </main>
 
-  <!-- FOOTER -->
-  <footer class="data-footer">
-    <p>
-      © <span id="year"></span>
-      <a href="/">SPORIX</a> – SPORUN NABZI BURADA ATAR
-    </p>
-
-    <p>
-      Canlı skorlar, futbol haberleri ve maç detayları.
-    </p>
+  <footer class="footer">
+    <a href="/">SPORIX</a>
+    <span>SPORUN NABZI BURADA ATAR</span>
   </footer>
-
-  <script src="/assets/veri.js" defer></script>
-
 </body>
 </html>
