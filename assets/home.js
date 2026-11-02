@@ -8,9 +8,7 @@
 
   const API_URL = "/api/matches";
   const STANDINGS_API_URL = "/api/standings";
-
   const REFRESH_MS = 60000;
-  const CLOCK_REFRESH_MS = 1000;
 
   const $ = id => document.getElementById(id);
 
@@ -19,7 +17,6 @@
   const dateLabel = $("selectedDateLabel");
   const matchCount = $("matchCount");
   const statusFilter = $("statusFilter");
-
   const standingsLeague = $("standingsLeague");
   const standingsTable = $("standingsTable");
 
@@ -28,8 +25,6 @@
   let selectedLeague = "";
   let loading = false;
   let standingsLoading = false;
-
-  let lastMatchUpdate = 0;
 
   // ==========================================
   // TARİH
@@ -43,7 +38,8 @@
       day: "2-digit"
     }).formatToParts(date);
 
-    const get = type => parts.find(p => p.type === type).value;
+    const get = type =>
+      parts.find(p => p.type === type).value;
 
     return `${get("year")}-${get("month")}-${get("day")}`;
   }
@@ -53,7 +49,9 @@
 
     const date = new Date(value);
 
-    return Number.isNaN(date.getTime()) ? null : date;
+    return Number.isNaN(date.getTime())
+      ? null
+      : date;
   }
 
   function formatTime(value) {
@@ -72,7 +70,9 @@
     return new Intl.DateTimeFormat("tr-TR", {
       timeZone: "Europe/Istanbul",
       dateStyle: "full"
-    }).format(new Date(`${value}T12:00:00+03:00`));
+    }).format(
+      new Date(`${value}T12:00:00+03:00`)
+    );
   }
 
   // ==========================================
@@ -148,7 +148,11 @@
 
     if (url) {
       try {
-        return new URL(url).pathname.split("/").filter(Boolean).at(-1) || "";
+        return new URL(url)
+          .pathname
+          .split("/")
+          .filter(Boolean)
+          .at(-1) || "";
       } catch (_) {}
     }
 
@@ -160,8 +164,13 @@
   // ==========================================
 
   function getStatus(match) {
-    const status = String(match?.status || "").toLowerCase();
-    const text = String(match?.status_text || "").toLowerCase();
+    const status = String(
+      match?.status || ""
+    ).toLowerCase();
+
+    const text = String(
+      match?.status_text || ""
+    ).toLowerCase();
 
     if (
       ["live", "inplay", "in_progress", "1h", "2h", "ht"].includes(status) ||
@@ -185,7 +194,9 @@
       return "upcoming";
     }
 
-    return status.includes("finish") ? "finished" : "upcoming";
+    return status.includes("finish")
+      ? "finished"
+      : "upcoming";
   }
 
   function getScore(match) {
@@ -234,69 +245,6 @@
   }
 
   // ==========================================
-  // GERÇEK CANLI DAKİKA VE SANİYE
-  // ==========================================
-
-  function getElapsedSeconds(match) {
-    const candidates = [
-      match?.elapsed,
-      match?.elapsed_time,
-      match?.minute,
-      match?.match_minute,
-      match?.time_elapsed,
-      match?.timer?.elapsed,
-      match?.status?.elapsed
-    ];
-
-    for (const value of candidates) {
-      if (typeof value === "number" && Number.isFinite(value)) {
-        return Math.max(0, Math.floor(value * 60));
-      }
-
-      if (typeof value === "string") {
-        const parsed = value.match(/^(\d+)(?::(\d{1,2}))?$/);
-
-        if (parsed) {
-          return Number(parsed[1]) * 60 + Number(parsed[2] || 0);
-        }
-      }
-    }
-
-    // Sağlayıcı dakika bilgisi vermiyorsa başlangıç
-    // saatinden yaklaşık geçen süreyi hesapla.
-    const kickoff = matchDate(match);
-
-    if (!kickoff) return null;
-
-    const seconds = Math.floor((Date.now() - kickoff.getTime()) / 1000);
-
-    if (seconds < 0 || seconds > 130 * 60) return null;
-
-    return seconds;
-  }
-
-  function getClockText(match) {
-    const status = getStatus(match);
-
-    if (status === "finished") return "BİTTİ";
-
-    if (status !== "live") {
-      return formatTime(
-        match.time || match.date || match.start_time
-      );
-    }
-
-    const elapsed = getElapsedSeconds(match);
-
-    if (elapsed === null) return "CANLI";
-
-    const minutes = Math.floor(elapsed / 60);
-    const seconds = elapsed % 60;
-
-    return `${minutes}:${String(seconds).padStart(2, "0")}`;
-  }
-
-  // ==========================================
   // TARİH SEÇİMİ
   // ==========================================
 
@@ -335,8 +283,11 @@
           type="button"
         >
           <span>
-            ${key === dateKey(today) ? "BUGÜN" : escapeHTML(day.toLocaleUpperCase("tr-TR"))}
+            ${key === dateKey(today)
+              ? "BUGÜN"
+              : escapeHTML(day.toLocaleUpperCase("tr-TR"))}
           </span>
+
           <strong>${escapeHTML(number)}</strong>
         </button>
       `;
@@ -391,7 +342,9 @@
   }
 
   function updateLeagueButtons() {
-    document.querySelectorAll("#leagueSidebar [data-league]").forEach(button => {
+    document.querySelectorAll(
+      "#leagueSidebar [data-league]"
+    ).forEach(button => {
       button.classList.toggle(
         "active",
         button.dataset.league === selectedLeague
@@ -400,7 +353,7 @@
   }
 
   // ==========================================
-  // MAÇ KARTI
+  // YENİ YATAY MAÇ KARTI
   // ==========================================
 
   function renderMatch(match) {
@@ -413,50 +366,103 @@
     const homeLogo = getLogo(match, "home");
     const awayLogo = getLogo(match, "away");
 
-    const clock = getClockText(match);
+    const clock = status === "live"
+      ? "CANLI"
+      : status === "finished"
+        ? "BİTTİ"
+        : formatTime(
+            match.time ||
+            match.date ||
+            match.start_time
+          );
 
     return `
-      <a class="match-row-link" href="${escapeHTML(matchLink(match))}">
+      <a
+        class="match-row-link"
+        href="${escapeHTML(matchLink(match))}"
+      >
         <article class="match-row">
 
-          <div class="match-time">
-            <span
-              class="${status === "live" ? "live-text" : ""}"
-              ${status === "live" ? 'data-live-clock="true"' : ""}
-              data-match-clock="${escapeHTML(getSlug(match) || "")}"
-            >
-              ${escapeHTML(clock)}
+          <div class="match-card-top">
+
+            <span class="match-league-name">
+              ${escapeHTML(getLeague(match))}
             </span>
+
+            <span class="match-start-time">
+              ${
+                status === "upcoming"
+                  ? escapeHTML(clock)
+                  : ""
+              }
+            </span>
+
           </div>
 
-          <div class="teams">
+          <div class="match-card-content">
 
-            <div class="team">
+            <div class="match-side home-side">
+
               ${
                 homeLogo
-                  ? `<img src="${escapeHTML(homeLogo)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+                  ? `<img
+                      src="${escapeHTML(homeLogo)}"
+                      alt=""
+                      loading="lazy"
+                      onerror="this.style.display='none'"
+                    >`
                   : ""
               }
-              <span class="team-name">${escapeHTML(home)}</span>
+
+              <span class="team-name">
+                ${escapeHTML(home)}
+              </span>
+
             </div>
 
-            <div class="team">
+            <div class="match-center">
+
+              <strong class="score">
+                ${escapeHTML(score || "–")}
+              </strong>
+
+              <span class="status ${
+                status === "live"
+                  ? "live"
+                  : status === "finished"
+                    ? "finished"
+                    : ""
+              }">
+                ${
+                  status === "live"
+                    ? "CANLI"
+                    : status === "finished"
+                      ? "BİTTİ"
+                      : "VS"
+                }
+              </span>
+
+            </div>
+
+            <div class="match-side away-side">
+
+              <span class="team-name">
+                ${escapeHTML(away)}
+              </span>
+
               ${
                 awayLogo
-                  ? `<img src="${escapeHTML(awayLogo)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+                  ? `<img
+                      src="${escapeHTML(awayLogo)}"
+                      alt=""
+                      loading="lazy"
+                      onerror="this.style.display='none'"
+                    >`
                   : ""
               }
-              <span class="team-name">${escapeHTML(away)}</span>
+
             </div>
 
-          </div>
-
-          <div class="score-box">
-            <span class="score">${escapeHTML(score || "–")}</span>
-
-            <span class="status ${status === "live" ? "live" : ""}">
-              ${status === "live" ? "CANLI" : status === "finished" ? "BİTTİ" : "MAÇ"}
-            </span>
           </div>
 
         </article>
@@ -479,7 +485,9 @@
       matches = matches.filter(match =>
         getLeague(match)
           .toLocaleLowerCase("tr-TR")
-          .includes(selectedLeague.toLocaleLowerCase("tr-TR"))
+          .includes(
+            selectedLeague.toLocaleLowerCase("tr-TR")
+          )
       );
     }
 
@@ -503,11 +511,13 @@
     });
 
     if (dateLabel) {
-      dateLabel.textContent = formatFullDate(selectedDate);
+      dateLabel.textContent =
+        formatFullDate(selectedDate);
     }
 
     if (matchCount) {
-      matchCount.textContent = `${matches.length} maç`;
+      matchCount.textContent =
+        `${matches.length} maç`;
     }
 
     updateMatchStatistics();
@@ -535,32 +545,42 @@
       groups.get(league).push(match);
     });
 
-    matchList.innerHTML = [...groups.entries()].map(([league, items]) => {
-      const logo = getLeagueLogo(items[0]);
+    matchList.innerHTML = [...groups.entries()]
+      .map(([league, items]) => {
+        const logo = getLeagueLogo(items[0]);
 
-      return `
-        <section class="league-group">
+        return `
+          <section class="league-group">
 
-          <div class="league-title">
-            ${
-              logo
-                ? `<img src="${escapeHTML(logo)}" alt="" loading="lazy" onerror="this.style.display='none'">`
-                : ""
-            }
+            <div class="league-title">
 
-            <span>${escapeHTML(league)}</span>
-            <small>${items.length} MAÇ</small>
-          </div>
+              ${
+                logo
+                  ? `<img
+                      src="${escapeHTML(logo)}"
+                      alt=""
+                      loading="lazy"
+                      onerror="this.style.display='none'"
+                    >`
+                  : ""
+              }
 
-          ${items.map(renderMatch).join("")}
+              <span>${escapeHTML(league)}</span>
 
-        </section>
-      `;
-    }).join("");
+              <small>${items.length} MAÇ</small>
+
+            </div>
+
+            ${items.map(renderMatch).join("")}
+
+          </section>
+        `;
+      })
+      .join("");
   }
 
   // ==========================================
-  // CANLI MAÇ SAYILARI
+  // MAÇ İSTATİSTİKLERİ
   // ==========================================
 
   function updateMatchStatistics() {
@@ -576,27 +596,17 @@
       match => getStatus(match) === "upcoming"
     ).length;
 
-    if ($("liveCount")) $("liveCount").textContent = live;
-    if ($("finishedCount")) $("finishedCount").textContent = finished;
-    if ($("upcomingCount")) $("upcomingCount").textContent = upcoming;
-  }
+    if ($("liveCount")) {
+      $("liveCount").textContent = live;
+    }
 
-  // ==========================================
-  // HER SANİYE CANLI SAATİ GÜNCELLE
-  // ==========================================
+    if ($("finishedCount")) {
+      $("finishedCount").textContent = finished;
+    }
 
-  function updateLiveClocks() {
-    document.querySelectorAll("[data-live-clock]").forEach(element => {
-      const slug = element.dataset.matchClock;
-
-      const match = allMatches.find(item =>
-        (getSlug(item) || "") === slug
-      );
-
-      if (!match || getStatus(match) !== "live") return;
-
-      element.textContent = getClockText(match);
-    });
+    if ($("upcomingCount")) {
+      $("upcomingCount").textContent = upcoming;
+    }
   }
 
   // ==========================================
@@ -615,7 +625,9 @@
       );
 
       if (!response.ok) {
-        throw new Error(`Sunucu yanıtı: ${response.status}`);
+        throw new Error(
+          `Sunucu yanıtı: ${response.status}`
+        );
       }
 
       const result = await response.json();
@@ -625,11 +637,12 @@
         : result.matches;
 
       if (!Array.isArray(matches)) {
-        throw new Error("API maç listesi döndürmedi.");
+        throw new Error(
+          "API maç listesi döndürmedi."
+        );
       }
 
       allMatches = matches;
-      lastMatchUpdate = Date.now();
 
       renderMatches();
 
@@ -659,7 +672,9 @@
 
     standingsTable.innerHTML = `
       <tr>
-        <td colspan="10">${escapeHTML(message)}</td>
+        <td colspan="10">
+          ${escapeHTML(message)}
+        </td>
       </tr>
     `;
   }
@@ -669,10 +684,16 @@
 
     const rows = Array.isArray(data)
       ? data
-      : data?.standings || data?.table || data?.data || [];
+      : data?.standings ||
+        data?.table ||
+        data?.data ||
+        [];
 
     if (!Array.isArray(rows) || rows.length === 0) {
-      renderStandingsError("Bu lig için puan durumu bulunamadı.");
+      renderStandingsError(
+        "Bu lig için puan durumu bulunamadı."
+      );
+
       return;
     }
 
@@ -734,15 +755,25 @@
           <td>${escapeHTML(won)}</td>
           <td>${escapeHTML(drawn)}</td>
           <td>${escapeHTML(lost)}</td>
-          <td>${escapeHTML(goalsFor)}:${escapeHTML(goalsAgainst)}</td>
-          <td><strong>${escapeHTML(points)}</strong></td>
+          <td>
+            ${escapeHTML(goalsFor)}:${escapeHTML(goalsAgainst)}
+          </td>
+          <td>
+            <strong>${escapeHTML(points)}</strong>
+          </td>
         </tr>
       `;
     }).join("");
   }
 
   async function loadStandings() {
-    if (!standingsTable || !standingsLeague || standingsLoading) return;
+    if (
+      !standingsTable ||
+      !standingsLeague ||
+      standingsLoading
+    ) {
+      return;
+    }
 
     standingsLoading = true;
 
@@ -750,7 +781,9 @@
 
     standingsTable.innerHTML = `
       <tr>
-        <td colspan="10">Puan durumu yükleniyor...</td>
+        <td colspan="10">
+          Puan durumu yükleniyor...
+        </td>
       </tr>
     `;
 
@@ -761,7 +794,9 @@
       );
 
       if (!response.ok) {
-        throw new Error(`Puan durumu API yanıtı: ${response.status}`);
+        throw new Error(
+          `Puan durumu API yanıtı: ${response.status}`
+        );
       }
 
       const data = await response.json();
@@ -793,7 +828,10 @@
     menuToggle.addEventListener("click", () => {
       const opened = mainNav.classList.toggle("open");
 
-      menuToggle.setAttribute("aria-expanded", String(opened));
+      menuToggle.setAttribute(
+        "aria-expanded",
+        String(opened)
+      );
     });
   }
 
@@ -802,7 +840,9 @@
   // ==========================================
 
   function setupSportsMenu() {
-    const dropdown = document.querySelector(".sports-dropdown");
+    const dropdown = document.querySelector(
+      ".sports-dropdown"
+    );
 
     if (!dropdown) return;
 
@@ -821,19 +861,27 @@
 
   function initialize() {
     if ($("year")) {
-      $("year").textContent = new Date().getFullYear();
+      $("year").textContent =
+        new Date().getFullYear();
     }
 
     if ($("todayText")) {
-      $("todayText").textContent = formatFullDate(dateKey(new Date()));
+      $("todayText").textContent =
+        formatFullDate(dateKey(new Date()));
     }
 
     if (statusFilter) {
-      statusFilter.addEventListener("change", renderMatches);
+      statusFilter.addEventListener(
+        "change",
+        renderMatches
+      );
     }
 
     if (standingsLeague) {
-      standingsLeague.addEventListener("change", loadStandings);
+      standingsLeague.addEventListener(
+        "change",
+        loadStandings
+      );
     }
 
     setupMobileMenu();
@@ -845,11 +893,8 @@
     loadMatches();
     loadStandings();
 
-    // Maç verilerini düzenli yenile.
+    // Maç verilerini 60 saniyede bir yenile.
     setInterval(loadMatches, REFRESH_MS);
-
-    // Canlı sayaçları her saniye güncelle.
-    setInterval(updateLiveClocks, CLOCK_REFRESH_MS);
   }
 
   initialize();
