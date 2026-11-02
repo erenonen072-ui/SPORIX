@@ -7,13 +7,14 @@ const LEAGUES = {
   "turkish-super-league": "Süper Lig",
   "turkish-first-league": "1. Lig",
   "turkish-second-league": "2. Lig",
-  "turkish-third-league": "3. Lig"
+  "turkish-third-league": "3. Lig",
+  "english-premier-league": "Premier League"
 };
 
 module.exports = async (req, res) => {
   res.setHeader(
     "Cache-Control",
-    "s-maxage=3600, stale-while-revalidate=7200"
+    "s-maxage=1800, stale-while-revalidate=3600"
   );
 
   try {
@@ -30,64 +31,48 @@ module.exports = async (req, res) => {
     }
 
     const url = new URL(API_URL);
+
     url.searchParams.set("sport", "football");
     url.searchParams.set("slug", slug);
 
     const response = await fetch(url.toString(), {
       headers: {
-        Accept: "application/json",
-        "User-Agent": "SPORIX/1.0"
-      }
+        Accept: "application/json"
+      },
+      signal: AbortSignal.timeout(15000)
     });
 
-    const raw = await response.text();
+    const data = await response.json();
 
-    let data;
-
-    try {
-      data = JSON.parse(raw);
-    } catch {
+    if (!response.ok || data.error || data.message) {
       return res.status(502).json({
         success: false,
-        error: "SportScore geçerli JSON göndermedi.",
+        error: data.error || data.message || "Puan durumu alınamadı.",
         standings: []
       });
     }
 
-    if (!response.ok) {
-      return res.status(502).json({
-        success: false,
-        error: "SportScore isteği başarısız.",
-        upstreamStatus: response.status,
-        details: data,
-        standings: []
-      });
-    }
+    const tables = Array.isArray(data.tables)
+      ? data.tables
+      : [];
 
-    if (
-      data?.error ||
-      data?.message === "No current season"
-    ) {
-      return res.status(200).json({
-        success: false,
-        error: data.error || data.message,
-        league: LEAGUES[slug],
-        slug,
-        standings: [],
-        details: data
-      });
-    }
+    const standings = tables.flatMap(table =>
+      Array.isArray(table.rows) ? table.rows : []
+    );
 
     return res.status(200).json({
       success: true,
       source: "SportScore",
       league: LEAGUES[slug],
       slug,
-      data
+      competitionLogo: data.competition_logo || "",
+      standings,
+      tables,
+      updated: new Date().toISOString()
     });
 
   } catch (error) {
-    console.error("SPORIX standings API:", error);
+    console.error("SPORIX standings:", error);
 
     return res.status(500).json({
       success: false,
