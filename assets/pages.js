@@ -1,5 +1,5 @@
 
- "use strict";
+"use strict";
 
 document.addEventListener("DOMContentLoaded", () => {
   const page = document.body.dataset.page;
@@ -20,22 +20,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (page === "matches") {
     loadMatches();
-    document.getElementById("refreshButton")?.addEventListener("click", loadMatches);
+    document.getElementById("refreshButton")
+      ?.addEventListener("click", loadMatches);
   }
 
   if (page === "standings") {
     const select = document.getElementById("competitionSelect");
-    document.getElementById("loadButton")?.addEventListener("click", loadStandings);
+
+    document.getElementById("loadButton")
+      ?.addEventListener("click", loadStandings);
+
     select?.addEventListener("change", loadStandings);
+
     loadStandings();
   }
 
   if (page === "fixtures") {
     const form = document.getElementById("fixtureForm");
+
     form?.addEventListener("submit", event => {
       event.preventDefault();
       loadFixtures();
     });
+
     loadFixtures();
   }
 
@@ -61,10 +68,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function showMessage(message, className = "sp-empty") {
     if (!results) return;
+
     results.replaceChildren();
+
     const box = document.createElement("div");
     box.className = className;
     box.textContent = message;
+
     results.appendChild(box);
   }
 
@@ -76,7 +86,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let current = data;
 
     for (let i = 0; i < 4; i++) {
-      if (!current || typeof current !== "object" || Array.isArray(current)) break;
+      if (!current || typeof current !== "object" ||
+          Array.isArray(current)) break;
 
       const next =
         current.data ??
@@ -85,6 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
         current.payload;
 
       if (!next || next === current) break;
+
       current = next;
     }
 
@@ -95,7 +107,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const root = unwrap(data);
 
     if (Array.isArray(root)) return root;
-
     if (!root || typeof root !== "object") return [];
 
     for (const key of preferredKeys) {
@@ -111,20 +122,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function make(tag, className, text) {
     const element = document.createElement(tag);
+
     if (className) element.className = className;
+
     if (text !== undefined && text !== null) {
       element.textContent = String(text);
     }
+
     return element;
   }
 
   function safeLogo(value) {
     if (typeof value !== "string") return "";
-    return /^https?:\/\//i.test(value.trim()) ? value.trim() : "";
+
+    const url = value.trim();
+
+    return /^https?:\/\//i.test(url) ? url : "";
   }
 
   function teamName(value) {
     if (typeof value === "string") return value;
+
     if (!value || typeof value !== "object") return "Takım";
 
     return value.name ||
@@ -172,7 +190,9 @@ document.addEventListener("DOMContentLoaded", () => {
       ? new Date(value < 10000000000 ? value * 1000 : value)
       : new Date(value);
 
-    if (Number.isNaN(date.getTime())) return "Tarih belirtilmedi";
+    if (Number.isNaN(date.getTime())) {
+      return "Tarih belirtilmedi";
+    }
 
     return date.toLocaleString("tr-TR", {
       day: "2-digit",
@@ -222,13 +242,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const home = teamName(homeValue);
     const away = teamName(awayValue);
 
-    const homeScore = match.home_score ?? match.homeScore ?? match.scores?.home;
-    const awayScore = match.away_score ?? match.awayScore ?? match.scores?.away;
+    const homeScore =
+      match.home_score ?? match.homeScore ?? match.scores?.home;
+
+    const awayScore =
+      match.away_score ?? match.awayScore ?? match.scores?.away;
 
     const status = matchStatus(match);
     const row = make("article", "sp-match");
-
     const top = make("div", "sp-match-top");
+
     top.append(
       make("span", status === "CANLI" ? "sp-status live" : "sp-status", status),
       make("span", "sp-match-date", formattedDate(matchDate(match)))
@@ -306,74 +329,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const data = await requestJSON("/api/matches?limit=50");
+
       renderMatchList(data, ["matches", "fixtures", "results"]);
 
       if (updated) {
-        updated.textContent = `Son kontrol: ${new Date().toLocaleTimeString("tr-TR")}`;
+        updated.textContent =
+          `Son kontrol: ${new Date().toLocaleTimeString("tr-TR")}`;
       }
     } catch (error) {
       console.error("SPORIX maçlar:", error);
+
       showMessage("Maçlar şu anda yüklenemedi. Biraz sonra tekrar dene.");
+
       if (updated) updated.textContent = "Veri bağlantısı kurulamadı.";
     }
   }
 
-  function findStandingsRows(data) {
-    const root = unwrap(data);
+  // =====================================
+  // SPORIX PUAN DURUMU
+  // =====================================
 
-    const direct = findArray(root, [
-      "standings",
-      "table",
-      "rows",
-      "items",
-      "teams",
-      "entries"
-    ]);
-
-    if (direct.length) return direct;
-
-    // Bazı lig API'leri grupları iç içe döndürebilir.
-    const groups = findArray(root, ["groups", "tables", "standings"]);
-
-    for (const group of groups) {
-      if (Array.isArray(group)) return group;
-      if (!group || typeof group !== "object") continue;
-
-      const nested = findArray(group, [
-        "table",
-        "rows",
-        "teams",
-        "standings",
-        "items"
-      ]);
-
-      if (nested.length) return nested;
-    }
-
-    return [];
-  }
-
-  function valueFrom(row, keys) {
-    for (const key of keys) {
-      const value = key.split(".").reduce((obj, part) => obj?.[part], row);
-      if (value !== undefined && value !== null) return value;
-    }
-    return "—";
-  }
+  let standingsRequestId = 0;
 
   function renderStandings(data) {
-    const rows = findStandingsRows(data);
+    const rows = Array.isArray(data.standings)
+      ? data.standings
+      : [];
 
     if (!rows.length) {
-      showMessage("Puan tablosu bu lig için alınamadı. Lig kodunu veya API yanıtını kontrol et.");
+      showMessage("Bu lig için puan durumu bulunamadı.");
       return;
     }
 
-    const table = make("table", "sp-table");
+    const wrapper = make("div", "sp-standings-wrap");
+    const table = make("table", "sp-table sp-standings-table");
+
     const thead = document.createElement("thead");
     const header = document.createElement("tr");
 
-    ["Sıra", "Takım", "O", "G", "B", "M", "AV", "P"].forEach(title => {
+    [
+      "#", "Takım", "O", "G", "B", "M",
+      "AG", "YG", "AV", "P"
+    ].forEach(title => {
       header.appendChild(make("th", "", title));
     });
 
@@ -385,83 +382,127 @@ document.addEventListener("DOMContentLoaded", () => {
     rows.forEach((row, index) => {
       const tr = document.createElement("tr");
 
-      const rank = valueFrom(row, [
-        "position", "rank", "place", "overall.position"
-      ]);
+      const position = row.pos ?? index + 1;
+      const name = teamName(row.team);
+      const logoURL = safeLogo(row.team_logo);
 
-      const name = valueFrom(row, [
-        "team.name", "team", "name", "participant.name", "title"
-      ]);
+      const rankCell = make("td", "sp-rank-cell", position);
 
-      const played = valueFrom(row, [
-        "played", "matches", "games", "all.played"
-      ]);
+      if (Number(position) <= 4) {
+        rankCell.classList.add("top-four");
+      }
 
-      const won = valueFrom(row, [
-        "won", "wins", "all.win"
-      ]);
+      const teamCell = make("td", "sp-team-cell");
+      const teamInfo = make("div", "sp-standings-team");
 
-      const drawn = valueFrom(row, [
-        "drawn", "draws", "all.draw"
-      ]);
+      if (logoURL) {
+        const image = make("img", "sp-standings-logo");
 
-      const lost = valueFrom(row, [
-        "lost", "losses", "all.lose"
-      ]);
+        image.src = logoURL;
+        image.alt = name;
+        image.loading = "lazy";
+        image.onerror = () => image.remove();
 
-      const difference = valueFrom(row, [
-        "goalDifference", "goal_difference", "goalsDiff", "gd"
-      ]);
+        teamInfo.appendChild(image);
+      }
 
-      const points = valueFrom(row, [
-        "points", "pts", "total"
-      ]);
+      teamInfo.appendChild(make("span", "sp-standings-name", name));
+      teamCell.appendChild(teamInfo);
 
-      [
-        rank === "—" ? index + 1 : rank,
-        name,
-        played,
-        won,
-        drawn,
-        lost,
-        difference,
-        points
-      ].forEach((value, cellIndex) => {
-        const cell = make("td", cellIndex === 1 ? "sp-team-cell" : "", value);
-        tr.appendChild(cell);
-      });
+      const values = [
+        rankCell,
+        teamCell,
+        make("td", "", row.p ?? "—"),
+        make("td", "", row.w ?? "—"),
+        make("td", "", row.d ?? "—"),
+        make("td", "", row.l ?? "—"),
+        make("td", "", row.gf ?? "—"),
+        make("td", "", row.ga ?? "—"),
+        make("td", "sp-goal-difference", row.gd ?? "—"),
+        make("td", "sp-points-cell", row.pts ?? "—")
+      ];
+
+      values.forEach(cell => tr.appendChild(cell));
+
+      if (row.promo_name) {
+        tr.title = row.promo_name;
+        tr.dataset.promotion = row.promo_name;
+      }
 
       tbody.appendChild(tr);
     });
 
     table.appendChild(tbody);
-    results.replaceChildren(table);
+    wrapper.appendChild(table);
+
+    results.replaceChildren(wrapper);
+
+    const updated = document.getElementById("standingsUpdated");
+
+    if (updated) {
+      updated.textContent = data.updated
+        ? `Son güncelleme: ${new Date(data.updated).toLocaleString("tr-TR")}`
+        : "";
+    }
   }
 
   async function loadStandings() {
     const select = document.getElementById("competitionSelect");
-    const slug = select?.value;
 
+    if (!select || !results) return;
+
+    const slug = select.value;
     if (!slug) return;
 
+    const requestId = ++standingsRequestId;
+
     const title = document.getElementById("tableTitle");
+
     if (title) {
-      title.textContent = select.options[select.selectedIndex].text;
+      title.textContent =
+        select.options[select.selectedIndex].text;
+    }
+
+    const button = document.getElementById("loadButton");
+
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Yükleniyor...";
     }
 
     loading("Puan tablosu yükleniyor...");
 
     try {
+      // ÖNEMLİ: Yeni standings.js API adresi
       const data = await requestJSON(
-        `/api/sportscore?action=standings&slug=${encodeURIComponent(slug)}`
+        `/api/standings?league=${encodeURIComponent(slug)}`
       );
 
+      // Daha yeni bir lig isteği başladıysa eski yanıtı gösterme.
+      if (requestId !== standingsRequestId) return;
+
       renderStandings(data);
+
     } catch (error) {
+      if (requestId !== standingsRequestId) return;
+
       console.error("SPORIX puan durumu:", error);
-      showMessage("Puan durumu alınamadı. Seçilen lig için veri bulunmuyor olabilir.");
+
+      showMessage(
+        error.message || "Puan durumu alınamadı."
+      );
+
+    } finally {
+      if (requestId === standingsRequestId && button) {
+        button.disabled = false;
+        button.textContent = "Tabloyu Getir";
+      }
     }
   }
+
+  // =====================================
+  // TAKIM FİKSTÜRÜ
+  // =====================================
 
   async function loadFixtures() {
     const input = document.getElementById("teamSlug");
@@ -486,9 +527,13 @@ document.addEventListener("DOMContentLoaded", () => {
         "events",
         "results"
       ]);
+
     } catch (error) {
       console.error("SPORIX fikstür:", error);
-      showMessage("Bu takımın fikstürü alınamadı. Takım slug bilgisini kontrol et.");
+
+      showMessage(
+        "Bu takımın fikstürü alınamadı. Takım slug bilgisini kontrol et."
+      );
     }
   }
 });
