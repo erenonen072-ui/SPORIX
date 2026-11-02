@@ -4,11 +4,18 @@
 const API_URL = "https://sportscore.com/api/widget/standings/";
 
 const LEAGUES = {
+  // TÜRKİYE
   "turkish-super-league": "Süper Lig",
   "turkish-first-league": "1. Lig",
   "turkish-second-league": "2. Lig",
   "turkish-third-league": "3. Lig",
-  "english-premier-league": "Premier League"
+
+  // AVRUPA
+  "english-premier-league": "Premier League",
+  "spanish-la-liga": "La Liga",
+  "bundesliga": "Bundesliga",
+  "italian-serie-a": "Serie A",
+  "french-ligue-1": "Ligue 1"
 };
 
 module.exports = async (req, res) => {
@@ -72,11 +79,11 @@ module.exports = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("SPORIX standings:", error);
+    console.error("Standings API error:", error);
 
     return res.status(500).json({
       success: false,
-      error: "Puan durumu alınamadı.",
+      error: "Puan durumu sunucudan alınamadı.",
       standings: []
     });
   }
