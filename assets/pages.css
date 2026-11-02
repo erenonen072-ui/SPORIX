@@ -602,3 +602,192 @@
     flex-direction: column;
   }
 }
+
+/* =====================================
+   SPORIX ALT SAYFALAR - NAVY & YELLOW
+   Ana sayfa etkilenmez.
+===================================== */
+
+.sp-page {
+  --sp-navy: #10264a;
+  --sp-blue: #193b6d;
+  --sp-yellow: #ffc928;
+  --sp-bg: #f4f6fa;
+  --sp-border: #e7ebf1;
+}
+
+.sp-page-heading h1 {
+  color: #10264a;
+}
+
+.sp-page-heading h1 span,
+.sp-eyebrow {
+  color: #c49400;
+}
+
+.sp-panel {
+  border-color: #e7ebf1;
+  border-radius: 11px;
+  box-shadow: 0 3px 14px rgba(16,38,74,.035);
+}
+
+.sp-panel-heading h2 {
+  color: #10264a;
+}
+
+.sp-live-indicator {
+  color: #8c6800;
+  background: #fff8df;
+  border: 1px solid #f1e2ad;
+}
+
+.sp-live-indicator i {
+  background: #e6b51c;
+}
+
+.sp-refresh {
+  color: #10264a;
+  background: #fff9e7;
+  border-color: #eddfa9;
+}
+
+.sp-refresh:hover {
+  color: #10264a;
+  background: #ffc928;
+}
+
+.sp-match {
+  border-color: #e7ebf1;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.sp-match:hover {
+  border-color: #e6c45d;
+  background: #fffdf6;
+}
+
+.sp-status.live,
+.sp-match .sp-status.live {
+  color: #b68700;
+}
+
+.sp-team {
+  color: #263750;
+}
+
+/* Takım logolarını küçült */
+.sp-team-logo {
+  width: 21px !important;
+  height: 21px !important;
+  max-width: 21px !important;
+  max-height: 21px !important;
+  object-fit: contain;
+  flex: 0 0 21px;
+}
+
+.sp-score {
+  color: #10264a;
+}
+
+.sp-detail-link {
+  color: #a77c00;
+}
+
+.sp-filter {
+  background: #f7f9fc;
+  border-color: #e7ebf1;
+}
+
+.sp-filter label {
+  color: #40516b;
+}
+
+.sp-filter select:focus,
+.sp-filter input:focus {
+  border-color: #d8aa16;
+  box-shadow: 0 0 0 3px rgba(255,201,40,.16);
+}
+
+.sp-primary-button {
+  background: #10264a;
+  color: #fff;
+}
+
+.sp-primary-button:hover {
+  background: #193b6d;
+  color: #ffc928;
+}
+
+.sp-table th {
+  color: #53647c;
+  background: #f0f4f9;
+}
+
+.sp-table td {
+  border-color: #edf0f4;
+}
+
+.sp-table tbody tr:hover {
+  background: #fffbed;
+}
+
+.sp-table .sp-team-cell {
+  color: #10264a;
+}
+
+.sp-provider a {
+  color: #a77c00;
+}
+
+/* Alt sayfa başlığı ve menüsü */
+.site-header {
+  border-color: #e7ebf1;
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+  background: #fff8df;
+  color: #10264a;
+}
+
+.brand-name {
+  color: #10264a;
+}
+
+.brand-name span,
+.footer-brand span {
+  color: #d5a000;
+}
+
+.mobile-menu-button {
+  color: #10264a;
+}
+
+.site-footer {
+  background: #10264a;
+}
+
+.footer-copy,
+.footer-credit {
+  color: #c1ccdc;
+}
+
+/* Mobil logo ve maç kartları */
+@media (max-width: 760px) {
+  .sp-team-logo {
+    width: 19px !important;
+    height: 19px !important;
+    max-width: 19px !important;
+    max-height: 19px !important;
+    flex-basis: 19px;
+  }
+
+  .sp-match {
+    padding: 11px 9px;
+  }
+
+  .sp-match-teams {
+    grid-template-columns: minmax(0, 1fr) 58px minmax(0, 1fr);
+  }
+}
