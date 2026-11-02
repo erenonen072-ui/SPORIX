@@ -1,4 +1,5 @@
- "use strict";
+
+"use strict";
 
 // ========================================
 // SPORIX - ANA SAYFA
@@ -16,8 +17,13 @@ const refreshButton = $("refreshMatches");
 const searchInput = $("competitionSearch");
 const searchResults = $("competitionResults");
 
-let currentCompetition = leagueSelect?.value || "turkish-super-league";
-let currentCompetitionName = "Türkiye Süper Lig";
+let currentCompetition =
+  leagueSelect?.value || "turkish-super-league";
+
+let currentCompetitionName =
+  leagueSelect?.selectedOptions?.[0]?.textContent ||
+  "Süper Lig";
+
 let currentFilter = "all";
 let allMatches = [];
 
@@ -26,6 +32,15 @@ let searchController = null;
 let searchTimer = null;
 let requestId = 0;
 let loading = false;
+
+const TURKISH_LEAGUES = [
+  { name: "Süper Lig", slug: "turkish-super-league" },
+  { name: "1. Lig", slug: "turkish-first-league" },
+  { name: "2. Lig", slug: "turkish-second-league" },
+  { name: "3. Lig", slug: "turkish-third-league" },
+  { name: "Türkiye Kupası", slug: "turkish-cup" },
+  { name: "Süper Kupa", slug: "turkish-super-cup" }
+];
 
 function escapeHTML(value) {
   return String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -55,32 +70,35 @@ function turkeyDate() {
 function updateDate() {
   if (!dateLabel) return;
 
-  dateLabel.textContent = new Date().toLocaleDateString("tr-TR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "Europe/Istanbul"
-  });
+  dateLabel.textContent = new Date().toLocaleDateString(
+    "tr-TR",
+    {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      timeZone: "Europe/Istanbul"
+    }
+  );
 }
 
 function getMatches(data) {
-  const candidates = [
-    data?.matches,
-    data?.fixtures,
-    data?.results,
-    data?.data?.matches,
-    data?.data?.fixtures,
-    data?.data?.results
-  ];
+  if (Array.isArray(data?.matches)) return data.matches;
+  if (Array.isArray(data?.fixtures)) return data.fixtures;
+  if (Array.isArray(data?.results)) return data.results;
+  if (Array.isArray(data?.data?.matches)) return data.data.matches;
 
-  return candidates.find(Array.isArray) || [];
+  return [];
 }
 
 function getTeam(match, side) {
-  return side === "home"
-    ? match.home || match.home_team || match.homeTeam || match.teams?.home || {}
-    : match.away || match.away_team || match.awayTeam || match.teams?.away || {};
+  if (side === "home") {
+    return match.home || match.home_team ||
+      match.homeTeam || match.teams?.home || {};
+  }
+
+  return match.away || match.away_team ||
+    match.awayTeam || match.teams?.away || {};
 }
 
 function teamName(team, fallback) {
@@ -98,13 +116,16 @@ function teamLogo(match, team, side) {
     ? match.home_logo || match.homeLogo
     : match.away_logo || match.awayLogo;
 
-  const value = direct || team?.logo || team?.image || team?.crest || "";
+  const value = direct ||
+    team?.logo ||
+    team?.image ||
+    team?.crest ||
+    "";
 
-  if (typeof value !== "string" || !/^https?:\/\//i.test(value)) {
-    return "";
-  }
-
-  return value;
+  return typeof value === "string" &&
+    /^https?:\/\//i.test(value)
+      ? value
+      : "";
 }
 
 function score(match, side, team) {
@@ -119,7 +140,9 @@ function score(match, side, team) {
       ? match.score?.home ?? match.scores?.home
       : match.score?.away ?? match.scores?.away);
 
-  if (value === null || value === undefined || value === "") return "-";
+  if (value === null || value === undefined || value === "") {
+    return "-";
+  }
 
   if (typeof value === "object") {
     return String(value.current ?? value.total ?? value.score ?? "-");
@@ -185,11 +208,11 @@ function matchTime(match) {
 }
 
 function competitionName(match) {
-  const competition = match.competition || match.league || match.tournament;
-
-  if (typeof competition === "string") return competition;
-
-  return competition?.name || competition?.title || currentCompetitionName;
+  return match.competition_name ||
+    match.competition?.name ||
+    match.league?.name ||
+    match.tournament?.name ||
+    currentCompetitionName;
 }
 
 function renderMatch(match) {
@@ -203,10 +226,15 @@ function renderMatch(match) {
   const awayLogo = teamLogo(match, away, "away");
 
   const status = statusOf(match);
+
   const homeScore = score(match, "home", home);
   const awayScore = score(match, "away", away);
 
-  const isUpcoming = ["upcoming", "postponed", "cancelled"].includes(status);
+  const isUpcoming = [
+    "upcoming",
+    "postponed",
+    "cancelled"
+  ].includes(status);
 
   const statusLabels = {
     live: "CANLI",
@@ -227,19 +255,18 @@ function renderMatch(match) {
 
   return `
     <article class="match-card" data-status="${status}">
-
       <div class="match-card-top">
         <span class="match-status ${status}">
           ${status === "live" ? "<i></i>" : ""}
           ${statusLabels[status]}
         </span>
+
         <span class="match-competition">
           ${escapeHTML(competitionName(match))}
         </span>
       </div>
 
       <div class="match-card-body">
-
         <div class="match-team">
           ${homeImage}
           <span>${escapeHTML(homeName)}</span>
@@ -258,7 +285,6 @@ function renderMatch(match) {
           ${awayImage}
           <span>${escapeHTML(awayName)}</span>
         </div>
-
       </div>
     </article>
   `;
@@ -267,7 +293,9 @@ function renderMatch(match) {
 function filteredMatches() {
   if (currentFilter === "all") return allMatches;
 
-  return allMatches.filter(match => statusOf(match) === currentFilter);
+  return allMatches.filter(
+    match => statusOf(match) === currentFilter
+  );
 }
 
 function renderMatches() {
@@ -280,7 +308,7 @@ function renderMatches() {
       <div class="empty-state">
         <div class="empty-icon">⚽</div>
         <h3>Maç bulunamadı</h3>
-        <p>Bu ligde seçilen kategoriye uygun maç bulunmuyor.</p>
+        <p>${escapeHTML(currentCompetitionName)} için bugün maç bulunamadı.</p>
       </div>
     `;
     return;
@@ -302,7 +330,10 @@ function showError(message) {
     </div>
   `;
 
-  $("retryMatches")?.addEventListener("click", () => loadMatches(true));
+  $("retryMatches")?.addEventListener(
+    "click",
+    () => loadMatches(true)
+  );
 }
 
 // ========================================
@@ -318,15 +349,14 @@ async function loadMatches(force = false) {
   matchController = controller;
 
   const thisRequest = ++requestId;
+
   loading = true;
 
   matchesBox.innerHTML = `
     <div class="loading-state">Maçlar yükleniyor...</div>
   `;
 
-  if (refreshButton) {
-    refreshButton.disabled = true;
-  }
+  if (refreshButton) refreshButton.disabled = true;
 
   try {
     const url = new URL(API, location.origin);
@@ -347,7 +377,22 @@ async function loadMatches(force = false) {
 
     if (thisRequest !== requestId) return;
 
-    allMatches = getMatches(data);
+    // Yalnızca seçilen lige ait sonuçlar.
+    const selectedLeague = TURKISH_LEAGUES.find(
+      league => league.slug === currentCompetition
+    );
+
+    allMatches = getMatches(data).filter(match => {
+      const slug =
+        match.competition_slug ||
+        match.competition?.slug ||
+        match.league?.slug ||
+        "";
+
+      // Sunucu seçilen lige özel sonuç döndürdüyse
+      // boş slug'ı da kabul ediyoruz.
+      return !slug || slug === currentCompetition;
+    });
 
     allMatches.sort((a, b) => {
       const aTime = new Date(startValue(a) || 0).getTime();
@@ -355,6 +400,10 @@ async function loadMatches(force = false) {
 
       return aTime - bTime;
     });
+
+    if (selectedLeague) {
+      currentCompetitionName = selectedLeague.name;
+    }
 
     updateDate();
     renderMatches();
@@ -390,7 +439,9 @@ function selectCompetition(slug, name) {
   currentFilter = "all";
 
   if (leagueSelect) {
-    let option = [...leagueSelect.options].find(item => item.value === slug);
+    let option = [...leagueSelect.options].find(
+      item => item.value === slug
+    );
 
     if (!option) {
       option = document.createElement("option");
@@ -403,7 +454,10 @@ function selectCompetition(slug, name) {
   }
 
   document.querySelectorAll("[data-filter]").forEach(button => {
-    button.classList.toggle("selected", button.dataset.filter === "all");
+    button.classList.toggle(
+      "selected",
+      button.dataset.filter === "all"
+    );
   });
 
   if (searchResults) {
@@ -414,12 +468,20 @@ function selectCompetition(slug, name) {
 }
 
 leagueSelect?.addEventListener("change", () => {
-  const option = leagueSelect.options[leagueSelect.selectedIndex];
+  const option = leagueSelect.options[
+    leagueSelect.selectedIndex
+  ];
 
-  selectCompetition(leagueSelect.value, option?.textContent || "");
+  selectCompetition(
+    leagueSelect.value,
+    option?.textContent || ""
+  );
 });
 
-refreshButton?.addEventListener("click", () => loadMatches(true));
+refreshButton?.addEventListener(
+  "click",
+  () => loadMatches(true)
+);
 
 // ========================================
 // FİLTRELER
@@ -442,6 +504,8 @@ document.querySelectorAll("[data-filter]").forEach(button => {
 // ========================================
 
 function showSearchMessage(message) {
+  if (!searchResults) return;
+
   searchResults.hidden = false;
 
   searchResults.innerHTML = `
@@ -475,20 +539,18 @@ async function searchCompetitions(query) {
     }
 
     const competitions = data.results?.competitions || [];
-
     const unique = new Map();
 
     competitions.forEach(item => {
-      if (
-        item?.slug &&
-        /^[a-z0-9-]+$/i.test(item.slug)
-      ) {
+      if (item?.slug && /^[a-z0-9-]+$/i.test(item.slug)) {
         unique.set(item.slug, item);
       }
     });
 
     if (!unique.size) {
-      showSearchMessage("Eşleşen lig bulunamadı. Başka bir kelime dene.");
+      showSearchMessage(
+        "Eşleşen lig bulunamadı. Başka bir kelime dene."
+      );
       return;
     }
 
@@ -535,9 +597,10 @@ searchInput?.addEventListener("input", () => {
     return;
   }
 
-  searchTimer = setTimeout(() => {
-    searchCompetitions(query);
-  }, 400);
+  searchTimer = setTimeout(
+    () => searchCompetitions(query),
+    400
+  );
 });
 
 searchResults?.addEventListener("click", event => {
@@ -545,7 +608,11 @@ searchResults?.addEventListener("click", event => {
 
   if (!button) return;
 
-  selectCompetition(button.dataset.slug, button.dataset.name);
+  selectCompetition(
+    button.dataset.slug,
+    button.dataset.name
+  );
+
   searchInput.value = "";
 });
 
@@ -559,13 +626,20 @@ const mainNav = $("mainNav");
 menuToggle?.addEventListener("click", () => {
   const opened = mainNav.classList.toggle("open");
 
-  menuToggle.setAttribute("aria-expanded", String(opened));
+  menuToggle.setAttribute(
+    "aria-expanded",
+    String(opened)
+  );
 });
 
 mainNav?.querySelectorAll("a").forEach(link => {
   link.addEventListener("click", () => {
     mainNav.classList.remove("open");
-    menuToggle?.setAttribute("aria-expanded", "false");
+
+    menuToggle?.setAttribute(
+      "aria-expanded",
+      "false"
+    );
   });
 });
 
