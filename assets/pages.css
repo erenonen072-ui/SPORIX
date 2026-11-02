@@ -791,3 +791,81 @@
     grid-template-columns: minmax(0, 1fr) 58px minmax(0, 1fr);
   }
 }
+
+/* =====================================
+   SPORIX - KÜÇÜK VE DENGELİ LOGOLAR
+===================================== */
+
+/* Maç kartlarındaki takım logoları */
+.sp-page .sp-team-logo,
+.sp-page .sp-team img {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  object-fit: contain !important;
+  flex: 0 0 20px !important;
+}
+
+/* Puan durumu tablosu logoları */
+.sp-page .sp-table img {
+  width: 19px !important;
+  height: 19px !important;
+  max-width: 19px !important;
+  max-height: 19px !important;
+  object-fit: contain !important;
+  vertical-align: middle;
+}
+
+/* Takım adı ve logo aynı hizada */
+.sp-page .sp-team,
+.sp-page .sp-table .sp-team-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Maç kartları ana sayfaya benzer kompakt görünüm */
+.sp-page .sp-match {
+  padding: 11px 14px;
+  margin-bottom: 7px;
+  border-radius: 8px;
+}
+
+.sp-page .sp-match-teams {
+  grid-template-columns: minmax(0, 1fr) 65px minmax(0, 1fr);
+  gap: 7px;
+}
+
+.sp-page .sp-score {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+/* Mobil */
+@media (max-width: 760px) {
+  .sp-page .sp-team-logo,
+  .sp-page .sp-team img {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    max-width: 18px !important;
+    min-height: 18px !important;
+    max-height: 18px !important;
+    flex-basis: 18px !important;
+  }
+
+  .sp-page .sp-table img {
+    width: 17px !important;
+    height: 17px !important;
+    max-width: 17px !important;
+    max-height: 17px !important;
+  }
+
+  .sp-page .sp-match-teams {
+    grid-template-columns: minmax(0, 1fr) 55px minmax(0, 1fr);
+  }
+}
