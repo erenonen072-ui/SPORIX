@@ -5,8 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#1268d5">
-  <meta name="description" content="SPORIX maç merkezi - canlı skorlar, maç kadroları ve istatistikler.">
-  <title>Maç Detayı | SPORIX</title>
+  <meta name="description" content="SPORIX maç merkezi. Canlı skorlar, maç olayları, kadrolar, istatistikler ve takım bilgileri.">
+  <title>Maç Merkezi | SPORIX</title>
   <link rel="icon" href="/images/logo.jpeg">
   <link rel="stylesheet" href="/assets/veri.css">
   <script src="/assets/veri.js" defer></script>
@@ -29,22 +29,27 @@
 
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Ana Sayfa</a><span>/</span>
-      <a href="/maclar/">Maçlar</a><span>/</span>
-      <strong>Maç Merkezi</strong>
+      <a href="/">Ana Sayfa</a>
+      <span>/</span>
+      <a href="/maclar/">Maçlar</a>
+      <span>/</span>
+      <strong id="breadcrumbCurrent">Detay</strong>
     </div>
 
     <div id="loading" class="notice">
       <span class="loader"></span>
-      <p>Maç bilgileri yükleniyor...</p>
+      <p>Bilgiler yükleniyor...</p>
     </div>
 
     <div id="error" class="notice error hidden">
-      <h2>Maç bilgileri yüklenemedi</h2>
+      <h2>Bilgiler yüklenemedi</h2>
       <p id="errorText">Lütfen daha sonra tekrar deneyin.</p>
-      <button id="retryButton" class="primary-button">Tekrar dene</button>
+      <button id="retryButton" class="primary-button" type="button">
+        Tekrar dene
+      </button>
     </div>
 
+    <!-- MAÇ DETAY SAYFASI -->
     <div id="matchPage" class="hidden">
       <section class="match-hero">
         <div class="competition">
@@ -59,8 +64,10 @@
 
         <div class="scoreboard">
           <div class="team-block">
-            <img id="homeLogo" class="team-logo" src="" alt="">
-            <h2 id="homeName">Ev Sahibi</h2>
+            <a id="homeTeamLink" class="team-profile-link" href="#">
+              <img id="homeLogo" class="team-logo" src="" alt="">
+              <h2 id="homeName">Ev Sahibi</h2>
+            </a>
           </div>
 
           <div class="score-block">
@@ -70,8 +77,10 @@
           </div>
 
           <div class="team-block">
-            <img id="awayLogo" class="team-logo" src="" alt="">
-            <h2 id="awayName">Deplasman</h2>
+            <a id="awayTeamLink" class="team-profile-link" href="#">
+              <img id="awayLogo" class="team-logo" src="" alt="">
+              <h2 id="awayName">Deplasman</h2>
+            </a>
           </div>
         </div>
 
@@ -100,7 +109,7 @@
               <span class="heading-mark"></span>
             </div>
             <div id="summaryContent" class="summary-content">
-              Maç özeti bilgileri yükleniyor.
+              Maç özeti yükleniyor.
             </div>
           </section>
 
@@ -123,6 +132,7 @@
                 <h2>Maç kadroları</h2>
               </div>
             </div>
+
             <div class="lineup-columns">
               <div class="lineup-team">
                 <h3 id="homeLineupTitle">Ev sahibi</h3>
@@ -132,6 +142,7 @@
                 <h4>Yedekler</h4>
                 <div id="homeSubs" class="player-list"></div>
               </div>
+
               <div class="lineup-team">
                 <h3 id="awayLineupTitle">Deplasman</h3>
                 <div id="awayLineup" class="player-list">
@@ -186,6 +197,53 @@
             </p>
             <a href="/maclar/" class="back-link">← Tüm maçlara dön</a>
           </section>
+        </aside>
+      </div>
+    </div>
+
+    <!-- TAKIM DETAY SAYFASI -->
+    <div id="teamPage" class="hidden">
+      <section class="team-hero">
+        <div class="team-profile">
+          <img id="teamLogo" src="" alt="Takım logosu">
+          <div>
+            <span class="team-label">SPORIX TAKIM PROFİLİ</span>
+            <h1 id="teamName">Takım</h1>
+            <p id="teamLeague">Lig bilgisi</p>
+          </div>
+        </div>
+        <div class="team-badge">TAKIM PROFİLİ</div>
+      </section>
+
+      <div class="team-layout">
+        <section class="panel">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">KARŞILAŞMALAR</span>
+              <h2>Takım maçları</h2>
+            </div>
+          </div>
+          <div id="teamMatches" class="team-matches">
+            <div class="empty-state">Maçlar yükleniyor...</div>
+          </div>
+        </section>
+
+        <aside class="panel">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">TAKIM BİLGİLERİ</span>
+              <h2>Genel bilgiler</h2>
+            </div>
+          </div>
+          <div class="info-list">
+            <div><span>Takım</span><strong id="teamInfoName">-</strong></div>
+            <div><span>Lig</span><strong id="teamInfoLeague">-</strong></div>
+            <div><span>Teknik direktör</span><strong id="teamCoach">-</strong></div>
+            <div><span>Stadyum</span><strong id="teamStadium">-</strong></div>
+          </div>
+          <p class="team-note">
+            Bilgiler veri sağlayıcısının sunduğu kayıtlara göre gösterilir.
+          </p>
         </aside>
       </div>
     </div>
