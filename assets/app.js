@@ -26,7 +26,6 @@ let currentCompetitionName =
 
 let currentFilter = "all";
 let allMatches = [];
-
 let matchController = null;
 let searchController = null;
 let searchTimer = null;
@@ -42,6 +41,10 @@ const TURKISH_LEAGUES = [
   { name: "Süper Kupa", slug: "turkish-super-cup" }
 ];
 
+// ========================================
+// GÜVENLİ METİN
+// ========================================
+
 function escapeHTML(value) {
   return String(value ?? "").replace(/[&<>"']/g, char => ({
     "&": "&amp;",
@@ -51,6 +54,10 @@ function escapeHTML(value) {
     "'": "&#39;"
   })[char]);
 }
+
+// ========================================
+// TÜRKİYE TARİHİ
+// ========================================
 
 function turkeyDate() {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -82,6 +89,10 @@ function updateDate() {
   );
 }
 
+// ========================================
+// API MAÇ VERİLERİ
+// ========================================
+
 function getMatches(data) {
   if (Array.isArray(data?.matches)) return data.matches;
   if (Array.isArray(data?.fixtures)) return data.fixtures;
@@ -91,14 +102,24 @@ function getMatches(data) {
   return [];
 }
 
+// ========================================
+// TAKIM BİLGİLERİ
+// ========================================
+
 function getTeam(match, side) {
   if (side === "home") {
-    return match.home || match.home_team ||
-      match.homeTeam || match.teams?.home || {};
+    return match.home ||
+      match.home_team ||
+      match.homeTeam ||
+      match.teams?.home ||
+      {};
   }
 
-  return match.away || match.away_team ||
-    match.awayTeam || match.teams?.away || {};
+  return match.away ||
+    match.away_team ||
+    match.awayTeam ||
+    match.teams?.away ||
+    {};
 }
 
 function teamName(team, fallback) {
@@ -128,6 +149,10 @@ function teamLogo(match, team, side) {
       : "";
 }
 
+// ========================================
+// SKOR
+// ========================================
+
 function score(match, side, team) {
   const direct = side === "home"
     ? match.home_score ?? match.homeScore
@@ -145,11 +170,20 @@ function score(match, side, team) {
   }
 
   if (typeof value === "object") {
-    return String(value.current ?? value.total ?? value.score ?? "-");
+    return String(
+      value.current ??
+      value.total ??
+      value.score ??
+      "-"
+    );
   }
 
   return String(value);
 }
+
+// ========================================
+// MAÇ DURUMU
+// ========================================
 
 function statusOf(match) {
   const raw = match.status?.name ||
@@ -161,9 +195,17 @@ function statusOf(match) {
 
   const status = String(raw).toLowerCase();
 
-  if (/postponed|delayed|ertelendi/.test(status)) return "postponed";
-  if (/cancelled|canceled|iptal/.test(status)) return "cancelled";
-  if (/suspended|abandoned|interrupted/.test(status)) return "suspended";
+  if (/postponed|delayed|ertelendi/.test(status)) {
+    return "postponed";
+  }
+
+  if (/cancelled|canceled|iptal/.test(status)) {
+    return "cancelled";
+  }
+
+  if (/suspended|abandoned|interrupted/.test(status)) {
+    return "suspended";
+  }
 
   if (/live|in.play|playing|1st half|2nd half|half time|halftime|extra time|penalty|canlı/.test(status)) {
     return "live";
@@ -175,6 +217,10 @@ function statusOf(match) {
 
   return "upcoming";
 }
+
+// ========================================
+// MAÇ SAATİ
+// ========================================
 
 function startValue(match) {
   return match.start_time ||
@@ -207,6 +253,10 @@ function matchTime(match) {
   });
 }
 
+// ========================================
+// LİG ADI
+// ========================================
+
 function competitionName(match) {
   return match.competition_name ||
     match.competition?.name ||
@@ -214,6 +264,10 @@ function competitionName(match) {
     match.tournament?.name ||
     currentCompetitionName;
 }
+
+// ========================================
+// MAÇ KARTI
+// ========================================
 
 function renderMatch(match) {
   const home = getTeam(match, "home");
@@ -255,7 +309,9 @@ function renderMatch(match) {
 
   return `
     <article class="match-card" data-status="${status}">
+
       <div class="match-card-top">
+
         <span class="match-status ${status}">
           ${status === "live" ? "<i></i>" : ""}
           ${statusLabels[status]}
@@ -264,39 +320,58 @@ function renderMatch(match) {
         <span class="match-competition">
           ${escapeHTML(competitionName(match))}
         </span>
+
       </div>
 
       <div class="match-card-body">
+
         <div class="match-team">
           ${homeImage}
           <span>${escapeHTML(homeName)}</span>
         </div>
 
         <div class="match-result">
+
           ${
             isUpcoming
               ? `<span class="match-time">${escapeHTML(matchTime(match) || "-")}</span>`
               : `<strong class="match-score">${escapeHTML(homeScore)} - ${escapeHTML(awayScore)}</strong>`
           }
-          <small class="live-clock">${statusLabels[status]}</small>
+
+          <small class="live-clock">
+            ${statusLabels[status]}
+          </small>
+
         </div>
 
         <div class="match-team away">
           ${awayImage}
           <span>${escapeHTML(awayName)}</span>
         </div>
+
       </div>
+
     </article>
   `;
 }
 
+// ========================================
+// MAÇ FİLTRELEME
+// ========================================
+
 function filteredMatches() {
-  if (currentFilter === "all") return allMatches;
+  if (currentFilter === "all") {
+    return allMatches;
+  }
 
   return allMatches.filter(
     match => statusOf(match) === currentFilter
   );
 }
+
+// ========================================
+// MAÇLARI EKRANA YAZ
+// ========================================
 
 function renderMatches() {
   if (!matchesBox) return;
@@ -308,25 +383,41 @@ function renderMatches() {
       <div class="empty-state">
         <div class="empty-icon">⚽</div>
         <h3>Maç bulunamadı</h3>
-        <p>${escapeHTML(currentCompetitionName)} için bugün maç bulunamadı.</p>
+        <p>
+          ${escapeHTML(currentCompetitionName)}
+          için bugün maç bulunamadı.
+        </p>
       </div>
     `;
+
     return;
   }
 
   matchesBox.innerHTML = list.map(renderMatch).join("");
 }
 
+// ========================================
+// HATA MESAJI
+// ========================================
+
 function showError(message) {
   if (!matchesBox) return;
 
   matchesBox.innerHTML = `
     <div class="error-state">
+
       <h3>Maçlar yüklenemedi</h3>
+
       <p>${escapeHTML(message)}</p>
-      <button class="retry-btn" id="retryMatches" type="button">
+
+      <button
+        class="retry-btn"
+        id="retryMatches"
+        type="button"
+      >
         Tekrar dene
       </button>
+
     </div>
   `;
 
@@ -346,6 +437,7 @@ async function loadMatches(force = false) {
   matchController?.abort();
 
   const controller = new AbortController();
+
   matchController = controller;
 
   const thisRequest = ++requestId;
@@ -353,16 +445,27 @@ async function loadMatches(force = false) {
   loading = true;
 
   matchesBox.innerHTML = `
-    <div class="loading-state">Maçlar yükleniyor...</div>
+    <div class="loading-state">
+      Maçlar yükleniyor...
+    </div>
   `;
 
-  if (refreshButton) refreshButton.disabled = true;
+  if (refreshButton) {
+    refreshButton.disabled = true;
+  }
 
   try {
     const url = new URL(API, location.origin);
 
-    url.searchParams.set("competition", currentCompetition);
-    url.searchParams.set("date", turkeyDate());
+    url.searchParams.set(
+      "competition",
+      currentCompetition
+    );
+
+    url.searchParams.set(
+      "date",
+      turkeyDate()
+    );
 
     const response = await fetch(url, {
       cache: "no-store",
@@ -372,31 +475,39 @@ async function loadMatches(force = false) {
     const data = await response.json();
 
     if (!response.ok || data.success === false) {
-      throw new Error(data.error || "Maç verileri alınamadı.");
+      throw new Error(
+        data.error || "Maç verileri alınamadı."
+      );
     }
 
     if (thisRequest !== requestId) return;
 
-    // Yalnızca seçilen lige ait sonuçlar.
+    // API seçilen lige ait maçları döndürüyor.
+    // İkinci bir filtre uygulamadan sonuçları alıyoruz.
+
     const selectedLeague = TURKISH_LEAGUES.find(
       league => league.slug === currentCompetition
     );
 
-    allMatches = getMatches(data).filter(match => {
-      const slug =
-        match.competition_slug ||
-        match.competition?.slug ||
-        match.league?.slug ||
-        "";
+    allMatches = getMatches(data);
 
-      // Sunucu seçilen lige özel sonuç döndürdüyse
-      // boş slug'ı da kabul ediyoruz.
-      return !slug || slug === currentCompetition;
+    console.log("SPORIX maç kontrolü:", {
+      secilenLig: currentCompetition,
+      API_ligi: data.selectedCompetition,
+      gelenMacSayisi: allMatches.length,
+      maclar: allMatches
     });
 
+    // Maçları saate göre sırala.
+
     allMatches.sort((a, b) => {
-      const aTime = new Date(startValue(a) || 0).getTime();
-      const bTime = new Date(startValue(b) || 0).getTime();
+      const aTime = new Date(
+        startValue(a) || 0
+      ).getTime();
+
+      const bTime = new Date(
+        startValue(b) || 0
+      ).getTime();
 
       return aTime - bTime;
     });
@@ -406,13 +517,19 @@ async function loadMatches(force = false) {
     }
 
     updateDate();
+
     renderMatches();
 
   } catch (error) {
     if (error.name === "AbortError") return;
+
     if (thisRequest !== requestId) return;
 
-    console.error("SPORIX maç hatası:", error);
+    console.error(
+      "SPORIX maç hatası:",
+      error
+    );
+
     showError(error.message);
 
   } finally {
@@ -435,7 +552,9 @@ function selectCompetition(slug, name) {
   if (!/^[a-z0-9-]+$/i.test(slug)) return;
 
   currentCompetition = slug;
+
   currentCompetitionName = name || slug;
+
   currentFilter = "all";
 
   if (leagueSelect) {
@@ -484,7 +603,7 @@ refreshButton?.addEventListener(
 );
 
 // ========================================
-// FİLTRELER
+// MAÇ DURUMU FİLTRELERİ
 // ========================================
 
 document.querySelectorAll("[data-filter]").forEach(button => {
@@ -492,7 +611,10 @@ document.querySelectorAll("[data-filter]").forEach(button => {
     currentFilter = button.dataset.filter || "all";
 
     document.querySelectorAll("[data-filter]").forEach(item => {
-      item.classList.toggle("selected", item === button);
+      item.classList.toggle(
+        "selected",
+        item === button
+      );
     });
 
     renderMatches();
@@ -519,12 +641,17 @@ async function searchCompetitions(query) {
   searchController?.abort();
 
   const controller = new AbortController();
+
   searchController = controller;
 
   showSearchMessage("Ligler aranıyor...");
 
   try {
-    const url = new URL(SEARCH_API, location.origin);
+    const url = new URL(
+      SEARCH_API,
+      location.origin
+    );
+
     url.searchParams.set("q", query);
 
     const response = await fetch(url, {
@@ -535,14 +662,21 @@ async function searchCompetitions(query) {
     const data = await response.json();
 
     if (!response.ok || data.success === false) {
-      throw new Error(data.error || "Arama yapılamadı.");
+      throw new Error(
+        data.error || "Arama yapılamadı."
+      );
     }
 
-    const competitions = data.results?.competitions || [];
+    const competitions =
+      data.results?.competitions || [];
+
     const unique = new Map();
 
     competitions.forEach(item => {
-      if (item?.slug && /^[a-z0-9-]+$/i.test(item.slug)) {
+      if (
+        item?.slug &&
+        /^[a-z0-9-]+$/i.test(item.slug)
+      ) {
         unique.set(item.slug, item);
       }
     });
@@ -551,14 +685,18 @@ async function searchCompetitions(query) {
       showSearchMessage(
         "Eşleşen lig bulunamadı. Başka bir kelime dene."
       );
+
       return;
     }
 
-    searchResults.innerHTML = [...unique.values()].map(item => {
-      const logo = typeof item.logo === "string" &&
+    searchResults.innerHTML = [
+      ...unique.values()
+    ].map(item => {
+      const logo =
+        typeof item.logo === "string" &&
         /^https?:\/\//i.test(item.logo)
-        ? `<img src="${escapeHTML(item.logo)}" alt="" loading="lazy">`
-        : `<span class="competition-placeholder">🏆</span>`;
+          ? `<img src="${escapeHTML(item.logo)}" alt="" loading="lazy">`
+          : `<span class="competition-placeholder">🏆</span>`;
 
       return `
         <button
@@ -567,11 +705,15 @@ async function searchCompetitions(query) {
           data-slug="${escapeHTML(item.slug)}"
           data-name="${escapeHTML(item.name || item.slug)}"
         >
+
           ${logo}
+
           <span class="competition-result-name">
             ${escapeHTML(item.name || item.slug)}
           </span>
+
           <b>Seç →</b>
+
         </button>
       `;
     }).join("");
@@ -581,7 +723,9 @@ async function searchCompetitions(query) {
   } catch (error) {
     if (error.name === "AbortError") return;
 
-    showSearchMessage(error.message || "Arama hatası.");
+    showSearchMessage(
+      error.message || "Arama hatası."
+    );
   }
 }
 
@@ -592,8 +736,10 @@ searchInput?.addEventListener("input", () => {
 
   if (query.length < 2) {
     searchController?.abort();
+
     searchResults.hidden = true;
     searchResults.innerHTML = "";
+
     return;
   }
 
@@ -648,7 +794,10 @@ mainNav?.querySelectorAll("a").forEach(link => {
 // ========================================
 
 updateDate();
+
 loadMatches();
+
+// 30 saniyede bir otomatik yenileme.
 
 setInterval(() => {
   if (!document.hidden && !loading) {
