@@ -1,9 +1,11 @@
+
 (() => {
   "use strict";
 
   const params = new URLSearchParams(location.search);
   const view = params.get("view") || "match";
   const slug = params.get("slug") || "";
+
   const $ = id => document.getElementById(id);
 
   const first = (...values) => values.find(v =>
@@ -132,6 +134,7 @@
     if (!input) return "Tarih bilgisi yok";
 
     const date = new Date(input);
+
     if (Number.isNaN(date.getTime())) return String(input);
 
     return new Intl.DateTimeFormat("tr-TR", {
@@ -246,11 +249,33 @@
       typeof match.away === "string" ? match.away : null
     );
 
-    const homeLogo = first(home.logo, home.image, home.team_logo, match.home_logo);
-    const awayLogo = first(away.logo, away.image, away.team_logo, match.away_logo);
+    const homeLogo = first(
+      home.logo,
+      home.image,
+      home.team_logo,
+      match.home_logo
+    );
 
-    const homeScore = first(match.home_score, match.homeScore, home.score, "-");
-    const awayScore = first(match.away_score, match.awayScore, away.score, "-");
+    const awayLogo = first(
+      away.logo,
+      away.image,
+      away.team_logo,
+      match.away_logo
+    );
+
+    const homeScore = first(
+      match.home_score,
+      match.homeScore,
+      home.score,
+      "-"
+    );
+
+    const awayScore = first(
+      match.away_score,
+      match.awayScore,
+      away.score,
+      "-"
+    );
 
     const competition = first(
       match.competition,
@@ -272,7 +297,13 @@
       "Maç bilgisi"
     ).replaceAll("_", " ");
 
-    const date = first(match.time, match.date, match.match_time, match.start_time);
+    const date = first(
+      match.time,
+      match.date,
+      match.match_time,
+      match.start_time
+    );
+
     const venue = first(match.venue, match.stadium, match.venue_name);
     const referee = first(match.referee, match.referee_name);
 
@@ -309,7 +340,11 @@
 
     setText("matchTime", minute, live ? "Canlı" : "Karşılaşma");
 
-    const half = first(match.half_score, match.halftime_score, match.ht_score);
+    const half = first(
+      match.half_score,
+      match.halftime_score,
+      match.ht_score
+    );
 
     let halfText = "";
 
@@ -344,6 +379,7 @@
     }
 
     document.title = `${homeName || "Maç"} - ${awayName || "Detay"} | SPORIX`;
+
     setText("breadcrumbCurrent", "Maç Detayı");
 
     const summary = first(
@@ -462,11 +498,13 @@
 
       if (assist) {
         const small = document.createElement("small");
+
         small.textContent = `Asist: ${
           typeof assist === "object"
             ? first(assist.name, assist.player_name, "")
             : assist
         }`;
+
         description.appendChild(small);
       }
 
@@ -480,7 +518,7 @@
   }
 
   // =====================================
-  // KADROLAR VE OYUNCU LİNKLERİ
+  // KADROLAR - SADECE OYUNCU İSİMLERİ
   // =====================================
 
   function normalizePlayer(player) {
@@ -503,37 +541,14 @@
       const player = normalizePlayer(item);
       const name = getPlayerName(player);
 
-      const number = first(
-        player.number,
-        player.shirt_number,
-        player.jersey_number,
-        player.no
-      );
-
       const row = document.createElement("div");
       row.className = "player-row";
-
-      const numberEl = document.createElement("span");
-      numberEl.className = "player-number";
-      numberEl.textContent = value(number, "•");
 
       const nameEl = document.createElement("span");
       nameEl.className = "player-name";
       nameEl.textContent = name;
 
-      const link = playerLink(player);
-
-      if (link) {
-        const anchor = document.createElement("a");
-        anchor.className = "player-row-link";
-        anchor.href = link;
-        anchor.setAttribute("aria-label", `${name} oyuncu profili`);
-        anchor.append(numberEl, nameEl);
-        row.appendChild(anchor);
-      } else {
-        row.append(numberEl, nameEl);
-      }
-
+      row.appendChild(nameEl);
       container.appendChild(row);
     });
   }
@@ -604,9 +619,25 @@
     for (const candidate of candidates) {
       if (Array.isArray(candidate)) {
         return candidate.map(item => ({
-          name: first(item.name, item.type, item.title, item.label, "İstatistik"),
-          home: first(item.home, item.home_value, item.home_team, item.value_home),
-          away: first(item.away, item.away_value, item.away_team, item.value_away)
+          name: first(
+            item.name,
+            item.type,
+            item.title,
+            item.label,
+            "İstatistik"
+          ),
+          home: first(
+            item.home,
+            item.home_value,
+            item.home_team,
+            item.value_home
+          ),
+          away: first(
+            item.away,
+            item.away_value,
+            item.away_team,
+            item.value_away
+          )
         })).filter(item =>
           item.home !== undefined || item.away !== undefined
         );
@@ -699,6 +730,7 @@
       bars.append(homeBar, awayBar);
       values.append(homeEl, bars, awayEl);
       row.append(label, values);
+
       container.appendChild(row);
     });
   }
@@ -768,8 +800,17 @@
         "Deplasman"
       );
 
-      const homeLogo = first(match.home_logo, homeObj.logo, match.home_team_logo);
-      const awayLogo = first(match.away_logo, awayObj.logo, match.away_team_logo);
+      const homeLogo = first(
+        match.home_logo,
+        homeObj.logo,
+        match.home_team_logo
+      );
+
+      const awayLogo = first(
+        match.away_logo,
+        awayObj.logo,
+        match.away_team_logo
+      );
 
       const homeScore = first(match.home_score, match.homeScore, "-");
       const awayScore = first(match.away_score, match.awayScore, "-");
@@ -798,6 +839,7 @@
 
       const homeImage = document.createElement("img");
       homeImage.alt = "";
+
       const safeHome = cleanImageUrl(homeLogo);
 
       if (safeHome) homeImage.src = safeHome;
@@ -805,6 +847,7 @@
 
       const homeText = document.createElement("span");
       homeText.textContent = value(home, "Ev sahibi");
+
       homeSide.append(homeImage, homeText);
 
       const score = document.createElement("div");
@@ -813,6 +856,7 @@
 
       const scoreStatus = document.createElement("small");
       scoreStatus.textContent = value(status);
+
       score.appendChild(scoreStatus);
 
       const awaySide = document.createElement("div");
@@ -823,6 +867,7 @@
 
       const awayImage = document.createElement("img");
       awayImage.alt = "";
+
       const safeAway = cleanImageUrl(awayLogo);
 
       if (safeAway) awayImage.src = safeAway;
@@ -837,6 +882,7 @@
 
   // =====================================
   // TAKIM KADROSU
+  // SADECE İSİMLER GÖSTERİLİR
   // =====================================
 
   function findSquad(data, team) {
@@ -861,7 +907,8 @@
 
     if (!players.length) {
       container.innerHTML =
-        '<div class="empty-state">Bu takım için veri sağlayıcısı tarafından kadro bilgisi sunulmamış.</div>';
+        '<div class="empty-state">Bu takım için kadro bilgisi bulunamadı.</div>';
+
       setText("squadCount", "Kadro verisi yok");
       return;
     }
@@ -872,73 +919,14 @@
       const player = normalizePlayer(item);
       const name = getPlayerName(player);
 
-      const photo = cleanImageUrl(first(
-        player.logo,
-        player.image,
-        player.photo,
-        player.picture,
-        player.player_logo
-      ));
+      const row = document.createElement("div");
+      row.className = "squad-name";
 
-      const position = first(
-        player.position,
-        player.position_name,
-        player.role,
-        "Oyuncu"
-      );
+      const nameEl = document.createElement("span");
+      nameEl.textContent = name;
 
-      const number = first(
-        player.number,
-        player.shirt_number,
-        player.jersey_number
-      );
-
-      const card = document.createElement("a");
-      card.className = "squad-card";
-
-      const link = playerLink(player);
-      card.href = link || "#";
-
-      if (!link) {
-        card.addEventListener("click", event => event.preventDefault());
-        card.classList.add("squad-card-disabled");
-      }
-
-      const imageWrap = document.createElement("div");
-      imageWrap.className = "squad-photo";
-
-      if (photo) {
-        const img = document.createElement("img");
-        img.src = photo;
-        img.alt = name;
-        img.loading = "lazy";
-        img.onerror = () => {
-          img.remove();
-          imageWrap.textContent = "⚽";
-        };
-        imageWrap.appendChild(img);
-      } else {
-        imageWrap.textContent = "⚽";
-      }
-
-      const info = document.createElement("div");
-      info.className = "squad-card-info";
-
-      const playerName = document.createElement("strong");
-      playerName.textContent = name;
-
-      const playerPosition = document.createElement("span");
-      playerPosition.textContent = value(position, "Oyuncu");
-
-      const playerNumber = document.createElement("small");
-      playerNumber.textContent = number !== undefined
-        ? `Forma no: ${number}`
-        : " ";
-
-      info.append(playerName, playerPosition, playerNumber);
-      card.append(imageWrap, info);
-
-      container.appendChild(card);
+      row.appendChild(nameEl);
+      container.appendChild(row);
     });
   }
 
@@ -962,7 +950,11 @@
       typeof team.manager === "string" ? team.manager : team.manager?.name
     );
 
-    const stadium = first(team.stadium, team.venue, team.stadium_name);
+    const stadium = first(
+      team.stadium,
+      team.venue,
+      team.stadium_name
+    );
 
     setText("teamName", name, "Takım");
     setText("teamLeague", league, "Lig bilgisi bulunamadı");
@@ -972,6 +964,7 @@
     setText("teamStadium", stadium, "Bilgi sağlanmadı");
 
     setText("breadcrumbCurrent", "Takım Profili");
+
     setImage("teamLogo", logo, name);
 
     const matches = array(
@@ -1074,13 +1067,22 @@
     );
 
     const age = first(player.age);
-    const birth = first(player.birth_date, player.date_of_birth, player.birthday);
+    const birth = first(
+      player.birth_date,
+      player.date_of_birth,
+      player.birthday
+    );
+
     const height = first(player.height);
 
     setText("playerName", name);
     setText("playerTeam", team, "Takım bilgisi bulunamadı");
     setText("playerPosition", position, "Pozisyon bilgisi yok");
-    setText("playerNumber", number !== undefined ? `#${number}` : "Forma numarası yok");
+
+    setText(
+      "playerNumber",
+      number !== undefined ? `#${number}` : "Forma numarası yok"
+    );
 
     setText("playerNationality", nationality);
     setText("playerAge", age);
@@ -1096,9 +1098,11 @@
 
     if (photoEl && fallback) {
       fallback.classList.toggle("hidden", Boolean(cleanImageUrl(photo)));
+
       photoEl.addEventListener("load", () => {
         fallback.classList.add("hidden");
       }, { once: true });
+
       photoEl.addEventListener("error", () => {
         fallback.classList.remove("hidden");
       }, { once: true });
@@ -1115,12 +1119,14 @@
     if (teamLink && teamSlug) {
       teamLink.href =
         `/veri.html?view=team&slug=${encodeURIComponent(teamSlug)}`;
+
       teamLink.classList.remove("hidden");
     } else {
       teamLink?.classList.add("hidden");
     }
 
     setText("breadcrumbCurrent", "Oyuncu Profili");
+
     document.title = `${name} | SPORIX`;
   }
 
