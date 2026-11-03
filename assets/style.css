@@ -1238,7 +1238,22 @@ button {
   .match-side .team-name {
     font-size: 11px;
   }
+.squad-name {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid #e8edf4;
+  border-radius: 8px;
+  color: #172235;
+  font-size: 14px;
+  font-weight: 600;
+}
 
+.squad-name span {
+  overflow-wrap: anywhere;
+}
   .match-center .score {
     font-size: 18px;
   }
