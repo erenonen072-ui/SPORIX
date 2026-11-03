@@ -1,17 +1,50 @@
 
 "use strict";
 
-const BASE_URL = "https://sportscore.com/api/widget/";
+const WIDGET_URL = "https://sportscore.com/api/widget/";
+const API_URL = "https://sportscore.com/api/v1/";
 
 const ENDPOINTS = {
-  matches: "matches/",
-  match: "match/",
-  team: "team/",
-  standings: "standings/",
-  topscorers: "topscorers/",
-  player: "player/",
-  bracket: "bracket/",
-  tracker: "tracker/"
+  matches: {
+    base: WIDGET_URL,
+    path: "matches/"
+  },
+  match: {
+    base: WIDGET_URL,
+    path: "match/"
+  },
+  team: {
+    base: WIDGET_URL,
+    path: "team/"
+  },
+  standings: {
+    base: WIDGET_URL,
+    path: "standings/"
+  },
+  topscorers: {
+    base: WIDGET_URL,
+    path: "topscorers/"
+  },
+  player: {
+    base: WIDGET_URL,
+    path: "player/"
+  },
+  bracket: {
+    base: WIDGET_URL,
+    path: "bracket/"
+  },
+  tracker: {
+    base: WIDGET_URL,
+    path: "tracker/"
+  },
+  fixtures: {
+    base: API_URL,
+    path: "fixtures/"
+  },
+  search: {
+    base: API_URL,
+    path: "search/"
+  }
 };
 
 function send(res, status, body) {
@@ -25,11 +58,13 @@ function validSlug(value) {
 function getLimit(value, fallback, max) {
   const parsed = Number.parseInt(value, 10);
 
-  if (!Number.isFinite(parsed)) {
-    return fallback;
-  }
+  if (!Number.isFinite(parsed)) return fallback;
 
   return Math.min(max, Math.max(1, parsed));
+}
+
+function validDate(value) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value || "");
 }
 
 export default async function handler(req, res) {
@@ -41,9 +76,9 @@ export default async function handler(req, res) {
   }
 
   const action = String(req.query.action || "").toLowerCase();
-  const endpoint = ENDPOINTS[action];
+  const config = ENDPOINTS[action];
 
-  if (!endpoint) {
+  if (!config) {
     return send(res, 400, {
       success: false,
       error: "Geçersiz API işlemi."
@@ -58,6 +93,7 @@ export default async function handler(req, res) {
   const slug = String(req.query.slug || "").trim();
   const id = String(req.query.id || "").trim();
 
+  // Maç, takım, lig ve futbolcu profilleri
   const slugActions = [
     "match",
     "team",
@@ -78,6 +114,7 @@ export default async function handler(req, res) {
     params.set("slug", slug);
   }
 
+  // Canlı maç takipçisi
   if (action === "tracker") {
     if (!/^\d+$/.test(id)) {
       return send(res, 400, {
@@ -89,11 +126,90 @@ export default async function handler(req, res) {
     params.set("id", id);
   }
 
-  if (["matches", "team", "topscorers"].includes(action)) {
-    const max = action === "team" ? 30 : 50;
-    const limit = getLimit(req.query.limit, 20, max);
+  // Genel maç listesi
+  if (action === "matches") {
+    params.set(
+      "limit",
+      String(getLimit(req.query.limit, 20, 50))
+    );
+  }
 
-    params.set("limit", String(limit));
+  // Lig ve takım arama
+  if (action === "search") {
+    const q = String(req.query.q || "").trim();
+
+    if (q.length < 2 || q.length > 100) {
+      return send(res, 400, {
+        success: false,
+        error: "Arama için en az 2 karakter girilmelidir."
+      });
+    }
+
+    params.set("q", q);
+    params.set(
+      "limit",
+      String(getLimit(req.query.limit, 20, 20))
+    );
+  }
+
+  // Tarihe ve lige göre maçlar
+  if (action === "fixtures") {
+    const date = String(req.query.date || "").trim();
+    const status = String(req.query.status || "").toLowerCase();
+    const competition = String(
+      req.query.competition || ""
+    ).trim();
+
+    const team = String(req.query.team || "").trim();
+
+    if (date && !validDate(date)) {
+      return send(res, 400, {
+        success: false,
+        error: "Tarih YYYY-MM-DD biçiminde olmalıdır."
+      });
+    }
+
+    if (
+      status &&
+      !["live", "finished", "upcoming"].includes(status)
+    ) {
+      return send(res, 400, {
+        success: false,
+        error: "Geçersiz maç durumu."
+      });
+    }
+
+    if (competition && !validSlug(competition)) {
+      return send(res, 400, {
+        success: false,
+        error: "Geçersiz lig slug değeri."
+      });
+    }
+
+    if (team && !validSlug(team)) {
+      return send(res, 400, {
+        success: false,
+        error: "Geçersiz takım slug değeri."
+      });
+    }
+
+    if (date) params.set("date", date);
+    if (status) params.set("status", status);
+    if (competition) params.set("competition", competition);
+    if (team) params.set("team", team);
+
+    params.set(
+      "limit",
+      String(getLimit(req.query.limit, 100, 200))
+    );
+  }
+
+  // Takım ve gol/asist listeleri
+  if (["team", "topscorers"].includes(action)) {
+    params.set(
+      "limit",
+      String(getLimit(req.query.limit, 20, 50))
+    );
   }
 
   if (action === "topscorers") {
@@ -103,7 +219,8 @@ export default async function handler(req, res) {
     );
   }
 
-  const url = `${BASE_URL}${endpoint}?${params.toString()}`;
+  const url =
+    `${config.base}${config.path}?${params.toString()}`;
 
   try {
     const response = await fetch(url, {
@@ -155,7 +272,7 @@ export default async function handler(req, res) {
       error:
         error.name === "TimeoutError"
           ? "SportScore isteği zaman aşımına uğradı."
-          : "SportScore sunucusuna şu anda ulaşılamıyor."
+          : "SportScore sunucusuna ulaşılamıyor."
     });
   }
 }
