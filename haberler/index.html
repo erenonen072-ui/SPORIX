@@ -3,49 +3,287 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Futbol Haberleri | SPORIX</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Spor Haberleri | SPORIX</title>
+  <meta name="description" content="Futbol dünyasından son gelişmeler, transfer haberleri ve spor gündemi SPORIX'te.">
+  <meta name="theme-color" content="#ffffff">
+
+  <link rel="icon" href="/images/logo.jpeg">
   <link rel="stylesheet" href="/assets/style.css">
+
+  <style>
+    .news-page {
+      max-width: 1200px;
+      margin: 30px auto 55px;
+      padding: 0 16px;
+    }
+
+    .news-heading {
+      margin-bottom: 25px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid #e8e8e8;
+    }
+
+    .news-heading h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      color: #171717;
+    }
+
+    .news-heading p {
+      margin: 0;
+      color: #777;
+      font-size: 15px;
+    }
+
+    .news-section-title {
+      font-size: 19px;
+      font-weight: 800;
+      margin: 25px 0 15px;
+      color: #171717;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .news-section-title::before {
+      content: "";
+      width: 4px;
+      height: 22px;
+      background: #e50914;
+      border-radius: 5px;
+    }
+
+    .news-empty {
+      background: #fff;
+      border: 1px solid #e8e8e8;
+      border-radius: 12px;
+      padding: 45px 20px;
+      text-align: center;
+    }
+
+    .news-empty-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 18px;
+      border-radius: 50%;
+      background: #f2f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    .news-empty h2 {
+      margin: 0 0 10px;
+      font-size: 21px;
+      color: #222;
+    }
+
+    .news-empty p {
+      max-width: 520px;
+      margin: 0 auto 20px;
+      color: #777;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .news-buttons {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .news-buttons a {
+      display: inline-block;
+      padding: 11px 17px;
+      border-radius: 7px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      background: #e50914;
+      color: #fff;
+    }
+
+    .news-buttons a.secondary {
+      background: #f1f3f5;
+      color: #333;
+    }
+
+    .news-info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 15px;
+      margin-top: 25px;
+    }
+
+    .news-info-card {
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #e8e8e8;
+      border-radius: 10px;
+    }
+
+    .news-info-card span {
+      font-size: 25px;
+    }
+
+    .news-info-card h3 {
+      margin: 12px 0 7px;
+      font-size: 16px;
+      color: #222;
+    }
+
+    .news-info-card p {
+      margin: 0;
+      color: #777;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 700px) {
+      .news-info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .news-heading h1 {
+        font-size: 25px;
+      }
+
+      .news-empty {
+        padding: 35px 17px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<header class="header"><div class="header-inner">
-  <a href="/" class="logo"><img src="/images/logo.jpeg" alt="SPORIX"><span>SPOR<span>IX</span></span></a>
-  <button class="menu-btn" id="menuBtn">☰</button>
-  <nav class="nav" id="mainNav">
-    <a href="/">Ana Sayfa</a><a href="/maclar/">Canlı Skorlar</a>
-    <a class="active" href="/haberler/">Haberler</a>
-    <a href="/puan-durumu/">Puan Durumu</a><a href="/fikstur/">Fikstür</a>
-  </nav>
-</div></header>
 
-<main class="container">
-  <div class="page-title">
-    <h1>Futbol Haberleri</h1>
-    <p>Futbol dünyasından gelişmeler, transferler ve gündem.</p>
-  </div>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container header-inner">
 
-  <div class="content-panel">
-    <div class="empty-state">
-      <strong>Haber merkezi</strong>
-      <p>Haberler burada listelenecek. Gerçek haber içerikleri ve görselleri bağlandığında bu alanda yayınlanacak.</p>
-      <div class="inner-links">
-        <a href="/maclar/">Canlı skorları takip et</a>
-        <a href="/fikstur/">Fikstürü incele</a>
-      </div>
+      <a class="brand" href="/">
+        <img src="/images/logo.jpeg" alt="SPORIX Logo">
+        <span>SPOR<span class="brand-red">IX</span></span>
+      </a>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Menüyü aç">
+        ☰
+      </button>
+
+      <nav class="nav" id="mainNav">
+        <a href="/">Ana Sayfa</a>
+        <a href="/maclar/">Maçlar</a>
+        <a href="/puan-durumu/">Puan Durumu</a>
+        <a href="/fikstur/">Fikstür</a>
+        <a class="active" href="/haberler/">Haberler</a>
+      </nav>
+
+      <a class="header-live" href="/maclar/">
+        <span class="live-dot"></span>
+        CANLI
+      </a>
+
     </div>
-  </div>
-</main>
+  </header>
 
-<footer class="footer"><div class="footer-inner">
-  <a href="/" class="footer-logo">SPOR<span>IX</span></a>
-  <div class="footer-links"><a href="/">Ana Sayfa</a><a href="/maclar/">Canlı Skorlar</a><a href="/puan-durumu/">Puan Durumu</a><a href="/fikstur/">Fikstür</a></div>
-  <small>© 2026 SPORIX</small>
-</div></footer>
+  <!-- HABERLER -->
+  <main class="news-page">
 
-<script>
-  document.getElementById("menuBtn")?.addEventListener("click", () => {
-    document.getElementById("mainNav")?.classList.toggle("open");
-  });
-</script>
+    <section class="news-heading">
+      <h1>SPOR HABERLERİ</h1>
+      <p>Futbol dünyasından gelişmeler, transferler ve spor gündemi.</p>
+    </section>
+
+    <h2 class="news-section-title">Günün Haberleri</h2>
+
+    <!-- Haber verileri bağlandığında haber kartları burada gösterilecek. -->
+    <section class="news-empty">
+
+      <div class="news-empty-icon">📰</div>
+
+      <h2>Haber merkezi hazırlanıyor</h2>
+
+      <p>
+        SPORIX spor haberleri bölümü için içerikler henüz eklenmedi.
+        Haber yayını başladığında güncel spor gelişmeleri bu alanda
+        listelenecek.
+      </p>
+
+      <div class="news-buttons">
+        <a href="/maclar/">Canlı maçları takip et</a>
+        <a class="secondary" href="/fikstur/">Fikstürü incele</a>
+      </div>
+
+    </section>
+
+    <h2 class="news-section-title">SPORIX'te Neler Var?</h2>
+
+    <section class="news-info-grid">
+
+      <article class="news-info-card">
+        <span>⚽</span>
+        <h3>Futbol</h3>
+        <p>Futbol maçlarını ve liglerdeki gelişmeleri takip et.</p>
+      </article>
+
+      <article class="news-info-card">
+        <span>📊</span>
+        <h3>Puan Durumları</h3>
+        <p>Liglerdeki takımların sıralamalarını incele.</p>
+      </article>
+
+      <article class="news-info-card">
+        <span>📅</span>
+        <h3>Maç Programı</h3>
+        <p>Oynanan ve yaklaşan karşılaşmalara göz at.</p>
+      </article>
+
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-inner">
+
+      <div class="footer-brand">
+        SPOR<span>IX</span>
+      </div>
+
+      <p>SPORUN NABZI BURADA ATAR</p>
+
+      <div class="footer-links">
+        <a href="/hakkimizda/">Hakkımızda</a>
+        <a href="/iletisim/">İletişim</a>
+        <a href="/gizlilik/">Gizlilik</a>
+        <a href="/cerez-politikasi/">Çerez Politikası</a>
+        <a href="/kullanim-kosullari/">Kullanım Koşulları</a>
+        <a href="/kunye/">Künye</a>
+        <a href="/duzeltme-politikasi/">Düzeltme Politikası</a>
+      </div>
+
+      <small>© <span id="year"></span> SPORIX. Tüm hakları saklıdır.</small>
+
+    </div>
+  </footer>
+
+  <script>
+    // Footer yılı
+    document.getElementById("year").textContent =
+      new Date().getFullYear();
+
+    // Mobil menü
+    const menuToggle = document.getElementById("menuToggle");
+    const mainNav = document.getElementById("mainNav");
+
+    menuToggle?.addEventListener("click", () => {
+      mainNav?.classList.toggle("open");
+    });
+  </script>
+
 </body>
 </html>
