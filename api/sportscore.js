@@ -22,6 +22,16 @@ function validSlug(value) {
   return /^[a-z0-9-]{2,120}$/i.test(value || "");
 }
 
+function getLimit(value, fallback, max) {
+  const parsed = Number.parseInt(value, 10);
+
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+
+  return Math.min(max, Math.max(1, parsed));
+}
+
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return send(res, 405, {
@@ -61,7 +71,7 @@ export default async function handler(req, res) {
     if (!validSlug(slug)) {
       return send(res, 400, {
         success: false,
-        error: "Geçerli bir lig, takım veya maç slug değeri gönderilmelidir."
+        error: "Geçerli bir slug gönderilmelidir."
       });
     }
 
@@ -81,12 +91,7 @@ export default async function handler(req, res) {
 
   if (["matches", "team", "topscorers"].includes(action)) {
     const max = action === "team" ? 30 : 50;
-
-    const requestedLimit = Number.parseInt(req.query.limit, 10);
-    const limit = Math.min(
-      max,
-      Math.max(1, Number.isFinite(requestedLimit) ? requestedLimit : 20)
-    );
+    const limit = getLimit(req.query.limit, 20, max);
 
     params.set("limit", String(limit));
   }
@@ -109,12 +114,12 @@ export default async function handler(req, res) {
       signal: AbortSignal.timeout(15000)
     });
 
-    const text = await response.text();
+    const responseText = await response.text();
 
     let data;
 
     try {
-      data = JSON.parse(text);
+      data = JSON.parse(responseText);
     } catch {
       return send(res, 502, {
         success: false,
@@ -147,9 +152,10 @@ export default async function handler(req, res) {
 
     return send(res, 502, {
       success: false,
-      error: error.name === "TimeoutError"
-        ? "SportScore isteği zaman aşımına uğradı."
-        : "SportScore sunucusuna şu anda ulaşılamıyor."
+      error:
+        error.name === "TimeoutError"
+          ? "SportScore isteği zaman aşımına uğradı."
+          : "SportScore sunucusuna şu anda ulaşılamıyor."
     });
   }
 }
