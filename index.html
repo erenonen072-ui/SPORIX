@@ -1,7 +1,8 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
- <!-- Google Analytics -->
+  <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-BNEDMNED4M"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -9,16 +10,14 @@
     gtag('js', new Date());
     gtag('config', 'G-BNEDMNED4M');
   </script>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>SPORIX | Canlı Skorlar ve Spor Haberleri</title>
   <meta name="description" content="SPORIX ile canlı skorları, maçları, fikstürleri, puan durumlarını ve spor haberlerini takip et.">
   <meta name="theme-color" content="#ffffff">
-
   <link rel="icon" href="/images/logo.jpeg">
   <link rel="stylesheet" href="/assets/style.css">
-
   <script src="/assets/home.js" defer></script>
 </head>
 
@@ -27,7 +26,6 @@
   <!-- HEADER -->
   <header class="header">
     <div class="container header-inner">
-
       <a class="brand" href="/">
         <img src="/images/logo.jpeg" alt="SPORIX Logo">
         <span>SPOR<span class="brand-red">IX</span></span>
@@ -49,14 +47,12 @@
         <span class="live-dot"></span>
         CANLI
       </a>
-
     </div>
   </header>
 
   <!-- SPORLAR MENÜSÜ -->
   <div class="sports-bar">
     <div class="container">
-
       <details class="sports-dropdown">
         <summary>
           <span>SPORLAR</span>
@@ -72,7 +68,6 @@
           <a href="/hentbol/">🤾 Hentbol</a>
         </div>
       </details>
-
     </div>
   </div>
 
@@ -81,13 +76,11 @@
 
     <!-- SOL SÜTUN: LİGLER -->
     <aside class="sidebar left-sidebar">
-
       <div class="side-heading">
         LİGLER
       </div>
 
       <div id="leagueSidebar" class="league-sidebar">
-
         <div class="country-heading">🇹🇷 TÜRKİYE</div>
 
         <button class="league-link active" data-league="Süper Lig">
@@ -139,9 +132,7 @@
         <button class="league-link" data-league="Ligue 1">
           Ligue 1
         </button>
-
       </div>
-
     </aside>
 
     <!-- ORTA SÜTUN: MAÇ MERKEZİ -->
@@ -149,13 +140,13 @@
 
       <div class="match-heading">
         <h1>MAÇ MERKEZİ</h1>
+
         <span class="live-label">
           <i></i> CANLI TAKİP
         </span>
       </div>
 
       <div class="match-toolbar">
-
         <div class="toolbar-title">
           MAÇ PROGRAMI
         </div>
@@ -166,7 +157,6 @@
           <option value="upcoming">Yaklaşan</option>
           <option value="finished">Tamamlanan</option>
         </select>
-
       </div>
 
       <!-- TARİH SEÇİMİ -->
@@ -181,143 +171,18 @@
 
       <!-- GERÇEK API MAÇLARI -->
       <div id="matchList" class="match-list">
-
         <div class="loading-state">
           <div class="loader"></div>
           <span>Maçlar yükleniyor...</span>
         </div>
-
-      </div>
-
-      <div class="data-note">
-        Maç bilgileri SportScore verileri kullanılarak gösterilir.
       </div>
 
     </section>
-
-    <!-- SAĞ SÜTUN -->
-    <aside class="sidebar right-sidebar">
-
-      <!-- SPOR HABERLERİ -->
-      <div class="widget news-widget">
-
-        <div class="widget-title">
-          SPOR HABERLERİ
-        </div>
-
-        <div class="news-list" id="sportsNews">
-
-          <div class="news-item">
-            <span class="news-tag">SON DAKİKA</span>
-            <p>Spor haberleri burada yayınlanacak.</p>
-          </div>
-
-          <div class="news-item">
-            <p>Transfer gelişmeleri</p>
-          </div>
-
-          <div class="news-item">
-            <p>Günün spor gündemi</p>
-          </div>
-
-          <a href="/haberler/" class="all-news-link">
-            Tüm haberler →
-          </a>
-
-        </div>
-
-      </div>
-
-      <!-- PUAN DURUMU -->
-      <div class="widget standings-widget">
-
-        <div class="widget-title">
-          PUAN DURUMU
-        </div>
-
-        <div class="standings-filter">
-
-          <label for="standingsLeague">
-            LİG SEÇ
-          </label>
-
-          <select id="standingsLeague">
-            <option value="Süper Lig">Türkiye - Süper Lig</option>
-            <option value="1. Lig">Türkiye - 1. Lig</option>
-            <option value="Premier League">İngiltere - Premier League</option>
-            <option value="La Liga">İspanya - La Liga</option>
-            <option value="Bundesliga">Almanya - Bundesliga</option>
-            <option value="Serie A">İtalya - Serie A</option>
-            <option value="Ligue 1">Fransa - Ligue 1</option>
-          </select>
-
-        </div>
-
-        <div class="standings-table-wrapper">
-
-          <table class="standings-table">
-
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>TAKIM</th>
-                <th>O</th>
-                <th>P</th>
-              </tr>
-            </thead>
-
-            <tbody id="standingsTable">
-
-              <tr>
-                <td colspan="4" class="standings-loading">
-                  Puan durumu yükleniyor...
-                </td>
-              </tr>
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-        <a href="/puan-durumu/" class="all-news-link">
-          Tüm puan durumu →
-        </a>
-
-      </div>
-
-      <!-- HIZLI ERİŞİM -->
-      <div class="widget">
-
-        <div class="widget-title">
-          HIZLI ERİŞİM
-        </div>
-
-        <a class="quick-link" href="/maclar/">
-          Tüm maçlar <span>→</span>
-        </a>
-
-        <a class="quick-link" href="/puan-durumu/">
-          Puan durumu <span>→</span>
-        </a>
-
-        <a class="quick-link" href="/fikstur/">
-          Fikstür <span>→</span>
-        </a>
-
-        <a class="quick-link" href="/haberler/">
-          Spor haberleri <span>→</span>
-        </a>
-
-      </div>
-
-    </aside>
 
   </main>
 
   <!-- FOOTER -->
   <footer class="footer">
-
     <div class="container footer-inner">
 
       <div class="footer-brand">
@@ -333,18 +198,10 @@
       </div>
 
       <small>
-        Veri sağlayıcı:
-        <a href="https://sportscore.com/" target="_blank" rel="noopener">
-          SportScore
-        </a>
-      </small>
-
-      <small>
         © <span id="year"></span> SPORIX. Tüm hakları saklıdır.
       </small>
 
     </div>
-
   </footer>
 
 </body>
