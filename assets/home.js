@@ -629,9 +629,10 @@
       const slug = card.dataset.matchSlug;
 
       if (!slug) {
-        alert("Bu maç için API'den detay bağlantısı alınamadı.");
-        return;
-      }
+  console.log("SPORIX - Detay bağlantısı bulunamayan maç:", match);
+  alert("Maç bağlantısı bulunamadı. Konsoldaki maç verisini kontrol et.");
+  return;
+}
 
       window.location.href = matchDetailURL(slug);
     });
