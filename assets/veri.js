@@ -15,8 +15,12 @@
   const array = (...values) => values.find(Array.isArray) || [];
 
   const text = (value, fallback = "-") => {
-    if (value === undefined || value === null || value === "") return fallback;
+    if (value === undefined || value === null || value === "") {
+      return fallback;
+    }
+
     if (typeof value === "object") return fallback;
+
     return String(value);
   };
 
@@ -45,25 +49,29 @@
   }
 
   function showError(message) {
-    $("loading").classList.add("hidden");
-    $("matchPage").classList.add("hidden");
-    $("teamPage").classList.add("hidden");
-    $("error").classList.remove("hidden");
-    $("errorText").textContent = message;
+    $("loading")?.classList.add("hidden");
+    $("matchPage")?.classList.add("hidden");
+    $("teamPage")?.classList.add("hidden");
+    $("error")?.classList.remove("hidden");
+
+    if ($("errorText")) {
+      $("errorText").textContent = message;
+    }
   }
 
   function showLoading() {
-    $("loading").classList.remove("hidden");
-    $("error").classList.add("hidden");
-    $("matchPage").classList.add("hidden");
-    $("teamPage").classList.add("hidden");
+    $("loading")?.classList.remove("hidden");
+    $("error")?.classList.add("hidden");
+    $("matchPage")?.classList.add("hidden");
+    $("teamPage")?.classList.add("hidden");
   }
 
   function showPage(page) {
-    $("loading").classList.add("hidden");
-    $("error").classList.add("hidden");
-    $("matchPage").classList.toggle("hidden", page !== "match");
-    $("teamPage").classList.toggle("hidden", page !== "team");
+    $("loading")?.classList.add("hidden");
+    $("error")?.classList.add("hidden");
+
+    $("matchPage")?.classList.toggle("hidden", page !== "match");
+    $("teamPage")?.classList.toggle("hidden", page !== "team");
   }
 
   function unwrap(payload) {
@@ -82,7 +90,9 @@
 
   async function request(url) {
     const response = await fetch(url, {
-      headers: { Accept: "application/json" }
+      headers: {
+        Accept: "application/json"
+      }
     });
 
     if (!response.ok) {
@@ -132,21 +142,28 @@
   }
 
   function getMatchSlug(match) {
-    const parts = String(match.url || "")
-      .split("/")
-      .filter(Boolean);
+    const parts = String(
+      match.url ||
+      match.match_url ||
+      match.link ||
+      ""
+    ).split("/").filter(Boolean);
+
+    const matchIndex = parts.indexOf("match");
+
+    if (matchIndex !== -1 && parts[matchIndex + 1]) {
+      return parts[matchIndex + 1];
+    }
 
     return first(
       match.slug,
       match.match_slug,
       match.url_slug,
-      parts.length >= 2 ? parts[parts.length - 2] : ""
+      ""
     );
   }
 
   function getTeamSlug(team, match, side) {
-    const isHome = side === "home";
-
     return first(
       team.slug,
       team.team_slug,
@@ -287,11 +304,17 @@
     )).toLowerCase();
 
     const live = [
-      "live", "playing", "in_play", "inplay",
-      "1h", "2h", "ht", "extra_time"
+      "live",
+      "playing",
+      "in_play",
+      "inplay",
+      "1h",
+      "2h",
+      "ht",
+      "extra_time"
     ].some(value => statusValue.includes(value));
 
-    $("statusDot").classList.toggle("live", live);
+    $("statusDot")?.classList.toggle("live", live);
 
     const minute = first(
       match.minute ? `${match.minute}'` : null,
@@ -311,7 +334,11 @@
     let halfText = "";
 
     if (half && typeof half === "object") {
-      halfText = `İlk yarı: ${first(half.home, half.home_score, "-")} - ${first(half.away, half.away_score, "-")}`;
+      halfText = `İlk yarı: ${
+        first(half.home, half.home_score, "-")
+      } - ${
+        first(half.away, half.away_score, "-")
+      }`;
     } else if (half) {
       halfText = `İlk yarı: ${half}`;
     }
@@ -333,15 +360,19 @@
     const homeLink = $("homeTeamLink");
     const awayLink = $("awayTeamLink");
 
-    if (homeSlug) {
-      homeLink.href = `/veri.html?view=team&slug=${encodeURIComponent(homeSlug)}`;
+    if (homeLink && homeSlug) {
+      homeLink.href =
+        `/veri.html?view=team&slug=${encodeURIComponent(homeSlug)}`;
     }
 
-    if (awaySlug) {
-      awayLink.href = `/veri.html?view=team&slug=${encodeURIComponent(awaySlug)}`;
+    if (awayLink && awaySlug) {
+      awayLink.href =
+        `/veri.html?view=team&slug=${encodeURIComponent(awaySlug)}`;
     }
 
-    document.title = `${homeName || "Maç"} - ${awayName || "Detay"} | SPORIX`;
+    document.title =
+      `${homeName || "Maç"} - ${awayName || "Detay"} | SPORIX`;
+
     setText("breadcrumbCurrent", "Maç Detayı");
 
     const summary = first(
@@ -358,6 +389,10 @@
     );
   }
 
+  // =====================================
+  // MAÇ OLAYLARI
+  // =====================================
+
   function renderEvents(detail) {
     const match = detail.match || detail;
 
@@ -370,6 +405,9 @@
     );
 
     const container = $("eventsList");
+
+    if (!container) return;
+
     container.replaceChildren();
 
     if (!events.length) {
@@ -381,6 +419,7 @@
     const sorted = [...events].sort((a, b) => {
       const minuteA = Number(first(a.minute, a.time, a.elapsed, 0));
       const minuteB = Number(first(b.minute, b.time, b.elapsed, 0));
+
       return minuteA - minuteB;
     });
 
@@ -450,11 +489,24 @@
 
       const description = document.createElement("div");
       description.className = "event-description";
-      description.textContent = `${label}${player ? ` · ${typeof player === "object" ? first(player.name, player.player_name, "") : player}` : ""}`;
+
+      const playerName = typeof player === "object"
+        ? first(player.name, player.player_name, "")
+        : player;
+
+      description.textContent =
+        `${label}${playerName ? ` · ${playerName}` : ""}`;
 
       if (assist) {
         const small = document.createElement("small");
-        small.textContent = `Asist: ${typeof assist === "object" ? first(assist.name, assist.player_name, "") : assist}`;
+
+        small.textContent =
+          `Asist: ${
+            typeof assist === "object"
+              ? first(assist.name, assist.player_name, "")
+              : assist
+          }`;
+
         description.appendChild(small);
       }
 
@@ -463,17 +515,28 @@
       eventIcon.textContent = icon;
 
       row.append(minuteElement, description, eventIcon);
+
       container.appendChild(row);
     });
   }
 
+  // =====================================
+  // KADROLAR
+  // =====================================
+
   function normalizePlayer(player) {
-    if (typeof player === "string") return { name: player };
+    if (typeof player === "string") {
+      return { name: player };
+    }
+
     return player || {};
   }
 
   function renderPlayerList(containerId, players) {
     const container = $(containerId);
+
+    if (!container) return;
+
     container.replaceChildren();
 
     if (!Array.isArray(players) || !players.length) {
@@ -511,6 +574,7 @@
       nameElement.textContent = text(name, "Oyuncu bilgisi");
 
       row.append(numberElement, nameElement);
+
       container.appendChild(row);
     });
   }
@@ -561,37 +625,280 @@
     renderPlayerList("awaySubs", awaySubs);
   }
 
+  // =====================================
+  // İSTATİSTİK VERİLERİNİ NORMALLEŞTİR
+  // =====================================
+
   function normalizeStats(detail) {
     const match = detail.match || detail;
 
-    const stats = first(
-      detail.stats,
-      detail.statistics,
-      match.stats,
-      match.statistics
-    );
+    const isValue = value =>
+      value !== undefined &&
+      value !== null &&
+      value !== "" &&
+      typeof value !== "object";
 
-    if (Array.isArray(stats)) return stats;
+    const getValue = (object, keys) => {
+      if (!object || typeof object !== "object") {
+        return undefined;
+      }
 
-    if (stats && typeof stats === "object") {
-      return Object.entries(stats).map(([key, value]) => {
-        if (value && typeof value === "object") {
-          return {
-            name: first(value.name, value.type, key),
-            home: first(value.home, value.home_value, value.home_team),
-            away: first(value.away, value.away_value, value.away_team)
-          };
+      for (const key of keys) {
+        if (isValue(object[key])) {
+          return object[key];
+        }
+      }
+
+      return undefined;
+    };
+
+    const homeKeys = [
+      "home",
+      "home_value",
+      "home_team",
+      "home_team_value",
+      "value_home",
+      "homeValue",
+      "homeValueString",
+      "local",
+      "team1",
+      "participant1",
+      "first"
+    ];
+
+    const awayKeys = [
+      "away",
+      "away_value",
+      "away_team",
+      "away_team_value",
+      "value_away",
+      "awayValue",
+      "awayValueString",
+      "visitor",
+      "team2",
+      "participant2",
+      "second"
+    ];
+
+    const nameKeys = [
+      "name",
+      "type",
+      "title",
+      "label",
+      "stat_name",
+      "statistic",
+      "description"
+    ];
+
+    function normalizeArray(items) {
+      if (!Array.isArray(items)) return [];
+
+      return items.map(item => {
+        if (!item || typeof item !== "object") {
+          return null;
         }
 
-        return { name: key, home: value, away: "" };
-      });
+        const name = getValue(item, nameKeys);
+
+        let home = getValue(item, homeKeys);
+        let away = getValue(item, awayKeys);
+
+        if (home === undefined && item.values) {
+          home = getValue(item.values, homeKeys);
+        }
+
+        if (away === undefined && item.values) {
+          away = getValue(item.values, awayKeys);
+        }
+
+        if (
+          home === undefined &&
+          item.home &&
+          typeof item.home === "object"
+        ) {
+          home = getValue(
+            item.home,
+            ["value", "total", "count", "display"]
+          );
+        }
+
+        if (
+          away === undefined &&
+          item.away &&
+          typeof item.away === "object"
+        ) {
+          away = getValue(
+            item.away,
+            ["value", "total", "count", "display"]
+          );
+        }
+
+        if (home === undefined && away === undefined) {
+          return null;
+        }
+
+        return {
+          name: name || "İstatistik",
+          home,
+          away
+        };
+      }).filter(Boolean);
     }
 
-    return [];
+    function normalizeObject(stats) {
+      if (!stats || typeof stats !== "object") {
+        return [];
+      }
+
+      if (Array.isArray(stats)) {
+        return normalizeArray(stats);
+      }
+
+      const homeStats = stats.home || stats.home_stats;
+      const awayStats = stats.away || stats.away_stats;
+
+      if (
+        Array.isArray(homeStats) &&
+        Array.isArray(awayStats)
+      ) {
+        const result = [];
+
+        homeStats.forEach((item, index) => {
+          const awayItem = awayStats[index];
+
+          if (!item || !awayItem) return;
+
+          result.push({
+            name:
+              getValue(item, nameKeys) ||
+              getValue(awayItem, nameKeys) ||
+              "İstatistik",
+
+            home: getValue(
+              item,
+              ["value", "total", "count", "display"]
+            ),
+
+            away: getValue(
+              awayItem,
+              ["value", "total", "count", "display"]
+            )
+          });
+        });
+
+        return result.filter(item =>
+          item.home !== undefined ||
+          item.away !== undefined
+        );
+      }
+
+      const result = [];
+
+      Object.entries(stats).forEach(([key, value]) => {
+        if (!value || typeof value !== "object") {
+          return;
+        }
+
+        const home = getValue(value, homeKeys);
+        const away = getValue(value, awayKeys);
+
+        if (home !== undefined || away !== undefined) {
+          result.push({
+            name: getValue(value, nameKeys) || key,
+            home,
+            away
+          });
+        }
+      });
+
+      return result;
+    }
+
+    const possibleStats = [
+      detail.statistics,
+      detail.stats,
+      detail.match_statistics,
+      detail.matchStats,
+      detail.statistic,
+      match.statistics,
+      match.stats,
+      match.match_statistics,
+      match.matchStats,
+      match.statistic
+    ];
+
+    for (const candidate of possibleStats) {
+      const result = normalizeObject(candidate);
+
+      if (result.length) {
+        return result;
+      }
+    }
+
+    // İç içe nesnelerde istatistikleri ara.
+    const visited = new Set();
+
+    function searchNested(object, depth = 0) {
+      if (!object || typeof object !== "object") {
+        return [];
+      }
+
+      if (depth > 5 || visited.has(object)) {
+        return [];
+      }
+
+      visited.add(object);
+
+      if (Array.isArray(object)) {
+        const result = normalizeArray(object);
+
+        if (result.length) return result;
+
+        for (const item of object) {
+          const nested = searchNested(item, depth + 1);
+
+          if (nested.length) return nested;
+        }
+
+        return [];
+      }
+
+      for (const key of Object.keys(object)) {
+        const normalizedKey = key.toLowerCase();
+
+        if (
+          normalizedKey.includes("stat") ||
+          normalizedKey.includes("period")
+        ) {
+          const result = normalizeObject(object[key]);
+
+          if (result.length) return result;
+        }
+      }
+
+      for (const value of Object.values(object)) {
+        if (value && typeof value === "object") {
+          const nested = searchNested(value, depth + 1);
+
+          if (nested.length) return nested;
+        }
+      }
+
+      return [];
+    }
+
+    return searchNested(detail);
   }
+
+  // =====================================
+  // İSTATİSTİKLERİ EKRANA BAS
+  // =====================================
 
   function renderStats(detail) {
     const container = $("statisticsList");
+
+    if (!container) return;
+
     container.replaceChildren();
 
     const stats = normalizeStats(detail);
@@ -599,41 +906,83 @@
     if (!stats.length) {
       container.innerHTML =
         '<div class="empty-state">Bu maç için istatistik verisi henüz sağlanmamış.</div>';
+
       return;
     }
 
     stats.forEach(stat => {
-      const name = first(stat.name, stat.type, stat.title, stat.label);
+      const name = first(
+        stat.name,
+        stat.type,
+        stat.title,
+        stat.label
+      );
 
       const home = first(
         stat.home,
         stat.home_value,
         stat.home_team,
-        stat.value_home,
-        0
+        stat.value_home
       );
 
       const away = first(
         stat.away,
         stat.away_value,
         stat.away_team,
-        stat.value_away,
-        0
+        stat.value_away
       );
 
-      const homeNumber = Number(String(home).replace("%", "").replace(",", "."));
-      const awayNumber = Number(String(away).replace("%", "").replace(",", "."));
+      if (home === undefined && away === undefined) {
+        return;
+      }
+
+      const homeText = text(home, "-");
+      const awayText = text(away, "-");
+
+      function parseNumber(value) {
+        if (value === undefined || value === null) {
+          return null;
+        }
+
+        const cleaned = String(value)
+          .replace("%", "")
+          .replace(",", ".")
+          .trim();
+
+        const number = Number(cleaned);
+
+        return Number.isFinite(number) && number >= 0
+          ? number
+          : null;
+      }
+
+      const homeNumber = parseNumber(home);
+      const awayNumber = parseNumber(away);
 
       let homeWidth = 50;
       let awayWidth = 50;
 
       if (
-        Number.isFinite(homeNumber) &&
-        Number.isFinite(awayNumber) &&
+        homeNumber !== null &&
+        awayNumber !== null &&
         homeNumber + awayNumber > 0
       ) {
-        homeWidth = homeNumber / (homeNumber + awayNumber) * 100;
+        homeWidth =
+          (homeNumber / (homeNumber + awayNumber)) * 100;
+
         awayWidth = 100 - homeWidth;
+      } else if (
+        homeNumber !== null &&
+        awayNumber === null
+      ) {
+        homeWidth = 100;
+        awayWidth = 0;
+      } else if (
+        awayNumber !== null &&
+        homeNumber === null
+      ) {
+        homeWidth = 0;
+        awayWidth = 100;
       }
 
       const row = document.createElement("div");
@@ -647,7 +996,7 @@
       values.className = "stat-values";
 
       const homeValue = document.createElement("span");
-      homeValue.textContent = text(home);
+      homeValue.textContent = homeText;
 
       const bars = document.createElement("div");
       bars.className = "stat-bars";
@@ -663,13 +1012,24 @@
       bars.append(homeBar, awayBar);
 
       const awayValue = document.createElement("span");
-      awayValue.textContent = text(away);
+      awayValue.textContent = awayText;
 
       values.append(homeValue, bars, awayValue);
+
       row.append(label, values);
+
       container.appendChild(row);
     });
+
+    if (!container.children.length) {
+      container.innerHTML =
+        '<div class="empty-state">Bu maç için gösterilebilir istatistik bulunamadı.</div>';
+    }
   }
+
+  // =====================================
+  // MAÇ VERİLERİNİ YÜKLE
+  // =====================================
 
   async function loadMatch() {
     if (!slug) {
@@ -688,6 +1048,8 @@
         throw new Error("Maç verisi bulunamadı.");
       }
 
+      console.log("SPORIX maç detay verisi:", detail);
+
       renderMatchHeader(detail);
       renderEvents(detail);
       renderLineups(detail);
@@ -696,7 +1058,10 @@
       showPage("match");
     } catch (error) {
       console.error("SPORIX maç detayı:", error);
-      showError(error.message || "Maç bilgileri alınamadı.");
+
+      showError(
+        error.message || "Maç bilgileri alınamadı."
+      );
     }
   }
 
@@ -706,11 +1071,15 @@
 
   function renderTeamMatches(matches) {
     const container = $("teamMatches");
+
+    if (!container) return;
+
     container.replaceChildren();
 
     if (!matches.length) {
       container.innerHTML =
         '<div class="empty-state">Bu takım için maç kaydı bulunamadı.</div>';
+
       return;
     }
 
@@ -746,13 +1115,26 @@
         match.away_team_logo
       );
 
-      const homeScore = first(match.home_score, match.homeScore, "-");
-      const awayScore = first(match.away_score, match.awayScore, "-");
+      const homeScore = first(
+        match.home_score,
+        match.homeScore,
+        "-"
+      );
+
+      const awayScore = first(
+        match.away_score,
+        match.awayScore,
+        "-"
+      );
 
       const status = first(
         match.status_text,
         match.status,
-        formatDate(first(match.time, match.date, match.match_time))
+        formatDate(first(
+          match.time,
+          match.date,
+          match.match_time
+        ))
       );
 
       const matchSlug = getMatchSlug(match);
@@ -761,11 +1143,17 @@
       link.className = "team-match";
 
       if (matchSlug) {
-        link.href = `/veri.html?view=match&slug=${encodeURIComponent(matchSlug)}`;
+        link.href =
+          `/veri.html?view=match&slug=${encodeURIComponent(matchSlug)}`;
       } else {
         link.href = "#";
-        link.addEventListener("click", event => event.preventDefault());
-        link.title = "Bu maç için detay bağlantısı sağlanmamış.";
+
+        link.addEventListener("click", event => {
+          event.preventDefault();
+        });
+
+        link.title =
+          "Bu maç için detay bağlantısı sağlanmamış.";
       }
 
       const homeSide = document.createElement("div");
@@ -773,6 +1161,7 @@
 
       const homeImage = document.createElement("img");
       homeImage.alt = "";
+
       if (homeLogo) {
         homeImage.src = homeLogo;
       } else {
@@ -790,6 +1179,7 @@
 
       const scoreStatus = document.createElement("small");
       scoreStatus.textContent = text(status);
+
       score.appendChild(scoreStatus);
 
       const awaySide = document.createElement("div");
@@ -800,6 +1190,7 @@
 
       const awayImage = document.createElement("img");
       awayImage.alt = "";
+
       if (awayLogo) {
         awayImage.src = awayLogo;
       } else {
@@ -809,12 +1200,18 @@
       awaySide.append(awayText, awayImage);
 
       link.append(homeSide, score, awaySide);
+
       container.appendChild(link);
     });
   }
 
   function renderTeamPage(data) {
-    const team = first(data.team, data.club, data, {});
+    const team = first(
+      data.team,
+      data.club,
+      data,
+      {}
+    );
 
     const name = first(
       team.name,
@@ -831,7 +1228,9 @@
     const league = first(
       team.league_name,
       team.competition_name,
-      typeof team.league === "string" ? team.league : team.league?.name,
+      typeof team.league === "string"
+        ? team.league
+        : team.league?.name,
       data.league_name
     );
 
@@ -888,11 +1287,17 @@
         throw new Error("Takım verisi bulunamadı.");
       }
 
+      console.log("SPORIX takım verisi:", data);
+
       renderTeamPage(data);
+
       showPage("team");
     } catch (error) {
       console.error("SPORIX takım detayı:", error);
-      showError(error.message || "Takım bilgileri alınamadı.");
+
+      showError(
+        error.message || "Takım bilgileri alınamadı."
+      );
     }
   }
 
@@ -912,7 +1317,7 @@
     });
   }
 
-  $("retryButton").addEventListener("click", () => {
+  $("retryButton")?.addEventListener("click", () => {
     if (view === "team") {
       loadTeam();
     } else {
@@ -929,4 +1334,5 @@
   } else {
     showError("Geçersiz sayfa türü.");
   }
+
 })();
