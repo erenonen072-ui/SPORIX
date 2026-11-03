@@ -26,9 +26,11 @@ let currentCompetitionName =
 
 let currentFilter = "all";
 let allMatches = [];
+
 let matchController = null;
 let searchController = null;
 let searchTimer = null;
+
 let requestId = 0;
 let loading = false;
 
@@ -53,6 +55,76 @@ function escapeHTML(value) {
     '"': "&quot;",
     "'": "&#39;"
   })[char]);
+}
+
+// ========================================
+// SLUG VE DETAY BAĞLANTILARI
+// ========================================
+
+function slugify(value) {
+  return String(value || "")
+    .toLocaleLowerCase("tr-TR")
+    .replace(/ı/g, "i")
+    .replace(/ğ/g, "g")
+    .replace(/ü/g, "u")
+    .replace(/ş/g, "s")
+    .replace(/ö/g, "o")
+    .replace(/ç/g, "c")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function extractSlugFromUrl(value) {
+  if (!value || typeof value !== "string") return "";
+
+  try {
+    const url = new URL(value, location.origin);
+    const parts = url.pathname.split("/").filter(Boolean);
+
+    const matchIndex = parts.indexOf("match");
+
+    if (matchIndex !== -1 && parts[matchIndex + 1]) {
+      return parts[matchIndex + 1];
+    }
+
+    return parts.at(-1) || "";
+  } catch {
+    return "";
+  }
+}
+
+function getMatchSlug(match, homeName, awayName) {
+  return (
+    match.slug ||
+    match.match_slug ||
+    match.url_slug ||
+    extractSlugFromUrl(match.url) ||
+    extractSlugFromUrl(match.match_url) ||
+    slugify(`${homeName}-vs-${awayName}`)
+  );
+}
+
+function getTeamSlug(match, team, side, name) {
+  const direct = side === "home"
+    ? match.home_team_slug || match.home_slug
+    : match.away_team_slug || match.away_slug;
+
+  return (
+    team?.slug ||
+    team?.team_slug ||
+    team?.url_slug ||
+    extractSlugFromUrl(team?.url) ||
+    direct ||
+    slugify(name)
+  );
+}
+
+function matchDetailUrl(slug) {
+  return `/veri.html?view=match&slug=${encodeURIComponent(slug)}`;
+}
+
+function teamDetailUrl(slug) {
+  return `/veri.html?view=team&slug=${encodeURIComponent(slug)}`;
 }
 
 // ========================================
@@ -98,6 +170,7 @@ function getMatches(data) {
   if (Array.isArray(data?.fixtures)) return data.fixtures;
   if (Array.isArray(data?.results)) return data.results;
   if (Array.isArray(data?.data?.matches)) return data.data.matches;
+  if (Array.isArray(data?.data?.fixtures)) return data.data.fixtures;
 
   return [];
 }
@@ -299,6 +372,11 @@ function renderMatch(match) {
     suspended: "DURDURULDU"
   };
 
+  const matchSlug = getMatchSlug(match, homeName, awayName);
+
+  const homeSlug = getTeamSlug(match, home, "home", homeName);
+  const awaySlug = getTeamSlug(match, away, "away", awayName);
+
   const homeImage = homeLogo
     ? `<img src="${escapeHTML(homeLogo)}" alt="${escapeHTML(homeName)}" loading="lazy">`
     : `<span class="team-placeholder">⚽</span>`;
@@ -308,7 +386,14 @@ function renderMatch(match) {
     : `<span class="team-placeholder">⚽</span>`;
 
   return `
-    <article class="match-card" data-status="${status}">
+    <article
+      class="match-card"
+      data-status="${status}"
+      data-match-slug="${escapeHTML(matchSlug)}"
+      tabindex="0"
+      role="link"
+      aria-label="${escapeHTML(homeName)} - ${escapeHTML(awayName)} maç detayını aç"
+    >
 
       <div class="match-card-top">
 
@@ -325,10 +410,15 @@ function renderMatch(match) {
 
       <div class="match-card-body">
 
-        <div class="match-team">
+        <a
+          class="match-team"
+          href="${teamDetailUrl(homeSlug)}"
+          data-team-link
+          aria-label="${escapeHTML(homeName)} takım profilini aç"
+        >
           ${homeImage}
           <span>${escapeHTML(homeName)}</span>
-        </div>
+        </a>
 
         <div class="match-result">
 
@@ -344,10 +434,15 @@ function renderMatch(match) {
 
         </div>
 
-        <div class="match-team away">
-          ${awayImage}
+        <a
+          class="match-team away"
+          href="${teamDetailUrl(awaySlug)}"
+          data-team-link
+          aria-label="${escapeHTML(awayName)} takım profilini aç"
+        >
           <span>${escapeHTML(awayName)}</span>
-        </div>
+          ${awayImage}
+        </a>
 
       </div>
 
@@ -397,6 +492,45 @@ function renderMatches() {
 }
 
 // ========================================
+// MAÇ KARTI VE TAKIM TIKLAMA SİSTEMİ
+// ========================================
+
+matchesBox?.addEventListener("click", event => {
+  const teamLink = event.target.closest("[data-team-link]");
+
+  // Takım bağlantısı kendi adresine gitsin.
+  if (teamLink) return;
+
+  const card = event.target.closest(".match-card");
+
+  if (!card) return;
+
+  const slug = card.dataset.matchSlug;
+
+  if (!slug) return;
+
+  window.location.href = matchDetailUrl(slug);
+});
+
+matchesBox?.addEventListener("keydown", event => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+
+  const card = event.target.closest(".match-card");
+
+  if (!card) return;
+
+  if (event.target.closest("[data-team-link]")) return;
+
+  event.preventDefault();
+
+  const slug = card.dataset.matchSlug;
+
+  if (slug) {
+    window.location.href = matchDetailUrl(slug);
+  }
+});
+
+// ========================================
 // HATA MESAJI
 // ========================================
 
@@ -405,9 +539,7 @@ function showError(message) {
 
   matchesBox.innerHTML = `
     <div class="error-state">
-
       <h3>Maçlar yüklenemedi</h3>
-
       <p>${escapeHTML(message)}</p>
 
       <button
@@ -417,7 +549,6 @@ function showError(message) {
       >
         Tekrar dene
       </button>
-
     </div>
   `;
 
@@ -482,9 +613,6 @@ async function loadMatches(force = false) {
 
     if (thisRequest !== requestId) return;
 
-    // API seçilen lige ait maçları döndürüyor.
-    // İkinci bir filtre uygulamadan sonuçları alıyoruz.
-
     const selectedLeague = TURKISH_LEAGUES.find(
       league => league.slug === currentCompetition
     );
@@ -497,8 +625,6 @@ async function loadMatches(force = false) {
       gelenMacSayisi: allMatches.length,
       maclar: allMatches
     });
-
-    // Maçları saate göre sırala.
 
     allMatches.sort((a, b) => {
       const aTime = new Date(
@@ -517,7 +643,6 @@ async function loadMatches(force = false) {
     }
 
     updateDate();
-
     renderMatches();
 
   } catch (error) {
@@ -552,9 +677,7 @@ function selectCompetition(slug, name) {
   if (!/^[a-z0-9-]+$/i.test(slug)) return;
 
   currentCompetition = slug;
-
   currentCompetitionName = name || slug;
-
   currentFilter = "all";
 
   if (leagueSelect) {
@@ -705,7 +828,6 @@ async function searchCompetitions(query) {
           data-slug="${escapeHTML(item.slug)}"
           data-name="${escapeHTML(item.name || item.slug)}"
         >
-
           ${logo}
 
           <span class="competition-result-name">
@@ -713,7 +835,6 @@ async function searchCompetitions(query) {
           </span>
 
           <b>Seç →</b>
-
         </button>
       `;
     }).join("");
@@ -798,7 +919,6 @@ updateDate();
 loadMatches();
 
 // 30 saniyede bir otomatik yenileme.
-
 setInterval(() => {
   if (!document.hidden && !loading) {
     loadMatches();
