@@ -24,7 +24,6 @@
   let selectedDate = dateKey(new Date());
   let selectedLeague = "";
   let loading = false;
-  let standingsLoading = false;
   let standingsRequestId = 0;
 
   // ==========================================
@@ -113,6 +112,92 @@
   }
 
   // ==========================================
+  // SLUG VE DETAY SAYFALARI
+  // ==========================================
+
+  function slugify(value) {
+    return String(value || "")
+      .toLocaleLowerCase("tr-TR")
+      .replace(/ı/g, "i")
+      .replace(/ğ/g, "g")
+      .replace(/ü/g, "u")
+      .replace(/ş/g, "s")
+      .replace(/ö/g, "o")
+      .replace(/ç/g, "c")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+  }
+
+  function extractSlug(value, type = "match") {
+    const url = cleanURL(value);
+
+    if (!url) return "";
+
+    try {
+      const parts = new URL(url).pathname
+        .split("/")
+        .filter(Boolean);
+
+      const routeIndex = parts.indexOf(type);
+
+      if (routeIndex !== -1 && parts[routeIndex + 1]) {
+        return parts[routeIndex + 1];
+      }
+
+      return parts.at(-1) || "";
+    } catch {
+      return "";
+    }
+  }
+
+  function getMatchSlug(match) {
+    return (
+      match?.slug ||
+      match?.match_slug ||
+      match?.url_slug ||
+      extractSlug(match?.url, "match") ||
+      extractSlug(match?.match_url, "match") ||
+      ""
+    );
+  }
+
+  function getTeam(match, side) {
+    return match?.[side] ||
+      match?.[`${side}_team`] ||
+      match?.teams?.[side] ||
+      {};
+  }
+
+  function getTeamSlug(match, side) {
+    const team = getTeam(match, side);
+
+    const directSlug = side === "home"
+      ? match?.home_team_slug || match?.home_slug
+      : match?.away_team_slug || match?.away_slug;
+
+    const teamUrl = team?.url ||
+      team?.team_url ||
+      match?.[`${side}_team_url`];
+
+    return (
+      team?.slug ||
+      team?.team_slug ||
+      team?.url_slug ||
+      directSlug ||
+      extractSlug(teamUrl, "team") ||
+      slugify(getName(team))
+    );
+  }
+
+  function matchDetailURL(slug) {
+    return `/veri.html?view=match&slug=${encodeURIComponent(slug)}`;
+  }
+
+  function teamDetailURL(slug) {
+    return `/veri.html?view=team&slug=${encodeURIComponent(slug)}`;
+  }
+
+  // ==========================================
   // TAKIM BİLGİLERİ
   // ==========================================
 
@@ -126,19 +211,20 @@
   }
 
   function getLogo(match, side) {
-    const team = match?.[side];
+    const team = getTeam(match, side);
 
     const candidates = [
       match?.[`${side}_logo`],
       typeof team === "object" ? team?.logo : "",
-      typeof team === "object" ? team?.image : ""
+      typeof team === "object" ? team?.image : "",
+      typeof team === "object" ? team?.crest : ""
     ];
 
     return cleanURL(candidates.find(Boolean));
   }
 
   // ==========================================
-  // LİG ADI - DÜZELTİLDİ
+  // LİG ADI
   // ==========================================
 
   function normalizeLeague(value) {
@@ -150,7 +236,6 @@
   }
 
   function getLeague(match) {
-    // API'nin Türkçe lig adı varsa öncelikle onu kullan.
     if (match?.competition_name) {
       return match.competition_name;
     }
@@ -174,24 +259,6 @@
     );
   }
 
-  function getSlug(match) {
-    if (match?.slug) return match.slug;
-
-    const url = cleanURL(match?.url);
-
-    if (url) {
-      try {
-        return new URL(url)
-          .pathname
-          .split("/")
-          .filter(Boolean)
-          .at(-1) || "";
-      } catch (_) {}
-    }
-
-    return "";
-  }
-
   // ==========================================
   // LİG EŞLEŞTİRME
   // ==========================================
@@ -200,7 +267,6 @@
     if (!selectedLeague) return true;
 
     const selected = normalizeLeague(selectedLeague);
-
     const leagueName = normalizeLeague(getLeague(match));
 
     if (leagueName === selected) return true;
@@ -224,7 +290,9 @@
 
   function getStatus(match) {
     const status = String(
-      match?.status || ""
+      match?.status?.name ||
+      match?.status ||
+      ""
     ).toLowerCase();
 
     const text = String(
@@ -295,14 +363,6 @@
     return date && dateKey(date) === selectedDate;
   }
 
-  function matchLink(match) {
-    const slug = getSlug(match);
-
-    return slug
-      ? `/veri.html?view=match&slug=${encodeURIComponent(slug)}`
-      : "/maclar/";
-  }
-
   // ==========================================
   // TARİH SEÇİMİ
   // ==========================================
@@ -317,7 +377,6 @@
       const date = new Date(today);
 
       date.setDate(today.getDate() + offset);
-
       dates.push(date);
     }
 
@@ -419,11 +478,16 @@
     const status = getStatus(match);
     const score = getScore(match);
 
-    const home = getName(match.home);
-    const away = getName(match.away);
+    const home = getName(getTeam(match, "home"));
+    const away = getName(getTeam(match, "away"));
 
     const homeLogo = getLogo(match, "home");
     const awayLogo = getLogo(match, "away");
+
+    const matchSlug = getMatchSlug(match);
+
+    const homeSlug = getTeamSlug(match, "home");
+    const awaySlug = getTeamSlug(match, "away");
 
     const clock = status === "live"
       ? "CANLI"
@@ -436,89 +500,163 @@
           );
 
     return `
-      <a
-        class="match-row-link"
-        href="${escapeHTML(matchLink(match))}"
+      <article
+        class="match-row"
+        data-match-card
+        data-match-slug="${escapeHTML(matchSlug)}"
+        tabindex="0"
+        role="link"
+        aria-label="${escapeHTML(home)} - ${escapeHTML(away)} maç detayını aç"
       >
-        <article class="match-row">
 
-          <div class="match-card-top">
-            <span class="match-league-name">
-              ${escapeHTML(getLeague(match))}
+        <div class="match-card-top">
+
+          <span class="match-league-name">
+            ${escapeHTML(getLeague(match))}
+          </span>
+
+          <span class="match-start-time">
+            ${
+              status === "upcoming"
+                ? escapeHTML(clock)
+                : ""
+            }
+          </span>
+
+        </div>
+
+        <div class="match-card-content">
+
+          <a
+            class="match-side home-side"
+            href="${teamDetailURL(homeSlug)}"
+            data-team-link
+            aria-label="${escapeHTML(home)} takım profilini aç"
+          >
+
+            ${
+              homeLogo
+                ? `<img
+                    src="${escapeHTML(homeLogo)}"
+                    alt="${escapeHTML(home)}"
+                    loading="lazy"
+                    onerror="this.style.display='none'"
+                  >`
+                : ""
+            }
+
+            <span class="team-name">
+              ${escapeHTML(home)}
             </span>
 
-            <span class="match-start-time">
-              ${
-                status === "upcoming"
-                  ? escapeHTML(clock)
+          </a>
+
+          <div class="match-center">
+
+            <strong class="score">
+              ${escapeHTML(score || "–")}
+            </strong>
+
+            <span class="status ${
+              status === "live"
+                ? "live"
+                : status === "finished"
+                  ? "finished"
                   : ""
-              }
-            </span>
-          </div>
+            }">
 
-          <div class="match-card-content">
-
-            <div class="match-side home-side">
               ${
-                homeLogo
-                  ? `<img
-                      src="${escapeHTML(homeLogo)}"
-                      alt=""
-                      loading="lazy"
-                      onerror="this.style.display='none'"
-                    >`
-                  : ""
-              }
-
-              <span class="team-name">
-                ${escapeHTML(home)}
-              </span>
-            </div>
-
-            <div class="match-center">
-              <strong class="score">
-                ${escapeHTML(score || "–")}
-              </strong>
-
-              <span class="status ${
                 status === "live"
-                  ? "live"
+                  ? "CANLI"
                   : status === "finished"
-                    ? "finished"
-                    : ""
-              }">
-                ${
-                  status === "live"
-                    ? "CANLI"
-                    : status === "finished"
-                      ? "BİTTİ"
-                      : "VS"
-                }
-              </span>
-            </div>
-
-            <div class="match-side away-side">
-              <span class="team-name">
-                ${escapeHTML(away)}
-              </span>
-
-              ${
-                awayLogo
-                  ? `<img
-                      src="${escapeHTML(awayLogo)}"
-                      alt=""
-                      loading="lazy"
-                      onerror="this.style.display='none'"
-                    >`
-                  : ""
+                    ? "BİTTİ"
+                    : "VS"
               }
-            </div>
+
+            </span>
 
           </div>
 
-        </article>
-      </a>
+          <a
+            class="match-side away-side"
+            href="${teamDetailURL(awaySlug)}"
+            data-team-link
+            aria-label="${escapeHTML(away)} takım profilini aç"
+          >
+
+            <span class="team-name">
+              ${escapeHTML(away)}
+            </span>
+
+            ${
+              awayLogo
+                ? `<img
+                    src="${escapeHTML(awayLogo)}"
+                    alt="${escapeHTML(away)}"
+                    loading="lazy"
+                    onerror="this.style.display='none'"
+                  >`
+                : ""
+            }
+
+          </a>
+
+        </div>
+
+      </article>
     `;
+  }
+
+  // ==========================================
+  // MAÇ KARTI TIKLAMA SİSTEMİ
+  // ==========================================
+
+  if (matchList) {
+    matchList.addEventListener("click", event => {
+
+      // Takım bağlantısına basıldıysa takım profiline git.
+      const teamLink = event.target.closest("[data-team-link]");
+
+      if (teamLink) {
+        return;
+      }
+
+      // Maç kartına basıldıysa maç detayını aç.
+      const card = event.target.closest("[data-match-card]");
+
+      if (!card) return;
+
+      const slug = card.dataset.matchSlug;
+
+      if (!slug) {
+        alert("Bu maç için API'den detay bağlantısı alınamadı.");
+        return;
+      }
+
+      window.location.href = matchDetailURL(slug);
+    });
+
+    matchList.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") {
+        return;
+      }
+
+      const card = event.target.closest("[data-match-card]");
+
+      if (!card) return;
+
+      if (event.target.closest("[data-team-link]")) {
+        return;
+      }
+
+      event.preventDefault();
+
+      const slug = card.dataset.matchSlug;
+
+      if (slug) {
+        window.location.href = matchDetailURL(slug);
+      }
+    });
   }
 
   // ==========================================
@@ -598,6 +736,7 @@
           <section class="league-group">
 
             <div class="league-title">
+
               ${
                 logo
                   ? `<img
@@ -612,6 +751,7 @@
               <span>${escapeHTML(league)}</span>
 
               <small>${items.length} MAÇ</small>
+
             </div>
 
             ${items.map(renderMatch).join("")}
@@ -667,7 +807,6 @@
       url.searchParams.set("date", selectedDate);
       url.searchParams.set("limit", "200");
 
-      // Tüm liglerin maçları tek seferde alınır.
       const response = await fetch(url, {
         cache: "no-store"
       });
@@ -814,9 +953,11 @@
           <td>${escapeHTML(won)}</td>
           <td>${escapeHTML(drawn)}</td>
           <td>${escapeHTML(lost)}</td>
+
           <td>
             ${escapeHTML(goalsFor)}:${escapeHTML(goalsAgainst)}
           </td>
+
           <td>
             <strong>${escapeHTML(points)}</strong>
           </td>
@@ -834,7 +975,6 @@
     }
 
     const thisRequest = ++standingsRequestId;
-
     const league = standingsLeague.value;
 
     standingsTable.innerHTML = `
