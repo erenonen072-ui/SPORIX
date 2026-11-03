@@ -1,77 +1,97 @@
-
 (() => {
   "use strict";
 
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(location.search);
   const view = params.get("view") || "match";
   const slug = params.get("slug") || "";
-
   const $ = id => document.getElementById(id);
 
-  const first = (...values) => values.find(value =>
-    value !== undefined && value !== null && value !== ""
+  const first = (...values) => values.find(v =>
+    v !== undefined && v !== null && v !== ""
   );
 
   const array = (...values) => values.find(Array.isArray) || [];
 
-  const text = (value, fallback = "-") => {
-    if (value === undefined || value === null || value === "") {
-      return fallback;
+  const value = (v, fallback = "-") =>
+    v === undefined || v === null || v === "" || typeof v === "object"
+      ? fallback
+      : String(v);
+
+  function setText(id, val, fallback = "-") {
+    const el = $(id);
+    if (el) el.textContent = value(val, fallback);
+  }
+
+  function cleanImageUrl(input) {
+    if (typeof input !== "string") return "";
+
+    let url = input.trim();
+
+    const markdown = url.match(/\]\((https?:\/\/[^)]+)\)/);
+    if (markdown) url = markdown[1];
+
+    const bracket = url.match(/^\[(https?:\/\/[^\]]+)\]$/);
+    if (bracket) url = bracket[1];
+
+    if (!/^https?:\/\//i.test(url)) return "";
+
+    try {
+      const parsed = new URL(url);
+      return ["http:", "https:"].includes(parsed.protocol) ? url : "";
+    } catch {
+      return "";
     }
-
-    if (typeof value === "object") return fallback;
-
-    return String(value);
-  };
-
-  function setText(id, value, fallback = "-") {
-    const element = $(id);
-    if (element) element.textContent = text(value, fallback);
   }
 
   function setImage(id, url, alt = "") {
-    const element = $(id);
-    if (!element) return;
+    const el = $(id);
+    if (!el) return;
 
-    if (url && typeof url === "string") {
-      element.src = url;
-      element.alt = alt;
-      element.classList.remove("hidden");
+    const safeUrl = cleanImageUrl(url);
 
-      element.onerror = () => {
-        element.removeAttribute("src");
-        element.classList.add("hidden");
-      };
-    } else {
-      element.removeAttribute("src");
-      element.classList.add("hidden");
+    if (!safeUrl) {
+      el.removeAttribute("src");
+      el.classList.add("hidden");
+      return;
     }
-  }
 
-  function showError(message) {
-    $("loading")?.classList.add("hidden");
-    $("matchPage")?.classList.add("hidden");
-    $("teamPage")?.classList.add("hidden");
-    $("error")?.classList.remove("hidden");
+    el.src = safeUrl;
+    el.alt = alt;
+    el.classList.remove("hidden");
 
-    if ($("errorText")) {
-      $("errorText").textContent = message;
-    }
+    el.onerror = () => {
+      el.removeAttribute("src");
+      el.classList.add("hidden");
+    };
   }
 
   function showLoading() {
     $("loading")?.classList.remove("hidden");
     $("error")?.classList.add("hidden");
-    $("matchPage")?.classList.add("hidden");
-    $("teamPage")?.classList.add("hidden");
+
+    ["matchPage", "teamPage", "playerPage"].forEach(id =>
+      $(id)?.classList.add("hidden")
+    );
+  }
+
+  function showError(message) {
+    $("loading")?.classList.add("hidden");
+
+    ["matchPage", "teamPage", "playerPage"].forEach(id =>
+      $(id)?.classList.add("hidden")
+    );
+
+    $("error")?.classList.remove("hidden");
+    setText("errorText", message, "Bilgiler yüklenemedi.");
   }
 
   function showPage(page) {
     $("loading")?.classList.add("hidden");
     $("error")?.classList.add("hidden");
 
-    $("matchPage")?.classList.toggle("hidden", page !== "match");
-    $("teamPage")?.classList.toggle("hidden", page !== "team");
+    ["matchPage", "teamPage", "playerPage"].forEach(id => {
+      $(id)?.classList.toggle("hidden", id !== `${page}Page`);
+    });
   }
 
   function unwrap(payload) {
@@ -90,9 +110,7 @@
 
   async function request(url) {
     const response = await fetch(url, {
-      headers: {
-        Accept: "application/json"
-      }
+      headers: { Accept: "application/json" }
     });
 
     if (!response.ok) {
@@ -110,14 +128,11 @@
     return unwrap(payload);
   }
 
-  function formatDate(value) {
-    if (!value) return "Tarih bilgisi yok";
+  function formatDate(input) {
+    if (!input) return "Tarih bilgisi yok";
 
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-      return String(value);
-    }
+    const date = new Date(input);
+    if (Number.isNaN(date.getTime())) return String(input);
 
     return new Intl.DateTimeFormat("tr-TR", {
       day: "2-digit",
@@ -128,8 +143,8 @@
     }).format(date);
   }
 
-  function slugify(value) {
-    return String(value || "")
+  function slugify(input) {
+    return String(input || "")
       .toLocaleLowerCase("tr-TR")
       .replace(/ı/g, "i")
       .replace(/ğ/g, "g")
@@ -141,26 +156,51 @@
       .replace(/^-|-$/g, "");
   }
 
-  function getMatchSlug(match) {
-    const parts = String(
-      match.url ||
-      match.match_url ||
-      match.link ||
-      ""
-    ).split("/").filter(Boolean);
-
-    const matchIndex = parts.indexOf("match");
-
-    if (matchIndex !== -1 && parts[matchIndex + 1]) {
-      return parts[matchIndex + 1];
-    }
-
+  function getPlayerSlug(player) {
     return first(
-      match.slug,
-      match.match_slug,
-      match.url_slug,
+      player.slug,
+      player.player_slug,
+      player.url_slug,
+      player.url?.split("/").filter(Boolean).pop(),
+      player.player_url?.split("/").filter(Boolean).pop(),
       ""
     );
+  }
+
+  function getPlayerName(player) {
+    if (typeof player === "string") return player;
+
+    return first(
+      player.name,
+      player.player_name,
+      player.athlete_name,
+      player.title,
+      "Oyuncu"
+    );
+  }
+
+  function playerLink(player) {
+    const playerSlug = getPlayerSlug(player);
+
+    if (!playerSlug || !/^[a-z0-9-]+$/i.test(playerSlug)) {
+      return "";
+    }
+
+    return `/veri.html?view=player&slug=${encodeURIComponent(playerSlug)}`;
+  }
+
+  function getMatchSlug(match) {
+    const parts = String(
+      match.url || match.match_url || match.link || ""
+    ).split("/").filter(Boolean);
+
+    const index = parts.indexOf("match");
+
+    if (index !== -1 && parts[index + 1]) {
+      return parts[index + 1];
+    }
+
+    return first(match.slug, match.match_slug, match.url_slug, "");
   }
 
   function getTeamSlug(team, match, side) {
@@ -176,19 +216,8 @@
   function getTeams(detail) {
     const match = detail.match || detail;
 
-    let home = first(
-      match.home_team,
-      match.homeTeam,
-      match.home,
-      {}
-    );
-
-    let away = first(
-      match.away_team,
-      match.awayTeam,
-      match.away,
-      {}
-    );
+    let home = first(match.home_team, match.homeTeam, match.home, {});
+    let away = first(match.away_team, match.awayTeam, match.away, {});
 
     if (typeof home === "string") home = { name: home };
     if (typeof away === "string") away = { name: away };
@@ -197,7 +226,7 @@
   }
 
   // =====================================
-  // MAÇ DETAY SAYFASI
+  // MAÇ BAŞLIĞI
   // =====================================
 
   function renderMatchHeader(detail) {
@@ -217,33 +246,11 @@
       typeof match.away === "string" ? match.away : null
     );
 
-    const homeLogo = first(
-      home.logo,
-      home.image,
-      home.team_logo,
-      match.home_logo
-    );
+    const homeLogo = first(home.logo, home.image, home.team_logo, match.home_logo);
+    const awayLogo = first(away.logo, away.image, away.team_logo, match.away_logo);
 
-    const awayLogo = first(
-      away.logo,
-      away.image,
-      away.team_logo,
-      match.away_logo
-    );
-
-    const homeScore = first(
-      match.home_score,
-      match.homeScore,
-      home.score,
-      "-"
-    );
-
-    const awayScore = first(
-      match.away_score,
-      match.awayScore,
-      away.score,
-      "-"
-    );
+    const homeScore = first(match.home_score, match.homeScore, home.score, "-");
+    const awayScore = first(match.away_score, match.awayScore, away.score, "-");
 
     const competition = first(
       match.competition,
@@ -260,28 +267,14 @@
       ? first(competition.logo, competition.image)
       : first(match.competition_logo, match.league_logo);
 
-    const status = text(
+    const status = value(
       first(match.status_text, match.status, match.match_status),
       "Maç bilgisi"
     ).replaceAll("_", " ");
 
-    const date = first(
-      match.time,
-      match.date,
-      match.match_time,
-      match.start_time
-    );
-
-    const venue = first(
-      match.venue,
-      match.stadium,
-      match.venue_name
-    );
-
-    const referee = first(
-      match.referee,
-      match.referee_name
-    );
+    const date = first(match.time, match.date, match.match_time, match.start_time);
+    const venue = first(match.venue, match.stadium, match.venue_name);
+    const referee = first(match.referee, match.referee_name);
 
     setText("homeName", homeName, "Ev sahibi");
     setText("awayName", awayName, "Deplasman");
@@ -296,23 +289,14 @@
     setImage("awayLogo", awayLogo, awayName);
     setImage("competitionLogo", competitionLogo, competitionName);
 
-    const statusValue = String(first(
-      match.status,
-      match.status_text,
-      match.match_status,
-      ""
-    )).toLowerCase();
+    const statusValue = String(
+      first(match.status, match.status_text, match.match_status, "")
+    ).toLowerCase();
 
     const live = [
-      "live",
-      "playing",
-      "in_play",
-      "inplay",
-      "1h",
-      "2h",
-      "ht",
-      "extra_time"
-    ].some(value => statusValue.includes(value));
+      "live", "playing", "in_play", "inplay",
+      "1h", "2h", "ht", "extra_time"
+    ].some(item => statusValue.includes(item));
 
     $("statusDot")?.classList.toggle("live", live);
 
@@ -325,20 +309,12 @@
 
     setText("matchTime", minute, live ? "Canlı" : "Karşılaşma");
 
-    const half = first(
-      match.half_score,
-      match.halftime_score,
-      match.ht_score
-    );
+    const half = first(match.half_score, match.halftime_score, match.ht_score);
 
     let halfText = "";
 
     if (half && typeof half === "object") {
-      halfText = `İlk yarı: ${
-        first(half.home, half.home_score, "-")
-      } - ${
-        first(half.away, half.away_score, "-")
-      }`;
+      halfText = `İlk yarı: ${first(half.home, half.home_score, "-")} - ${first(half.away, half.away_score, "-")}`;
     } else if (half) {
       halfText = `İlk yarı: ${half}`;
     }
@@ -357,22 +333,17 @@
     const homeSlug = getTeamSlug(home, match, "home");
     const awaySlug = getTeamSlug(away, match, "away");
 
-    const homeLink = $("homeTeamLink");
-    const awayLink = $("awayTeamLink");
-
-    if (homeLink && homeSlug) {
-      homeLink.href =
+    if (homeSlug && $("homeTeamLink")) {
+      $("homeTeamLink").href =
         `/veri.html?view=team&slug=${encodeURIComponent(homeSlug)}`;
     }
 
-    if (awayLink && awaySlug) {
-      awayLink.href =
+    if (awaySlug && $("awayTeamLink")) {
+      $("awayTeamLink").href =
         `/veri.html?view=team&slug=${encodeURIComponent(awaySlug)}`;
     }
 
-    document.title =
-      `${homeName || "Maç"} - ${awayName || "Detay"} | SPORIX`;
-
+    document.title = `${homeName || "Maç"} - ${awayName || "Detay"} | SPORIX`;
     setText("breadcrumbCurrent", "Maç Detayı");
 
     const summary = first(
@@ -385,7 +356,7 @@
     setText(
       "summaryContent",
       summary,
-      "Bu karşılaşma için ayrıca bir maç özeti sağlanmamış. Olaylar, kadrolar ve istatistikler mevcut API verilerine göre gösterilir."
+      "Bu karşılaşma için ayrıca bir maç özeti sağlanmamış."
     );
   }
 
@@ -405,7 +376,6 @@
     );
 
     const container = $("eventsList");
-
     if (!container) return;
 
     container.replaceChildren();
@@ -416,14 +386,10 @@
       return;
     }
 
-    const sorted = [...events].sort((a, b) => {
-      const minuteA = Number(first(a.minute, a.time, a.elapsed, 0));
-      const minuteB = Number(first(b.minute, b.time, b.elapsed, 0));
-
-      return minuteA - minuteB;
-    });
-
-    sorted.forEach(event => {
+    [...events].sort((a, b) =>
+      Number(first(a.minute, a.time, a.elapsed, 0)) -
+      Number(first(b.minute, b.time, b.elapsed, 0))
+    ).forEach(event => {
       const type = String(first(
         event.type,
         event.incident_type,
@@ -465,16 +431,13 @@
         icon = "🔄";
         label = "Oyuncu değişikliği";
       } else if (type.includes("penalty")) {
-        icon = "⚽";
         label = "Penaltı";
       } else if (type.includes("own")) {
-        icon = "⚽";
         label = "Kendi kalesine gol";
       } else if (type.includes("var")) {
         icon = "📺";
         label = "VAR";
       } else if (type.includes("goal")) {
-        icon = "⚽";
         label = "Gol";
       } else {
         label = first(event.type_name, event.description, "Maç olayı");
@@ -483,9 +446,9 @@
       const row = document.createElement("div");
       row.className = "event-row";
 
-      const minuteElement = document.createElement("div");
-      minuteElement.className = "event-minute";
-      minuteElement.textContent = minute;
+      const minuteEl = document.createElement("div");
+      minuteEl.className = "event-minute";
+      minuteEl.textContent = minute;
 
       const description = document.createElement("div");
       description.className = "event-description";
@@ -499,14 +462,11 @@
 
       if (assist) {
         const small = document.createElement("small");
-
-        small.textContent =
-          `Asist: ${
-            typeof assist === "object"
-              ? first(assist.name, assist.player_name, "")
-              : assist
-          }`;
-
+        small.textContent = `Asist: ${
+          typeof assist === "object"
+            ? first(assist.name, assist.player_name, "")
+            : assist
+        }`;
         description.appendChild(small);
       }
 
@@ -514,27 +474,21 @@
       eventIcon.className = "event-side";
       eventIcon.textContent = icon;
 
-      row.append(minuteElement, description, eventIcon);
-
+      row.append(minuteEl, description, eventIcon);
       container.appendChild(row);
     });
   }
 
   // =====================================
-  // KADROLAR
+  // KADROLAR VE OYUNCU LİNKLERİ
   // =====================================
 
   function normalizePlayer(player) {
-    if (typeof player === "string") {
-      return { name: player };
-    }
-
-    return player || {};
+    return typeof player === "string" ? { name: player } : (player || {});
   }
 
   function renderPlayerList(containerId, players) {
     const container = $(containerId);
-
     if (!container) return;
 
     container.replaceChildren();
@@ -547,13 +501,7 @@
 
     players.forEach(item => {
       const player = normalizePlayer(item);
-
-      const name = first(
-        player.name,
-        player.player_name,
-        player.athlete_name,
-        player.title
-      );
+      const name = getPlayerName(player);
 
       const number = first(
         player.number,
@@ -565,15 +513,26 @@
       const row = document.createElement("div");
       row.className = "player-row";
 
-      const numberElement = document.createElement("span");
-      numberElement.className = "player-number";
-      numberElement.textContent = text(number, "•");
+      const numberEl = document.createElement("span");
+      numberEl.className = "player-number";
+      numberEl.textContent = value(number, "•");
 
-      const nameElement = document.createElement("span");
-      nameElement.className = "player-name";
-      nameElement.textContent = text(name, "Oyuncu bilgisi");
+      const nameEl = document.createElement("span");
+      nameEl.className = "player-name";
+      nameEl.textContent = name;
 
-      row.append(numberElement, nameElement);
+      const link = playerLink(player);
+
+      if (link) {
+        const anchor = document.createElement("a");
+        anchor.className = "player-row-link";
+        anchor.href = link;
+        anchor.setAttribute("aria-label", `${name} oyuncu profili`);
+        anchor.append(numberEl, nameEl);
+        row.appendChild(anchor);
+      } else {
+        row.append(numberEl, nameEl);
+      }
 
       container.appendChild(row);
     });
@@ -626,277 +585,58 @@
   }
 
   // =====================================
-  // İSTATİSTİK VERİLERİNİ NORMALLEŞTİR
+  // İSTATİSTİKLER
   // =====================================
 
   function normalizeStats(detail) {
     const match = detail.match || detail;
 
-    const isValue = value =>
-      value !== undefined &&
-      value !== null &&
-      value !== "" &&
-      typeof value !== "object";
-
-    const getValue = (object, keys) => {
-      if (!object || typeof object !== "object") {
-        return undefined;
-      }
-
-      for (const key of keys) {
-        if (isValue(object[key])) {
-          return object[key];
-        }
-      }
-
-      return undefined;
-    };
-
-    const homeKeys = [
-      "home",
-      "home_value",
-      "home_team",
-      "home_team_value",
-      "value_home",
-      "homeValue",
-      "homeValueString",
-      "local",
-      "team1",
-      "participant1",
-      "first"
-    ];
-
-    const awayKeys = [
-      "away",
-      "away_value",
-      "away_team",
-      "away_team_value",
-      "value_away",
-      "awayValue",
-      "awayValueString",
-      "visitor",
-      "team2",
-      "participant2",
-      "second"
-    ];
-
-    const nameKeys = [
-      "name",
-      "type",
-      "title",
-      "label",
-      "stat_name",
-      "statistic",
-      "description"
-    ];
-
-    function normalizeArray(items) {
-      if (!Array.isArray(items)) return [];
-
-      return items.map(item => {
-        if (!item || typeof item !== "object") {
-          return null;
-        }
-
-        const name = getValue(item, nameKeys);
-
-        let home = getValue(item, homeKeys);
-        let away = getValue(item, awayKeys);
-
-        if (home === undefined && item.values) {
-          home = getValue(item.values, homeKeys);
-        }
-
-        if (away === undefined && item.values) {
-          away = getValue(item.values, awayKeys);
-        }
-
-        if (
-          home === undefined &&
-          item.home &&
-          typeof item.home === "object"
-        ) {
-          home = getValue(
-            item.home,
-            ["value", "total", "count", "display"]
-          );
-        }
-
-        if (
-          away === undefined &&
-          item.away &&
-          typeof item.away === "object"
-        ) {
-          away = getValue(
-            item.away,
-            ["value", "total", "count", "display"]
-          );
-        }
-
-        if (home === undefined && away === undefined) {
-          return null;
-        }
-
-        return {
-          name: name || "İstatistik",
-          home,
-          away
-        };
-      }).filter(Boolean);
-    }
-
-    function normalizeObject(stats) {
-      if (!stats || typeof stats !== "object") {
-        return [];
-      }
-
-      if (Array.isArray(stats)) {
-        return normalizeArray(stats);
-      }
-
-      const homeStats = stats.home || stats.home_stats;
-      const awayStats = stats.away || stats.away_stats;
-
-      if (
-        Array.isArray(homeStats) &&
-        Array.isArray(awayStats)
-      ) {
-        const result = [];
-
-        homeStats.forEach((item, index) => {
-          const awayItem = awayStats[index];
-
-          if (!item || !awayItem) return;
-
-          result.push({
-            name:
-              getValue(item, nameKeys) ||
-              getValue(awayItem, nameKeys) ||
-              "İstatistik",
-
-            home: getValue(
-              item,
-              ["value", "total", "count", "display"]
-            ),
-
-            away: getValue(
-              awayItem,
-              ["value", "total", "count", "display"]
-            )
-          });
-        });
-
-        return result.filter(item =>
-          item.home !== undefined ||
-          item.away !== undefined
-        );
-      }
-
-      const result = [];
-
-      Object.entries(stats).forEach(([key, value]) => {
-        if (!value || typeof value !== "object") {
-          return;
-        }
-
-        const home = getValue(value, homeKeys);
-        const away = getValue(value, awayKeys);
-
-        if (home !== undefined || away !== undefined) {
-          result.push({
-            name: getValue(value, nameKeys) || key,
-            home,
-            away
-          });
-        }
-      });
-
-      return result;
-    }
-
-    const possibleStats = [
+    const candidates = [
       detail.statistics,
       detail.stats,
       detail.match_statistics,
       detail.matchStats,
-      detail.statistic,
       match.statistics,
       match.stats,
-      match.match_statistics,
-      match.matchStats,
-      match.statistic
+      match.match_statistics
     ];
 
-    for (const candidate of possibleStats) {
-      const result = normalizeObject(candidate);
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate)) {
+        return candidate.map(item => ({
+          name: first(item.name, item.type, item.title, item.label, "İstatistik"),
+          home: first(item.home, item.home_value, item.home_team, item.value_home),
+          away: first(item.away, item.away_value, item.away_team, item.value_away)
+        })).filter(item =>
+          item.home !== undefined || item.away !== undefined
+        );
+      }
 
-      if (result.length) {
-        return result;
+      if (candidate && typeof candidate === "object") {
+        const homeStats = candidate.home || candidate.home_stats;
+        const awayStats = candidate.away || candidate.away_stats;
+
+        if (Array.isArray(homeStats) && Array.isArray(awayStats)) {
+          return homeStats.map((item, index) => ({
+            name: first(item.name, item.type, item.title, "İstatistik"),
+            home: first(item.value, item.total, item.count),
+            away: first(
+              awayStats[index]?.value,
+              awayStats[index]?.total,
+              awayStats[index]?.count
+            )
+          })).filter(item =>
+            item.home !== undefined || item.away !== undefined
+          );
+        }
       }
     }
 
-    // İç içe nesnelerde istatistikleri ara.
-    const visited = new Set();
-
-    function searchNested(object, depth = 0) {
-      if (!object || typeof object !== "object") {
-        return [];
-      }
-
-      if (depth > 5 || visited.has(object)) {
-        return [];
-      }
-
-      visited.add(object);
-
-      if (Array.isArray(object)) {
-        const result = normalizeArray(object);
-
-        if (result.length) return result;
-
-        for (const item of object) {
-          const nested = searchNested(item, depth + 1);
-
-          if (nested.length) return nested;
-        }
-
-        return [];
-      }
-
-      for (const key of Object.keys(object)) {
-        const normalizedKey = key.toLowerCase();
-
-        if (
-          normalizedKey.includes("stat") ||
-          normalizedKey.includes("period")
-        ) {
-          const result = normalizeObject(object[key]);
-
-          if (result.length) return result;
-        }
-      }
-
-      for (const value of Object.values(object)) {
-        if (value && typeof value === "object") {
-          const nested = searchNested(value, depth + 1);
-
-          if (nested.length) return nested;
-        }
-      }
-
-      return [];
-    }
-
-    return searchNested(detail);
+    return [];
   }
-
-  // =====================================
-  // İSTATİSTİKLERİ EKRANA BAS
-  // =====================================
 
   function renderStats(detail) {
     const container = $("statisticsList");
-
     if (!container) return;
 
     container.replaceChildren();
@@ -906,83 +646,27 @@
     if (!stats.length) {
       container.innerHTML =
         '<div class="empty-state">Bu maç için istatistik verisi henüz sağlanmamış.</div>';
-
       return;
     }
 
     stats.forEach(stat => {
-      const name = first(
-        stat.name,
-        stat.type,
-        stat.title,
-        stat.label
-      );
+      const home = first(stat.home, stat.home_value, "-");
+      const away = first(stat.away, stat.away_value, "-");
 
-      const home = first(
-        stat.home,
-        stat.home_value,
-        stat.home_team,
-        stat.value_home
-      );
+      const parse = val => {
+        const n = Number(String(val).replace("%", "").replace(",", "."));
+        return Number.isFinite(n) && n >= 0 ? n : null;
+      };
 
-      const away = first(
-        stat.away,
-        stat.away_value,
-        stat.away_team,
-        stat.value_away
-      );
+      const h = parse(home);
+      const a = parse(away);
 
-      if (home === undefined && away === undefined) {
-        return;
-      }
+      let hw = 50;
+      let aw = 50;
 
-      const homeText = text(home, "-");
-      const awayText = text(away, "-");
-
-      function parseNumber(value) {
-        if (value === undefined || value === null) {
-          return null;
-        }
-
-        const cleaned = String(value)
-          .replace("%", "")
-          .replace(",", ".")
-          .trim();
-
-        const number = Number(cleaned);
-
-        return Number.isFinite(number) && number >= 0
-          ? number
-          : null;
-      }
-
-      const homeNumber = parseNumber(home);
-      const awayNumber = parseNumber(away);
-
-      let homeWidth = 50;
-      let awayWidth = 50;
-
-      if (
-        homeNumber !== null &&
-        awayNumber !== null &&
-        homeNumber + awayNumber > 0
-      ) {
-        homeWidth =
-          (homeNumber / (homeNumber + awayNumber)) * 100;
-
-        awayWidth = 100 - homeWidth;
-      } else if (
-        homeNumber !== null &&
-        awayNumber === null
-      ) {
-        homeWidth = 100;
-        awayWidth = 0;
-      } else if (
-        awayNumber !== null &&
-        homeNumber === null
-      ) {
-        homeWidth = 0;
-        awayWidth = 100;
+      if (h !== null && a !== null && h + a > 0) {
+        hw = h / (h + a) * 100;
+        aw = 100 - hw;
       }
 
       const row = document.createElement("div");
@@ -990,46 +674,34 @@
 
       const label = document.createElement("div");
       label.className = "stat-label";
-      label.textContent = text(name, "İstatistik");
+      label.textContent = value(stat.name, "İstatistik");
 
       const values = document.createElement("div");
       values.className = "stat-values";
 
-      const homeValue = document.createElement("span");
-      homeValue.textContent = homeText;
+      const homeEl = document.createElement("span");
+      homeEl.textContent = value(home);
 
       const bars = document.createElement("div");
       bars.className = "stat-bars";
 
       const homeBar = document.createElement("div");
       homeBar.className = "stat-home";
-      homeBar.style.width = `${homeWidth}%`;
+      homeBar.style.width = `${hw}%`;
 
       const awayBar = document.createElement("div");
       awayBar.className = "stat-away";
-      awayBar.style.width = `${awayWidth}%`;
+      awayBar.style.width = `${aw}%`;
+
+      const awayEl = document.createElement("span");
+      awayEl.textContent = value(away);
 
       bars.append(homeBar, awayBar);
-
-      const awayValue = document.createElement("span");
-      awayValue.textContent = awayText;
-
-      values.append(homeValue, bars, awayValue);
-
+      values.append(homeEl, bars, awayEl);
       row.append(label, values);
-
       container.appendChild(row);
     });
-
-    if (!container.children.length) {
-      container.innerHTML =
-        '<div class="empty-state">Bu maç için gösterilebilir istatistik bulunamadı.</div>';
-    }
   }
-
-  // =====================================
-  // MAÇ VERİLERİNİ YÜKLE
-  // =====================================
 
   async function loadMatch() {
     if (!slug) {
@@ -1048,8 +720,6 @@
         throw new Error("Maç verisi bulunamadı.");
       }
 
-      console.log("SPORIX maç detay verisi:", detail);
-
       renderMatchHeader(detail);
       renderEvents(detail);
       renderLineups(detail);
@@ -1058,20 +728,16 @@
       showPage("match");
     } catch (error) {
       console.error("SPORIX maç detayı:", error);
-
-      showError(
-        error.message || "Maç bilgileri alınamadı."
-      );
+      showError(error.message || "Maç bilgileri alınamadı.");
     }
   }
 
   // =====================================
-  // TAKIM DETAY SAYFASI
+  // TAKIM MAÇLARI
   // =====================================
 
   function renderTeamMatches(matches) {
     const container = $("teamMatches");
-
     if (!container) return;
 
     container.replaceChildren();
@@ -1079,18 +745,17 @@
     if (!matches.length) {
       container.innerHTML =
         '<div class="empty-state">Bu takım için maç kaydı bulunamadı.</div>';
-
       return;
     }
 
     matches.forEach(match => {
-      const homeObject = match.home_team || {};
-      const awayObject = match.away_team || {};
+      const homeObj = match.home_team || {};
+      const awayObj = match.away_team || {};
 
       const home = first(
         match.home,
         match.home_name,
-        homeObject.name,
+        homeObj.name,
         match.home_team_name,
         "Ev sahibi"
       );
@@ -1098,43 +763,21 @@
       const away = first(
         match.away,
         match.away_name,
-        awayObject.name,
+        awayObj.name,
         match.away_team_name,
         "Deplasman"
       );
 
-      const homeLogo = first(
-        match.home_logo,
-        homeObject.logo,
-        match.home_team_logo
-      );
+      const homeLogo = first(match.home_logo, homeObj.logo, match.home_team_logo);
+      const awayLogo = first(match.away_logo, awayObj.logo, match.away_team_logo);
 
-      const awayLogo = first(
-        match.away_logo,
-        awayObject.logo,
-        match.away_team_logo
-      );
-
-      const homeScore = first(
-        match.home_score,
-        match.homeScore,
-        "-"
-      );
-
-      const awayScore = first(
-        match.away_score,
-        match.awayScore,
-        "-"
-      );
+      const homeScore = first(match.home_score, match.homeScore, "-");
+      const awayScore = first(match.away_score, match.awayScore, "-");
 
       const status = first(
         match.status_text,
         match.status,
-        formatDate(first(
-          match.time,
-          match.date,
-          match.match_time
-        ))
+        formatDate(first(match.time, match.date, match.match_time))
       );
 
       const matchSlug = getMatchSlug(match);
@@ -1147,13 +790,7 @@
           `/veri.html?view=match&slug=${encodeURIComponent(matchSlug)}`;
       } else {
         link.href = "#";
-
-        link.addEventListener("click", event => {
-          event.preventDefault();
-        });
-
-        link.title =
-          "Bu maç için detay bağlantısı sağlanmamış.";
+        link.addEventListener("click", event => event.preventDefault());
       }
 
       const homeSide = document.createElement("div");
@@ -1161,16 +798,13 @@
 
       const homeImage = document.createElement("img");
       homeImage.alt = "";
+      const safeHome = cleanImageUrl(homeLogo);
 
-      if (homeLogo) {
-        homeImage.src = homeLogo;
-      } else {
-        homeImage.style.display = "none";
-      }
+      if (safeHome) homeImage.src = safeHome;
+      else homeImage.hidden = true;
 
       const homeText = document.createElement("span");
-      homeText.textContent = text(home, "Ev sahibi");
-
+      homeText.textContent = value(home, "Ev sahibi");
       homeSide.append(homeImage, homeText);
 
       const score = document.createElement("div");
@@ -1178,83 +812,166 @@
       score.textContent = `${homeScore} - ${awayScore}`;
 
       const scoreStatus = document.createElement("small");
-      scoreStatus.textContent = text(status);
-
+      scoreStatus.textContent = value(status);
       score.appendChild(scoreStatus);
 
       const awaySide = document.createElement("div");
       awaySide.className = "team-match-side away";
 
       const awayText = document.createElement("span");
-      awayText.textContent = text(away, "Deplasman");
+      awayText.textContent = value(away, "Deplasman");
 
       const awayImage = document.createElement("img");
       awayImage.alt = "";
+      const safeAway = cleanImageUrl(awayLogo);
 
-      if (awayLogo) {
-        awayImage.src = awayLogo;
-      } else {
-        awayImage.style.display = "none";
-      }
+      if (safeAway) awayImage.src = safeAway;
+      else awayImage.hidden = true;
 
       awaySide.append(awayText, awayImage);
 
       link.append(homeSide, score, awaySide);
-
       container.appendChild(link);
     });
   }
 
+  // =====================================
+  // TAKIM KADROSU
+  // =====================================
+
+  function findSquad(data, team) {
+    return array(
+      data.squad,
+      data.players,
+      data.roster,
+      data.squad_players,
+      data.team_players,
+      team.squad,
+      team.players,
+      team.roster,
+      team.squad_players
+    );
+  }
+
+  function renderSquad(players) {
+    const container = $("teamSquad");
+    if (!container) return;
+
+    container.replaceChildren();
+
+    if (!players.length) {
+      container.innerHTML =
+        '<div class="empty-state">Bu takım için veri sağlayıcısı tarafından kadro bilgisi sunulmamış.</div>';
+      setText("squadCount", "Kadro verisi yok");
+      return;
+    }
+
+    setText("squadCount", `${players.length} oyuncu`);
+
+    players.forEach(item => {
+      const player = normalizePlayer(item);
+      const name = getPlayerName(player);
+
+      const photo = cleanImageUrl(first(
+        player.logo,
+        player.image,
+        player.photo,
+        player.picture,
+        player.player_logo
+      ));
+
+      const position = first(
+        player.position,
+        player.position_name,
+        player.role,
+        "Oyuncu"
+      );
+
+      const number = first(
+        player.number,
+        player.shirt_number,
+        player.jersey_number
+      );
+
+      const card = document.createElement("a");
+      card.className = "squad-card";
+
+      const link = playerLink(player);
+      card.href = link || "#";
+
+      if (!link) {
+        card.addEventListener("click", event => event.preventDefault());
+        card.classList.add("squad-card-disabled");
+      }
+
+      const imageWrap = document.createElement("div");
+      imageWrap.className = "squad-photo";
+
+      if (photo) {
+        const img = document.createElement("img");
+        img.src = photo;
+        img.alt = name;
+        img.loading = "lazy";
+        img.onerror = () => {
+          img.remove();
+          imageWrap.textContent = "⚽";
+        };
+        imageWrap.appendChild(img);
+      } else {
+        imageWrap.textContent = "⚽";
+      }
+
+      const info = document.createElement("div");
+      info.className = "squad-card-info";
+
+      const playerName = document.createElement("strong");
+      playerName.textContent = name;
+
+      const playerPosition = document.createElement("span");
+      playerPosition.textContent = value(position, "Oyuncu");
+
+      const playerNumber = document.createElement("small");
+      playerNumber.textContent = number !== undefined
+        ? `Forma no: ${number}`
+        : " ";
+
+      info.append(playerName, playerPosition, playerNumber);
+      card.append(imageWrap, info);
+
+      container.appendChild(card);
+    });
+  }
+
   function renderTeamPage(data) {
-    const team = first(
-      data.team,
-      data.club,
-      data,
-      {}
-    );
+    const team = first(data.team, data.club, data, {});
 
-    const name = first(
-      team.name,
-      team.team_name,
-      team.title
-    );
-
-    const logo = first(
-      team.logo,
-      team.team_logo,
-      team.image
-    );
+    const name = first(team.name, team.team_name, team.title);
+    const logo = first(team.logo, team.team_logo, team.image);
 
     const league = first(
       team.league_name,
       team.competition_name,
-      typeof team.league === "string"
-        ? team.league
-        : team.league?.name,
+      typeof team.league === "string" ? team.league : team.league?.name,
       data.league_name
     );
 
     const coach = first(
-      team.coach,
+      team.coach?.name,
       team.coach_name,
       team.manager_name,
-      team.manager
+      typeof team.manager === "string" ? team.manager : team.manager?.name
     );
 
-    const stadium = first(
-      team.stadium,
-      team.venue,
-      team.stadium_name
-    );
+    const stadium = first(team.stadium, team.venue, team.stadium_name);
 
     setText("teamName", name, "Takım");
     setText("teamLeague", league, "Lig bilgisi bulunamadı");
     setText("teamInfoName", name);
     setText("teamInfoLeague", league);
-    setText("teamCoach", coach);
-    setText("teamStadium", stadium);
-    setText("breadcrumbCurrent", "Takım Profili");
+    setText("teamCoach", coach, "Bilgi sağlanmadı");
+    setText("teamStadium", stadium, "Bilgi sağlanmadı");
 
+    setText("breadcrumbCurrent", "Takım Profili");
     setImage("teamLogo", logo, name);
 
     const matches = array(
@@ -1266,6 +983,7 @@
     );
 
     renderTeamMatches(matches);
+    renderSquad(findSquad(data, team));
 
     document.title = `${name || "Takım"} | SPORIX`;
   }
@@ -1287,17 +1005,147 @@
         throw new Error("Takım verisi bulunamadı.");
       }
 
-      console.log("SPORIX takım verisi:", data);
-
       renderTeamPage(data);
-
       showPage("team");
     } catch (error) {
       console.error("SPORIX takım detayı:", error);
+      showError(error.message || "Takım bilgileri alınamadı.");
+    }
+  }
 
-      showError(
-        error.message || "Takım bilgileri alınamadı."
+  // =====================================
+  // OYUNCU PROFİLİ
+  // =====================================
+
+  function getPlayerObject(data) {
+    return first(
+      data.player,
+      data.athlete,
+      data.profile,
+      data
+    );
+  }
+
+  function renderPlayerPage(data) {
+    const player = getPlayerObject(data);
+
+    const name = first(
+      player.name,
+      player.player_name,
+      player.full_name,
+      player.title
+    );
+
+    if (!name) {
+      throw new Error("Oyuncu profili API yanıtında bulunamadı.");
+    }
+
+    const photo = first(
+      player.logo,
+      player.image,
+      player.photo,
+      player.picture,
+      player.player_logo
+    );
+
+    const team = first(
+      player.team?.name,
+      player.team_name,
+      typeof player.team === "string" ? player.team : null,
+      player.club?.name
+    );
+
+    const position = first(
+      player.position,
+      player.position_name,
+      player.role
+    );
+
+    const number = first(
+      player.number,
+      player.shirt_number,
+      player.jersey_number
+    );
+
+    const nationality = first(
+      player.nationality,
+      player.country,
+      player.country_name
+    );
+
+    const age = first(player.age);
+    const birth = first(player.birth_date, player.date_of_birth, player.birthday);
+    const height = first(player.height);
+
+    setText("playerName", name);
+    setText("playerTeam", team, "Takım bilgisi bulunamadı");
+    setText("playerPosition", position, "Pozisyon bilgisi yok");
+    setText("playerNumber", number !== undefined ? `#${number}` : "Forma numarası yok");
+
+    setText("playerNationality", nationality);
+    setText("playerAge", age);
+    setText("playerBirth", birth ? formatDate(birth) : "-");
+    setText("playerHeight", height);
+    setText("playerPositionInfo", position);
+    setText("playerTeamInfo", team);
+
+    setImage("playerPhoto", photo, name);
+
+    const photoEl = $("playerPhoto");
+    const fallback = $("playerPhotoFallback");
+
+    if (photoEl && fallback) {
+      fallback.classList.toggle("hidden", Boolean(cleanImageUrl(photo)));
+      photoEl.addEventListener("load", () => {
+        fallback.classList.add("hidden");
+      }, { once: true });
+      photoEl.addEventListener("error", () => {
+        fallback.classList.remove("hidden");
+      }, { once: true });
+    }
+
+    const teamSlug = first(
+      player.team?.slug,
+      player.team_slug,
+      player.club?.slug
+    );
+
+    const teamLink = $("playerTeamLink");
+
+    if (teamLink && teamSlug) {
+      teamLink.href =
+        `/veri.html?view=team&slug=${encodeURIComponent(teamSlug)}`;
+      teamLink.classList.remove("hidden");
+    } else {
+      teamLink?.classList.add("hidden");
+    }
+
+    setText("breadcrumbCurrent", "Oyuncu Profili");
+    document.title = `${name} | SPORIX`;
+  }
+
+  async function loadPlayer() {
+    if (!slug) {
+      showError("Oyuncu bağlantısında slug bilgisi bulunamadı.");
+      return;
+    }
+
+    showLoading();
+
+    try {
+      const data = await request(
+        `/api/sportscore?action=player&slug=${encodeURIComponent(slug)}`
       );
+
+      if (!data || typeof data !== "object") {
+        throw new Error("Oyuncu verisi bulunamadı.");
+      }
+
+      renderPlayerPage(data);
+      showPage("player");
+    } catch (error) {
+      console.error("SPORIX oyuncu profili:", error);
+      showError(error.message || "Oyuncu bilgileri alınamadı.");
     }
   }
 
@@ -1318,21 +1166,20 @@
   }
 
   $("retryButton")?.addEventListener("click", () => {
-    if (view === "team") {
-      loadTeam();
-    } else {
-      loadMatch();
-    }
+    if (view === "team") loadTeam();
+    else if (view === "player") loadPlayer();
+    else loadMatch();
   });
 
   setupTabs();
 
   if (view === "team") {
     loadTeam();
+  } else if (view === "player") {
+    loadPlayer();
   } else if (view === "match") {
     loadMatch();
   } else {
     showError("Geçersiz sayfa türü.");
   }
-
 })();
