@@ -1,289 +1,267 @@
 
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Spor Haberleri | SPORIX</title>
-  <meta name="description" content="Futbol dünyasından son gelişmeler, transfer haberleri ve spor gündemi SPORIX'te.">
-  <meta name="theme-color" content="#ffffff">
-
-  <link rel="icon" href="/images/logo.jpeg">
-  <link rel="stylesheet" href="/assets/style.css">
-
-  <style>
-    .news-page {
-      max-width: 1200px;
-      margin: 30px auto 55px;
-      padding: 0 16px;
-    }
-
-    .news-heading {
-      margin-bottom: 25px;
-      padding-bottom: 18px;
-      border-bottom: 1px solid #e8e8e8;
-    }
-
-    .news-heading h1 {
-      margin: 0 0 8px;
-      font-size: 30px;
-      color: #171717;
-    }
-
-    .news-heading p {
-      margin: 0;
-      color: #777;
-      font-size: 15px;
-    }
-
-    .news-section-title {
-      font-size: 19px;
-      font-weight: 800;
-      margin: 25px 0 15px;
-      color: #171717;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .news-section-title::before {
-      content: "";
-      width: 4px;
-      height: 22px;
-      background: #e50914;
-      border-radius: 5px;
-    }
-
-    .news-empty {
-      background: #fff;
-      border: 1px solid #e8e8e8;
-      border-radius: 12px;
-      padding: 45px 20px;
-      text-align: center;
-    }
-
-    .news-empty-icon {
-      width: 64px;
-      height: 64px;
-      margin: 0 auto 18px;
-      border-radius: 50%;
-      background: #f2f5f9;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-    }
-
-    .news-empty h2 {
-      margin: 0 0 10px;
-      font-size: 21px;
-      color: #222;
-    }
-
-    .news-empty p {
-      max-width: 520px;
-      margin: 0 auto 20px;
-      color: #777;
-      line-height: 1.7;
-      font-size: 14px;
-    }
-
-    .news-buttons {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .news-buttons a {
-      display: inline-block;
-      padding: 11px 17px;
-      border-radius: 7px;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 700;
-      background: #e50914;
-      color: #fff;
-    }
-
-    .news-buttons a.secondary {
-      background: #f1f3f5;
-      color: #333;
-    }
-
-    .news-info-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 15px;
-      margin-top: 25px;
-    }
-
-    .news-info-card {
-      padding: 20px;
-      background: #fff;
-      border: 1px solid #e8e8e8;
-      border-radius: 10px;
-    }
-
-    .news-info-card span {
-      font-size: 25px;
-    }
-
-    .news-info-card h3 {
-      margin: 12px 0 7px;
-      font-size: 16px;
-      color: #222;
-    }
-
-    .news-info-card p {
-      margin: 0;
-      color: #777;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    @media (max-width: 700px) {
-      .news-info-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .news-heading h1 {
-        font-size: 25px;
-      }
-
-      .news-empty {
-        padding: 35px 17px;
-      }
-    }
-  </style>
-</head>
-
-<body>
-
-  <!-- HEADER -->
-  <header class="header">
-    <div class="container header-inner">
-
-      <a class="brand" href="/">
-        <img src="/images/logo.jpeg" alt="SPORIX Logo">
-        <span>SPOR<span class="brand-red">IX</span></span>
-      </a>
-
-      <button class="menu-toggle" id="menuToggle" aria-label="Menüyü aç">
-        ☰
-      </button>
-
-      <nav class="nav" id="mainNav">
-        <a href="/">Ana Sayfa</a>
-        <a href="/maclar/">Maçlar</a>
-        <a href="/puan-durumu/">Puan Durumu</a>
-        <a href="/fikstur/">Fikstür</a>
-        <a class="active" href="/haberler/">Haberler</a>
-      </nav>
-
-      <a class="header-live" href="/maclar/">
-        <span class="live-dot"></span>
-        CANLI
-      </a>
-
+<section class="sporix-news">
+  <div class="news-top">
+    <div>
+      <h2>Son Spor Haberleri</h2>
+      <p>Güncel spor gelişmeleri ve futbol gündemi</p>
     </div>
-  </header>
+    <span id="newsUpdated">Haberler yükleniyor...</span>
+  </div>
 
-  <!-- HABERLER -->
-  <main class="news-page">
+  <div id="newsStatus" class="news-status">
+    Haberler getiriliyor...
+  </div>
 
-    <section class="news-heading">
-      <h1>SPOR HABERLERİ</h1>
-      <p>Futbol dünyasından gelişmeler, transferler ve spor gündemi.</p>
-    </section>
+  <div id="newsList" class="news-grid"></div>
+</section>
 
-    <h2 class="news-section-title">Günün Haberleri</h2>
+<style>
+  .sporix-news {
+    margin: 25px 0 45px;
+  }
 
-    <!-- Haber verileri bağlandığında haber kartları burada gösterilecek. -->
-    <section class="news-empty">
+  .news-top {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
 
-      <div class="news-empty-icon">📰</div>
+  .news-top h2 {
+    margin: 0 0 6px;
+    font-size: 23px;
+    color: #171717;
+  }
 
-      <h2>Haber merkezi hazırlanıyor</h2>
+  .news-top p,
+  #newsUpdated {
+    margin: 0;
+    color: #777;
+    font-size: 13px;
+  }
 
-      <p>
-        SPORIX spor haberleri bölümü için içerikler henüz eklenmedi.
-        Haber yayını başladığında güncel spor gelişmeleri bu alanda
-        listelenecek.
-      </p>
+  .news-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
 
-      <div class="news-buttons">
-        <a href="/maclar/">Canlı maçları takip et</a>
-        <a class="secondary" href="/fikstur/">Fikstürü incele</a>
-      </div>
+  .news-card {
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    transition: transform .2s, box-shadow .2s;
+  }
 
-    </section>
+  .news-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.07);
+  }
 
-    <h2 class="news-section-title">SPORIX'te Neler Var?</h2>
+  .news-card a {
+    color: inherit;
+    text-decoration: none;
+  }
 
-    <section class="news-info-grid">
+  .news-image {
+    width: 100%;
+    height: 185px;
+    object-fit: cover;
+    display: block;
+    background: #f0f2f5;
+  }
 
-      <article class="news-info-card">
-        <span>⚽</span>
-        <h3>Futbol</h3>
-        <p>Futbol maçlarını ve liglerdeki gelişmeleri takip et.</p>
-      </article>
+  .news-no-image {
+    height: 185px;
+    display: grid;
+    place-items: center;
+    background: #f0f2f5;
+    color: #8a8f98;
+    font-size: 42px;
+  }
 
-      <article class="news-info-card">
-        <span>📊</span>
-        <h3>Puan Durumları</h3>
-        <p>Liglerdeki takımların sıralamalarını incele.</p>
-      </article>
+  .news-content {
+    padding: 15px;
+  }
 
-      <article class="news-info-card">
-        <span>📅</span>
-        <h3>Maç Programı</h3>
-        <p>Oynanan ve yaklaşan karşılaşmalara göz at.</p>
-      </article>
+  .news-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+    color: #777;
+    font-size: 12px;
+  }
 
-    </section>
+  .news-source {
+    color: #e50914;
+    font-weight: 800;
+  }
 
-  </main>
+  .news-content h3 {
+    margin: 0 0 9px;
+    color: #202124;
+    font-size: 16px;
+    line-height: 1.45;
+  }
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div class="container footer-inner">
+  .news-content p {
+    margin: 0;
+    color: #737373;
+    font-size: 13px;
+    line-height: 1.6;
+  }
 
-      <div class="footer-brand">
-        SPOR<span>IX</span>
-      </div>
+  .news-status {
+    padding: 18px;
+    margin-bottom: 16px;
+    border-radius: 9px;
+    background: #f5f6f8;
+    color: #555;
+    font-size: 14px;
+  }
 
-      <p>SPORUN NABZI BURADA ATAR</p>
+  .news-status:empty {
+    display: none;
+  }
 
-      <div class="footer-links">
-        <a href="/hakkimizda/">Hakkımızda</a>
-        <a href="/iletisim/">İletişim</a>
-        <a href="/gizlilik/">Gizlilik</a>
-        <a href="/cerez-politikasi/">Çerez Politikası</a>
-        <a href="/kullanim-kosullari/">Kullanım Koşulları</a>
-        <a href="/kunye/">Künye</a>
-        <a href="/duzeltme-politikasi/">Düzeltme Politikası</a>
-      </div>
+  @media (max-width: 850px) {
+    .news-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
 
-      <small>© <span id="year"></span> SPORIX. Tüm hakları saklıdır.</small>
+  @media (max-width: 560px) {
+    .news-grid {
+      grid-template-columns: 1fr;
+    }
 
-    </div>
-  </footer>
+    .news-image,
+    .news-no-image {
+      height: 210px;
+    }
 
-  <script>
-    // Footer yılı
-    document.getElementById("year").textContent =
-      new Date().getFullYear();
+    .news-top {
+      align-items: start;
+      flex-direction: column;
+    }
+  }
+</style>
 
-    // Mobil menü
-    const menuToggle = document.getElementById("menuToggle");
-    const mainNav = document.getElementById("mainNav");
+<script>
+(async function loadSporixNews() {
+  const list = document.getElementById("newsList");
+  const status = document.getElementById("newsStatus");
+  const updated = document.getElementById("newsUpdated");
 
-    menuToggle?.addEventListener("click", () => {
-      mainNav?.classList.toggle("open");
+  if (!list || !status) return;
+
+  function formatDate(value) {
+    if (!value) return "Tarih belirtilmemiş";
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Tarih belirtilmemiş";
+
+    return new Intl.DateTimeFormat("tr-TR", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit"
+    }).format(date);
+  }
+
+  function createCard(news) {
+    const article = document.createElement("article");
+    article.className = "news-card";
+
+    const link = document.createElement("a");
+    link.href = news.link;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.setAttribute("aria-label", news.title);
+
+    if (news.image) {
+      const img = document.createElement("img");
+      img.className = "news-image";
+      img.src = news.image;
+      img.alt = news.title;
+      img.loading = "lazy";
+      img.referrerPolicy = "no-referrer";
+
+      img.addEventListener("error", () => {
+        const fallback = document.createElement("div");
+        fallback.className = "news-no-image";
+        fallback.textContent = "⚽";
+        img.replaceWith(fallback);
+      });
+
+      link.appendChild(img);
+    } else {
+      const fallback = document.createElement("div");
+      fallback.className = "news-no-image";
+      fallback.textContent = "⚽";
+      link.appendChild(fallback);
+    }
+
+    const content = document.createElement("div");
+    content.className = "news-content";
+
+    const meta = document.createElement("div");
+    meta.className = "news-meta";
+
+    const source = document.createElement("span");
+    source.className = "news-source";
+    source.textContent = news.source || "Haber kaynağı";
+
+    const date = document.createElement("span");
+    date.textContent = formatDate(news.date);
+
+    meta.append(source, date);
+
+    const title = document.createElement("h3");
+    title.textContent = news.title;
+
+    const description = document.createElement("p");
+    description.textContent =
+      news.description || "Haberi kaynağında okumak için tıklayın.";
+
+    content.append(meta, title, description);
+    link.appendChild(content);
+    article.appendChild(link);
+
+    return article;
+  }
+
+  try {
+    const response = await fetch("/api/news", {
+      headers: { "Accept": "application/json" }
     });
-  </script>
 
-</body>
-</html>
+    if (!response.ok) {
+      throw new Error("Haber servisi şu anda yanıt vermiyor.");
+    }
+
+    const data = await response.json();
+
+    if (!data.success || !data.items?.length) {
+      throw new Error(data.message || "Henüz haber bulunamadı.");
+    }
+
+    list.replaceChildren(
+      ...data.items.map(createCard)
+    );
+
+    status.textContent = "";
+    updated.textContent =
+      "Son kontrol: " + formatDate(data.updatedAt);
+
+  } catch (error) {
+    status.textContent =
+      "Haberler şu anda yüklenemedi. Lütfen biraz sonra tekrar dene.";
+    updated.textContent = "";
+    console.error("SPORIX haber hatası:", error);
+  }
+})();
+</script>
