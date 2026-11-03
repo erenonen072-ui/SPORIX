@@ -5,7 +5,6 @@
   // ==========================================
   // SPORIX AYARLARI
   // ==========================================
-
   const API_URL = "/api/matches";
   const STANDINGS_API_URL = "/api/standings";
   const REFRESH_MS = 60000;
@@ -29,7 +28,6 @@
   // ==========================================
   // TÜRKİYE LİGLERİ
   // ==========================================
-
   const TURKISH_LEAGUES = [
     { name: "Süper Lig", aliases: ["turkish super league"] },
     { name: "1. Lig", aliases: ["turkish first league", "1st league"] },
@@ -42,7 +40,6 @@
   // ==========================================
   // TARİH
   // ==========================================
-
   function dateKey(date) {
     const parts = new Intl.DateTimeFormat("en-CA", {
       timeZone: "Europe/Istanbul",
@@ -91,7 +88,6 @@
   // ==========================================
   // GÜVENLİ HTML
   // ==========================================
-
   function escapeHTML(value) {
     return String(value ?? "").replace(/[&<>"']/g, char => ({
       "&": "&amp;",
@@ -108,13 +104,12 @@
     const text = String(value).trim();
     const direct = text.match(/https?:\/\/[^\s)]+/);
 
-    return direct ? direct[0] : "";
+    return direct ? direct[0].replace(/[),]+$/, "") : "";
   }
 
   // ==========================================
-  // SLUG VE DETAY SAYFALARI
+  // SLUG VE URL İŞLEMLERİ
   // ==========================================
-
   function slugify(value) {
     return String(value || "")
       .toLocaleLowerCase("tr-TR")
@@ -129,43 +124,96 @@
   }
 
   function extractSlug(value, type = "match") {
-    const url = cleanURL(value);
-
-    if (!url) return "";
+    if (!value) return "";
 
     try {
-      const parts = new URL(url).pathname
+      const url = new URL(
+        String(value),
+        window.location.origin
+      );
+
+      const parts = url.pathname
         .split("/")
         .filter(Boolean);
 
       const routeIndex = parts.indexOf(type);
 
-      if (routeIndex !== -1 && parts[routeIndex + 1]) {
-        return parts[routeIndex + 1];
+      if (
+        routeIndex !== -1 &&
+        parts[routeIndex + 1]
+      ) {
+        return decodeURIComponent(parts[routeIndex + 1]);
       }
 
-      return parts.at(-1) || "";
-    } catch {
+      return "";
+    } catch (error) {
       return "";
     }
   }
 
   function getMatchSlug(match) {
-    return (
-      match?.slug ||
-      match?.match_slug ||
-      match?.url_slug ||
-      extractSlug(match?.url, "match") ||
-      extractSlug(match?.match_url, "match") ||
-      ""
-    );
+    if (!match || typeof match !== "object") {
+      return "";
+    }
+
+    // Öncelikle sağlayıcının gerçek maç URL'sini kontrol et.
+    const urls = [
+      match.match_url,
+      match.details_url,
+      match.detail_url,
+      match.match_link,
+      match.link,
+      match.url,
+      match.source_url
+    ];
+
+    for (const url of urls) {
+      const slug = extractSlug(url, "match");
+      if (slug) return slug;
+    }
+
+    // Ardından açık slug alanlarını kontrol et.
+    const candidates = [
+      match.match_slug,
+      match.url_slug,
+      match.slug,
+      match.event_slug,
+      match.fixture_slug
+    ];
+
+    for (const value of candidates) {
+      if (
+        typeof value === "string" &&
+        value.trim() &&
+        !/^\d+$/.test(value.trim())
+      ) {
+        return value.trim();
+      }
+    }
+
+    // Bazı API'ler URL bilgisini nested nesnede gönderir.
+    const nestedUrls = [
+      match.match?.url,
+      match.match?.match_url,
+      match.event?.url,
+      match.event?.match_url
+    ];
+
+    for (const url of nestedUrls) {
+      const slug = extractSlug(url, "match");
+      if (slug) return slug;
+    }
+
+    return "";
   }
 
   function getTeam(match, side) {
-    return match?.[side] ||
+    return (
+      match?.[side] ||
       match?.[`${side}_team`] ||
       match?.teams?.[side] ||
-      {};
+      {}
+    );
   }
 
   function getTeamSlug(match, side) {
@@ -175,8 +223,10 @@
       ? match?.home_team_slug || match?.home_slug
       : match?.away_team_slug || match?.away_slug;
 
-    const teamUrl = team?.url ||
+    const teamUrl =
+      team?.url ||
       team?.team_url ||
+      team?.profile_url ||
       match?.[`${side}_team_url`];
 
     return (
@@ -200,14 +250,17 @@
   // ==========================================
   // TAKIM BİLGİLERİ
   // ==========================================
-
   function getName(team) {
-    if (typeof team === "string") return team;
+    if (typeof team === "string") {
+      return team;
+    }
 
-    return team?.name ||
+    return (
+      team?.name ||
       team?.title ||
       team?.short_name ||
-      "Takım";
+      "Takım"
+    );
   }
 
   function getLogo(match, side) {
@@ -226,7 +279,6 @@
   // ==========================================
   // LİG ADI
   // ==========================================
-
   function normalizeLeague(value) {
     return String(value || "")
       .toLocaleLowerCase("tr-TR")
@@ -262,7 +314,6 @@
   // ==========================================
   // LİG EŞLEŞTİRME
   // ==========================================
-
   function matchesSelectedLeague(match) {
     if (!selectedLeague) return true;
 
@@ -287,7 +338,6 @@
   // ==========================================
   // MAÇ DURUMU
   // ==========================================
-
   function getStatus(match) {
     const status = String(
       match?.status?.name ||
@@ -366,7 +416,6 @@
   // ==========================================
   // TARİH SEÇİMİ
   // ==========================================
-
   function renderDates() {
     if (!dateStrip) return;
 
@@ -375,7 +424,6 @@
 
     for (let offset = -2; offset <= 5; offset++) {
       const date = new Date(today);
-
       date.setDate(today.getDate() + offset);
       dates.push(date);
     }
@@ -405,7 +453,6 @@
               ? "BUGÜN"
               : escapeHTML(day.toLocaleUpperCase("tr-TR"))}
           </span>
-
           <strong>${escapeHTML(number)}</strong>
         </button>
       `;
@@ -428,7 +475,6 @@
   // ==========================================
   // LİG SEÇİMİ
   // ==========================================
-
   function setupLeagueButtons() {
     const container = $("leagueSidebar");
 
@@ -473,7 +519,6 @@
   // ==========================================
   // MAÇ KARTI
   // ==========================================
-
   function renderMatch(match) {
     const status = getStatus(match);
     const score = getScore(match);
@@ -489,6 +534,9 @@
     const homeSlug = getTeamSlug(match, "home");
     const awaySlug = getTeamSlug(match, "away");
 
+    // Tıklanan kartın orijinal API verisini bulabilmek için indeks.
+    const matchIndex = allMatches.indexOf(match);
+
     const clock = status === "live"
       ? "CANLI"
       : status === "finished"
@@ -503,37 +551,29 @@
       <article
         class="match-row"
         data-match-card
+        data-match-index="${matchIndex}"
         data-match-slug="${escapeHTML(matchSlug)}"
         tabindex="0"
         role="link"
         aria-label="${escapeHTML(home)} - ${escapeHTML(away)} maç detayını aç"
       >
-
         <div class="match-card-top">
-
           <span class="match-league-name">
             ${escapeHTML(getLeague(match))}
           </span>
 
           <span class="match-start-time">
-            ${
-              status === "upcoming"
-                ? escapeHTML(clock)
-                : ""
-            }
+            ${status === "upcoming" ? escapeHTML(clock) : ""}
           </span>
-
         </div>
 
         <div class="match-card-content">
-
           <a
             class="match-side home-side"
             href="${teamDetailURL(homeSlug)}"
             data-team-link
             aria-label="${escapeHTML(home)} takım profilini aç"
           >
-
             ${
               homeLogo
                 ? `<img
@@ -548,11 +588,9 @@
             <span class="team-name">
               ${escapeHTML(home)}
             </span>
-
           </a>
 
           <div class="match-center">
-
             <strong class="score">
               ${escapeHTML(score || "–")}
             </strong>
@@ -564,7 +602,6 @@
                   ? "finished"
                   : ""
             }">
-
               ${
                 status === "live"
                   ? "CANLI"
@@ -572,9 +609,7 @@
                     ? "BİTTİ"
                     : "VS"
               }
-
             </span>
-
           </div>
 
           <a
@@ -583,7 +618,6 @@
             data-team-link
             aria-label="${escapeHTML(away)} takım profilini aç"
           >
-
             <span class="team-name">
               ${escapeHTML(away)}
             </span>
@@ -598,11 +632,8 @@
                   >`
                 : ""
             }
-
           </a>
-
         </div>
-
       </article>
     `;
   }
@@ -610,10 +641,8 @@
   // ==========================================
   // MAÇ KARTI TIKLAMA SİSTEMİ
   // ==========================================
-
   if (matchList) {
     matchList.addEventListener("click", event => {
-
       // Takım bağlantısına basıldıysa takım profiline git.
       const teamLink = event.target.closest("[data-team-link]");
 
@@ -621,18 +650,32 @@
         return;
       }
 
-      // Maç kartına basıldıysa maç detayını aç.
       const card = event.target.closest("[data-match-card]");
 
       if (!card) return;
 
-      const slug = card.dataset.matchSlug;
+      const index = Number(card.dataset.matchIndex);
+      const match = allMatches[index];
+
+      if (!match) {
+        console.error("SPORIX: Maç verisi bulunamadı.", card);
+        return;
+      }
+
+      const slug = getMatchSlug(match);
 
       if (!slug) {
-  console.log("SPORIX - Detay bağlantısı bulunamayan maç:", match);
-  alert("Maç bağlantısı bulunamadı. Konsoldaki maç verisini kontrol et.");
-  return;
-}
+        console.error(
+          "SPORIX - Detay bağlantısı bulunamayan maç:",
+          match
+        );
+
+        alert(
+          "Bu maç için API'den gerçek detay bağlantısı alınamadı. Konsolu kontrol et."
+        );
+
+        return;
+      }
 
       window.location.href = matchDetailURL(slug);
     });
@@ -652,10 +695,20 @@
 
       event.preventDefault();
 
-      const slug = card.dataset.matchSlug;
+      const index = Number(card.dataset.matchIndex);
+      const match = allMatches[index];
+
+      if (!match) return;
+
+      const slug = getMatchSlug(match);
 
       if (slug) {
         window.location.href = matchDetailURL(slug);
+      } else {
+        console.error(
+          "SPORIX - Maç slug bilgisi bulunamadı:",
+          match
+        );
       }
     });
   }
@@ -663,7 +716,6 @@
   // ==========================================
   // MAÇLARI GÖSTER
   // ==========================================
-
   function renderMatches() {
     if (!matchList || !statusFilter) return;
 
@@ -695,13 +747,11 @@
     });
 
     if (dateLabel) {
-      dateLabel.textContent =
-        formatFullDate(selectedDate);
+      dateLabel.textContent = formatFullDate(selectedDate);
     }
 
     if (matchCount) {
-      matchCount.textContent =
-        `${matches.length} maç`;
+      matchCount.textContent = `${matches.length} maç`;
     }
 
     updateMatchStatistics();
@@ -713,7 +763,6 @@
           <span>Başka bir gün veya lig seçebilirsin.</span>
         </div>
       `;
-
       return;
     }
 
@@ -735,9 +784,7 @@
 
         return `
           <section class="league-group">
-
             <div class="league-title">
-
               ${
                 logo
                   ? `<img
@@ -750,13 +797,10 @@
               }
 
               <span>${escapeHTML(league)}</span>
-
               <small>${items.length} MAÇ</small>
-
             </div>
 
             ${items.map(renderMatch).join("")}
-
           </section>
         `;
       })
@@ -766,7 +810,6 @@
   // ==========================================
   // MAÇ İSTATİSTİKLERİ
   // ==========================================
-
   function updateMatchStatistics() {
     const live = allMatches.filter(
       match => getStatus(match) === "live"
@@ -796,7 +839,6 @@
   // ==========================================
   // MAÇ API
   // ==========================================
-
   async function loadMatches() {
     if (loading) return;
 
@@ -822,12 +864,13 @@
 
       const matches = Array.isArray(result)
         ? result
-        : result.matches;
+        : result.matches ||
+          result.data?.matches ||
+          result.data ||
+          [];
 
       if (!Array.isArray(matches)) {
-        throw new Error(
-          "API maç listesi döndürmedi."
-        );
+        throw new Error("API maç listesi döndürmedi.");
       }
 
       allMatches = matches;
@@ -861,7 +904,6 @@
   // ==========================================
   // PUAN DURUMU HATA
   // ==========================================
-
   function renderStandingsError(message) {
     if (!standingsTable) return;
 
@@ -877,7 +919,6 @@
   // ==========================================
   // PUAN DURUMU
   // ==========================================
-
   function renderStandings(data) {
     if (!standingsTable) return;
 
@@ -885,6 +926,8 @@
       ? data
       : data?.standings ||
         data?.table ||
+        data?.data?.standings ||
+        data?.data?.table ||
         data?.data ||
         [];
 
@@ -892,7 +935,6 @@
       renderStandingsError(
         "Bu lig için puan durumu bulunamadı."
       );
-
       return;
     }
 
@@ -954,11 +996,9 @@
           <td>${escapeHTML(won)}</td>
           <td>${escapeHTML(drawn)}</td>
           <td>${escapeHTML(lost)}</td>
-
           <td>
             ${escapeHTML(goalsFor)}:${escapeHTML(goalsAgainst)}
           </td>
-
           <td>
             <strong>${escapeHTML(points)}</strong>
           </td>
@@ -968,10 +1008,7 @@
   }
 
   async function loadStandings() {
-    if (
-      !standingsTable ||
-      !standingsLeague
-    ) {
+    if (!standingsTable || !standingsLeague) {
       return;
     }
 
@@ -987,18 +1024,38 @@
     `;
 
     try {
-      const response = await fetch(
-        `${STANDINGS_API_URL}?league=${encodeURIComponent(league)}`,
-        { cache: "no-store" }
+      const url = new URL(
+        STANDINGS_API_URL,
+        window.location.origin
       );
 
+      url.searchParams.set("league", league);
+
+      const response = await fetch(url, {
+        cache: "no-store"
+      });
+
+      const responseText = await response.text();
+
       if (!response.ok) {
+        console.error(
+          "SPORIX standings API yanıtı:",
+          response.status,
+          responseText
+        );
+
         throw new Error(
           `Puan durumu API yanıtı: ${response.status}`
         );
       }
 
-      const data = await response.json();
+      let data;
+
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error("Puan durumu API geçerli JSON döndürmedi.");
+      }
 
       if (thisRequest !== standingsRequestId) return;
 
@@ -1018,7 +1075,6 @@
   // ==========================================
   // MOBİL MENÜ
   // ==========================================
-
   function setupMobileMenu() {
     const menuToggle = $("menuToggle");
     const mainNav = $("mainNav");
@@ -1038,7 +1094,6 @@
   // ==========================================
   // SPOR MENÜSÜ
   // ==========================================
-
   function setupSportsMenu() {
     const dropdown = document.querySelector(
       ".sports-dropdown"
@@ -1058,11 +1113,9 @@
   // ==========================================
   // SAYFA BAŞLANGICI
   // ==========================================
-
   function initialize() {
     if ($("year")) {
-      $("year").textContent =
-        new Date().getFullYear();
+      $("year").textContent = new Date().getFullYear();
     }
 
     if ($("todayText")) {
