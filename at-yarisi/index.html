@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>At Yarışı | Çok Yakında - SPORIX</title>
+  <meta name="description" content="SPORIX At Yarışı kategorisi çok yakında yayında.">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" href="/images/logo.jpeg">
+  <link rel="stylesheet" href="/assets/style.css">
+  <style>
+    .coming-soon{max-width:850px;margin:65px auto;padding:65px 25px;text-align:center;background:#fff;border:1px solid #e8e8e8;border-radius:16px}
+    .coming-icon{width:90px;height:90px;margin:0 auto 25px;display:grid;place-items:center;border-radius:22px;background:#f1f4f8;font-size:45px}
+    .coming-label{color:#e50914;font-weight:800;font-size:12px;letter-spacing:2px}
+    .coming-soon h1{margin:15px 0;font-size:clamp(30px,5vw,45px);color:#171717}
+    .coming-soon p{max-width:530px;margin:0 auto 25px;color:#777;line-height:1.8;font-size:15px}
+    .coming-soon h2{font-size:24px;color:#e50914;margin:25px 0 12px}
+    .coming-button{display:inline-block;padding:13px 22px;border-radius:8px;background:#e50914;color:#fff;text-decoration:none;font-weight:700}
+    .coming-button:hover{background:#c9000a}
+    .coming-footer{margin-top:45px;padding:30px 15px;text-align:center;background:#fff;border-top:1px solid #eee}
+    .coming-footer p{color:#777;font-size:13px}
+    .coming-footer a{color:#555;text-decoration:none;margin:5px 9px;font-size:13px}
+    .coming-footer a:hover{color:#e50914}
+    @media(max-width:600px){.coming-soon{margin:30px auto;padding:45px 18px}}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container header-inner">
+      <a class="brand" href="/">
+        <img src="/images/logo.jpeg" alt="SPORIX">
+        <span>SPOR<span class="brand-red">IX</span></span>
+      </a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Menüyü aç">☰</button>
+      <nav class="nav" id="mainNav">
+        <a href="/">Ana Sayfa</a>
+        <a href="/maclar/">Maçlar</a>
+        <a href="/puan-durumu/">Puan Durumu</a>
+        <a href="/fikstur/">Fikstür</a>
+        <a href="/haberler/">Haberler</a>
+      </nav>
+      <a class="header-live" href="/maclar/"><span class="live-dot"></span> CANLI</a>
+    </div>
+  </header>
+  <main class="container">
+    <section class="coming-soon">
+      <div class="coming-icon">🏇</div>
+      <span class="coming-label">SPORIX YENİ KATEGORİ</span>
+      <h1>At Yarışı</h1>
+      <p>At yarışı dünyasındaki yarış programları, sonuçlar ve güncel gelişmeler üzerinde çalışıyoruz.</p>
+      <h2>ÇOK YAKINDA!</h2>
+      <p>SPORUN NABZI BURADA ATAR.</p>
+      <a href="/" class="coming-button">Ana Sayfaya Dön</a>
+    </section>
+  </main>
+  <footer class="coming-footer">
+    <strong>SPOR<span style="color:#e50914">IX</span></strong>
+    <p>SPORUN NABZI BURADA ATAR</p>
+    <div>
+      <a href="/hakkimizda/">Hakkımızda</a>
+      <a href="/iletisim/">İletişim</a>
+      <a href="/gizlilik/">Gizlilik</a>
+      <a href="/cerez-politikasi/">Çerez Politikası</a>
+      <a href="/kullanim-kosullari/">Kullanım Koşulları</a>
+      <a href="/kunye/">Künye</a>
+      <a href="/duzeltme-politikasi/">Düzeltme Politikası</a>
+    </div>
+    <p>© <span class="year"></span> SPORIX. Tüm hakları saklıdır.</p>
+  </footer>
+  <script>
+    document.querySelector(".year").textContent = new Date().getFullYear();
+    document.getElementById("menuToggle")?.addEventListener("click", () => {
+      document.getElementById("mainNav")?.classList.toggle("open");
+    });
+  </script>
+</body>
+</html>
