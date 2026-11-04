@@ -1,8 +1,6 @@
 
 <!DOCTYPE html>
 <html lang="tr">
-
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,7 +36,7 @@
   <meta name="twitter:description" content="Spor dünyasındaki gelişmeleri, canlı skorları ve maç sonuçlarını takip et.">
   <meta name="twitter:image" content="https://sporix.vercel.app/images/logo.jpeg">
 
-  <!-- ORGANIZATION STRUCTURED DATA -->
+  <!-- STRUCTURED DATA -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -49,23 +47,31 @@
   }
   </script>
 
-  <!-- CSS AND JAVASCRIPT -->
+  <!-- CSS -->
   <link rel="stylesheet" href="/assets/style.css">
+
+  <!-- HOMEPAGE JAVASCRIPT -->
   <script src="/assets/home.js" defer></script>
 </head>
-
 
 <body>
 
   <!-- HEADER -->
   <header class="header">
     <div class="container header-inner">
-      <a class="brand" href="/">
+
+      <a class="brand" href="/" aria-label="SPORIX Ana Sayfa">
         <img src="/images/logo.jpeg" alt="SPORIX Logo">
         <span>SPOR<span class="brand-red">IX</span></span>
       </a>
 
-      <button class="menu-toggle" id="menuToggle" aria-label="Menüyü aç">
+      <button
+        class="menu-toggle"
+        id="menuToggle"
+        type="button"
+        aria-label="Menüyü aç"
+        aria-expanded="false"
+      >
         ☰
       </button>
 
@@ -81,12 +87,14 @@
         <span class="live-dot"></span>
         CANLI
       </a>
+
     </div>
   </header>
 
   <!-- SPORLAR MENÜSÜ -->
   <div class="sports-bar">
     <div class="container">
+
       <details class="sports-dropdown">
         <summary>
           <span>SPORLAR</span>
@@ -102,6 +110,7 @@
           <a href="/hentbol/">🤾 Hentbol</a>
         </div>
       </details>
+
     </div>
   </div>
 
@@ -110,62 +119,105 @@
 
     <!-- SOL SÜTUN: LİGLER -->
     <aside class="sidebar left-sidebar">
+
       <div class="side-heading">
         LİGLER
       </div>
 
       <div id="leagueSidebar" class="league-sidebar">
+
         <div class="country-heading">🇹🇷 TÜRKİYE</div>
 
-        <button class="league-link active" data-league="Süper Lig">
+        <button
+          class="league-link active"
+          type="button"
+          data-league="Süper Lig"
+        >
           Süper Lig
         </button>
 
-        <button class="league-link" data-league="1. Lig">
+        <button
+          class="league-link"
+          type="button"
+          data-league="1. Lig"
+        >
           1. Lig
         </button>
 
-        <button class="league-link" data-league="2. Lig">
+        <button
+          class="league-link"
+          type="button"
+          data-league="2. Lig"
+        >
           2. Lig
         </button>
 
-        <button class="league-link" data-league="3. Lig">
+        <button
+          class="league-link"
+          type="button"
+          data-league="3. Lig"
+        >
           3. Lig
         </button>
 
-        <button class="league-link" data-league="Türkiye Kupası">
+        <button
+          class="league-link"
+          type="button"
+          data-league="Türkiye Kupası"
+        >
           Türkiye Kupası
         </button>
 
         <div class="country-heading">🏴 İNGİLTERE</div>
 
-        <button class="league-link" data-league="Premier League">
+        <button
+          class="league-link"
+          type="button"
+          data-league="Premier League"
+        >
           Premier League
         </button>
 
         <div class="country-heading">🇪🇸 İSPANYA</div>
 
-        <button class="league-link" data-league="La Liga">
+        <button
+          class="league-link"
+          type="button"
+          data-league="La Liga"
+        >
           La Liga
         </button>
 
         <div class="country-heading">🇩🇪 ALMANYA</div>
 
-        <button class="league-link" data-league="Bundesliga">
+        <button
+          class="league-link"
+          type="button"
+          data-league="Bundesliga"
+        >
           Bundesliga
         </button>
 
         <div class="country-heading">🇮🇹 İTALYA</div>
 
-        <button class="league-link" data-league="Serie A">
+        <button
+          class="league-link"
+          type="button"
+          data-league="Serie A"
+        >
           Serie A
         </button>
 
         <div class="country-heading">🇫🇷 FRANSA</div>
 
-        <button class="league-link" data-league="Ligue 1">
+        <button
+          class="league-link"
+          type="button"
+          data-league="Ligue 1"
+        >
           Ligue 1
         </button>
+
       </div>
     </aside>
 
@@ -176,11 +228,14 @@
         <h1>MAÇ MERKEZİ</h1>
 
         <span class="live-label">
-          <i></i> CANLI TAKİP
+          <i></i>
+          CANLI TAKİP
         </span>
       </div>
 
+      <!-- MAÇ PROGRAMI -->
       <div class="match-toolbar">
+
         <div class="toolbar-title">
           MAÇ PROGRAMI
         </div>
@@ -191,6 +246,44 @@
           <option value="upcoming">Yaklaşan</option>
           <option value="finished">Tamamlanan</option>
         </select>
+
+      </div>
+
+      <!-- MAÇ ARAMA VE FAVORİLER -->
+      <div class="match-actions">
+
+        <div class="match-search-box">
+
+          <span class="search-icon">⌕</span>
+
+          <input
+            type="search"
+            id="homeMatchSearch"
+            placeholder="Takım veya maç ara..."
+            autocomplete="off"
+            aria-label="Maç ara"
+          >
+
+          <button
+            type="button"
+            id="clearMatchSearch"
+            aria-label="Aramayı temizle"
+          >
+            ×
+          </button>
+
+        </div>
+
+        <button
+          type="button"
+          id="favoriteMatchesButton"
+          class="favorite-matches-button"
+          aria-pressed="false"
+        >
+          ⭐ Favorilerim
+          <span id="favoriteMatchCount">0</span>
+        </button>
+
       </div>
 
       <!-- TARİH SEÇİMİ -->
@@ -198,17 +291,50 @@
         <!-- Tarihler home.js tarafından oluşturulacak -->
       </div>
 
+      <!-- MAÇ ÖZETİ -->
       <div class="match-summary">
-        <strong id="selectedDateLabel">Maçlar yükleniyor...</strong>
-        <span id="matchCount">0 maç</span>
+
+        <strong id="selectedDateLabel">
+          Maçlar yükleniyor...
+        </strong>
+
+        <span id="matchCount">
+          0 maç
+        </span>
+
+      </div>
+
+      <!-- MAÇ İSTATİSTİKLERİ -->
+      <div class="match-statistics">
+
+        <div class="stat-item">
+          <span class="stat-dot live-dot"></span>
+          <span>Canlı</span>
+          <strong id="liveCount">0</strong>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-dot finished-dot"></span>
+          <span>Biten</span>
+          <strong id="finishedCount">0</strong>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-dot upcoming-dot"></span>
+          <span>Yaklaşan</span>
+          <strong id="upcomingCount">0</strong>
+        </div>
+
       </div>
 
       <!-- GERÇEK API MAÇLARI -->
       <div id="matchList" class="match-list">
+
         <div class="loading-state">
           <div class="loader"></div>
           <span>Maçlar yükleniyor...</span>
         </div>
+
       </div>
 
     </section>
@@ -217,6 +343,7 @@
 
   <!-- FOOTER -->
   <footer class="footer">
+
     <div class="container footer-inner">
 
       <div class="footer-brand">
@@ -225,23 +352,22 @@
 
       <p>SPORUN NABZI BURADA ATAR</p>
 
-      
-<div class="footer-links">
-  <a href="/hakkimizda/">Hakkımızda</a>
-  <a href="/iletisim/">İletişim</a>
-  <a href="/gizlilik/">Gizlilik</a>
-  <a href="/cerez-politikasi/">Çerez Politikası</a>
-  <a href="/kullanim-kosullari/">Kullanım Koşulları</a>
-  <a href="/kunye/">Künye</a>
-  <a href="/duzeltme-politikasi/">Düzeltme Politikası</a>
-</div>
-
+      <div class="footer-links">
+        <a href="/hakkimizda/">Hakkımızda</a>
+        <a href="/iletisim/">İletişim</a>
+        <a href="/gizlilik/">Gizlilik</a>
+        <a href="/cerez-politikasi/">Çerez Politikası</a>
+        <a href="/kullanim-kosullari/">Kullanım Koşulları</a>
+        <a href="/kunye/">Künye</a>
+        <a href="/duzeltme-politikasi/">Düzeltme Politikası</a>
+      </div>
 
       <small>
         © <span id="year"></span> SPORIX. Tüm hakları saklıdır.
       </small>
 
     </div>
+
   </footer>
 
 </body>
