@@ -1258,3 +1258,143 @@ button {
     font-size: 18px;
   }
 }
+/* =====================================
+   SPORIX - MAÇ ARAMA VE FAVORİLER
+===================================== */
+
+.match-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0;
+  flex-wrap: wrap;
+}
+
+.match-search-box {
+  flex: 1;
+  min-width: 200px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 13px;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #e5e5e5);
+  border-radius: 9px;
+}
+
+.match-search-box .search-icon {
+  font-size: 23px;
+  color: #888;
+}
+
+.match-search-box input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+}
+
+.match-search-box button {
+  border: 0;
+  background: transparent;
+  color: #888;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.favorite-matches-button {
+  height: 46px;
+  padding: 0 15px;
+  border: 1px solid #e50914;
+  border-radius: 9px;
+  background: #fff;
+  color: #e50914;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.favorite-matches-button:hover,
+.favorite-matches-button.active {
+  background: #e50914;
+  color: #fff;
+}
+
+.favorite-matches-button span {
+  margin-left: 5px;
+}
+
+.favorite-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  margin: 12px 0 8px;
+  background: #fff8e5;
+  color: #8a6100;
+  border-left: 3px solid #f5b800;
+  border-radius: 7px;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.favorite-match-button {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e5e5e5;
+  border-radius: 50%;
+  background: #fff;
+  color: #a0a0a0;
+  font-size: 19px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.favorite-match-button:hover {
+  color: #e5a900;
+  border-color: #e5a900;
+}
+
+.favorite-match-button.is-favorite {
+  color: #e5a900;
+  background: #fff8e5;
+  border-color: #e5a900;
+}
+
+.match-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.match-empty-search {
+  padding: 30px 15px;
+  text-align: center;
+  color: #777;
+  background: var(--card-bg, #fff);
+  border-radius: 9px;
+  border: 1px solid var(--border-color, #e5e5e5);
+}
+
+@media (max-width: 550px) {
+  .match-actions {
+    align-items: stretch;
+  }
+
+  .match-search-box {
+    flex-basis: 100%;
+  }
+
+  .favorite-matches-button {
+    width: 100%;
+  }
+}
