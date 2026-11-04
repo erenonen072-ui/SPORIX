@@ -1,22 +1,16 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>SPORIX | Canlı Skorlar, Fikstür ve Spor Haberleri</title>
-
     <meta name="description" content="SPORIX ile canlı maç skorlarını, güncel futbol sonuçlarını, lig fikstürlerini ve puan durumlarını takip et. Spor dünyasının nabzı burada atar.">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#ffffff">
-
     <link rel="canonical" href="https://sporix.vercel.app/">
-
     <!-- FAVICON VE LOGO -->
     <link rel="icon" type="image/jpeg" href="/images/logo.jpeg">
     <link rel="apple-touch-icon" href="/images/logo.jpeg">
-
     <!-- OPEN GRAPH -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="SPORIX">
@@ -25,13 +19,11 @@
     <meta property="og:description" content="Canlı skorlar, maç sonuçları, lig fikstürleri ve puan durumları SPORIX'te.">
     <meta property="og:url" content="https://sporix.vercel.app/">
     <meta property="og:image" content="https://sporix.vercel.app/images/logo.jpeg">
-
     <!-- TWITTER -->
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="SPORIX | Canlı Skorlar ve Spor Haberleri">
     <meta name="twitter:description" content="Canlı skorları, maç sonuçlarını ve güncel spor haberlerini SPORIX'te takip et.">
     <meta name="twitter:image" content="https://sporix.vercel.app/images/logo.jpeg">
-
     <!-- GOOGLE STRUCTURED DATA -->
     <script type="application/ld+json">
     {
@@ -56,28 +48,23 @@
         ]
     }
     </script>
-
     <!-- GOOGLE SEARCH CONSOLE -->
     <meta name="google-site-verification"
           content="ckQmpp3NrgOskzMPisORVmzZa757lTcPHeMArWRr6Ag">
-
     <!-- CSS -->
     <link rel="stylesheet" href="/assets/style.css">
-
     <!-- JAVASCRIPT -->
     <script src="/assets/home.js" defer></script>
 </head>
-
 <body>
-
     <!-- HEADER -->
     <header class="header">
         <div class="container header-inner">
-
+            <!-- GERÇEK SPORIX LOGOSU -->
             <a class="brand" href="/" aria-label="SPORIX Ana Sayfa">
                 <img src="/images/logo.jpeg" alt="SPORIX">
             </a>
-
+            <!-- MOBİL MENÜ -->
             <button
                 class="menu-toggle"
                 id="menuToggle"
@@ -86,7 +73,7 @@
                 aria-expanded="false">
                 ☰
             </button>
-
+            <!-- NAVİGASYON -->
             <nav class="nav" id="mainNav">
                 <a class="active" href="/">Ana Sayfa</a>
                 <a href="/maclar/">Maçlar</a>
@@ -94,25 +81,21 @@
                 <a href="/fikstur/">Fikstür</a>
                 <a href="/haberler/">Haberler</a>
             </nav>
-
+            <!-- CANLI MAÇLAR -->
             <a class="header-live" href="/maclar/">
                 <span class="live-dot"></span>
                 CANLI
             </a>
-
         </div>
     </header>
-
     <!-- SPORLAR MENÜSÜ -->
     <div class="sports-bar">
         <div class="container">
-
             <details class="sports-dropdown">
                 <summary>
                     <span>SPORLAR</span>
                     <span class="sports-arrow">▼</span>
                 </summary>
-
                 <div class="sports-menu">
                     <a href="/maclar/?sport=football">⚽ Futbol</a>
                     <a href="/basketbol/">🏀 Basketbol</a>
@@ -122,147 +105,105 @@
                     <a href="/hentbol/">🤾 Hentbol</a>
                 </div>
             </details>
-
         </div>
     </div>
-
     <!-- ANA SAYFA -->
     <main class="container page-layout">
-
         <!-- SOL SÜTUN: LİGLER -->
         <aside class="sidebar left-sidebar">
-
             <div class="side-heading">
                 LİGLER
             </div>
-
             <div id="leagueSidebar" class="league-sidebar">
-
+                <div class="country-heading">🇹🇷 TÜRKİYE</div>
                 <button class="league-link active"
                         type="button"
-                        data-league="all">
-                    🌍 Tüm Ligler
+                        data-league="Süper Lig">
+                    Süper Lig
                 </button>
-
-                <!-- TÜRKİYE -->
-                <div class="country-heading">🇹🇷 TÜRKİYE</div>
-
-                <button class="league-link" type="button" data-league="Süper Lig">Süper Lig</button>
-                <button class="league-link" type="button" data-league="1. Lig">1. Lig</button>
-                <button class="league-link" type="button" data-league="2. Lig">2. Lig</button>
-                <button class="league-link" type="button" data-league="3. Lig">3. Lig</button>
-                <button class="league-link" type="button" data-league="Türkiye Kupası">Türkiye Kupası</button>
-                <button class="league-link" type="button" data-league="Süper Kupa">Süper Kupa</button>
-
-                <!-- İNGİLTERE -->
+                <button class="league-link"
+                        type="button"
+                        data-league="1. Lig">
+                    1. Lig
+                </button>
+                <button class="league-link"
+                        type="button"
+                        data-league="2. Lig">
+                    2. Lig
+                </button>
+                <button class="league-link"
+                        type="button"
+                        data-league="3. Lig">
+                    3. Lig
+                </button>
+                <button class="league-link"
+                        type="button"
+                        data-league="Türkiye Kupası">
+                    Türkiye Kupası
+                </button>
                 <div class="country-heading">🏴 İNGİLTERE</div>
-
-                <button class="league-link" type="button" data-league="Premier League">Premier League</button>
-                <button class="league-link" type="button" data-league="Championship">Championship</button>
-                <button class="league-link" type="button" data-league="League One">League One</button>
-                <button class="league-link" type="button" data-league="League Two">League Two</button>
-
-                <!-- İSPANYA -->
+                <button class="league-link"
+                        type="button"
+                        data-league="Premier League">
+                    Premier League
+                </button>
                 <div class="country-heading">🇪🇸 İSPANYA</div>
-
-                <button class="league-link" type="button" data-league="La Liga">La Liga</button>
-                <button class="league-link" type="button" data-league="La Liga 2">La Liga 2</button>
-
-                <!-- ALMANYA -->
+                <button class="league-link"
+                        type="button"
+                        data-league="La Liga">
+                    La Liga
+                </button>
                 <div class="country-heading">🇩🇪 ALMANYA</div>
-
-                <button class="league-link" type="button" data-league="Bundesliga">Bundesliga</button>
-                <button class="league-link" type="button" data-league="2. Bundesliga">2. Bundesliga</button>
-
-                <!-- İTALYA -->
+                <button class="league-link"
+                        type="button"
+                        data-league="Bundesliga">
+                    Bundesliga
+                </button>
                 <div class="country-heading">🇮🇹 İTALYA</div>
-
-                <button class="league-link" type="button" data-league="Serie A">Serie A</button>
-                <button class="league-link" type="button" data-league="Serie B">Serie B</button>
-
-                <!-- FRANSA -->
+                <button class="league-link"
+                        type="button"
+                        data-league="Serie A">
+                    Serie A
+                </button>
                 <div class="country-heading">🇫🇷 FRANSA</div>
-
-                <button class="league-link" type="button" data-league="Ligue 1">Ligue 1</button>
-                <button class="league-link" type="button" data-league="Ligue 2">Ligue 2</button>
-
-                <!-- HOLLANDA -->
-                <div class="country-heading">🇳🇱 HOLLANDA</div>
-
-                <button class="league-link" type="button" data-league="Eredivisie">Eredivisie</button>
-                <button class="league-link" type="button" data-league="Eerste Divisie">Eerste Divisie</button>
-
-                <!-- PORTEKİZ -->
-                <div class="country-heading">🇵🇹 PORTEKİZ</div>
-
-                <button class="league-link" type="button" data-league="Primeira Liga">Primeira Liga</button>
-
-                <!-- BELÇİKA -->
-                <div class="country-heading">🇧🇪 BELÇİKA</div>
-
-                <button class="league-link" type="button" data-league="Belgian Pro League">Belgian Pro League</button>
-
-                <!-- AVRUPA KUPALARI -->
-                <div class="country-heading">🏆 AVRUPA KUPALARI</div>
-
-                <button class="league-link" type="button" data-league="UEFA Champions League">Şampiyonlar Ligi</button>
-                <button class="league-link" type="button" data-league="UEFA Europa League">Avrupa Ligi</button>
-                <button class="league-link" type="button" data-league="UEFA Conference League">Konferans Ligi</button>
-
-                <!-- DİĞER ÜLKELER -->
-                <div class="country-heading">🌎 DİĞER ÜLKELER</div>
-
-                <button class="league-link" type="button" data-league="MLS">MLS</button>
-                <button class="league-link" type="button" data-league="Saudi Pro League">Suudi Arabistan Ligi</button>
-                <button class="league-link" type="button" data-league="Brasileirao">Brezilya Serie A</button>
-                <button class="league-link" type="button" data-league="Argentina Primera Division">Arjantin Ligi</button>
-                <button class="league-link" type="button" data-league="J1 League">Japonya Ligi</button>
-
+                <button class="league-link"
+                        type="button"
+                        data-league="Ligue 1">
+                    Ligue 1
+                </button>
             </div>
-
         </aside>
-
         <!-- ORTA SÜTUN: MAÇ MERKEZİ -->
         <section class="main-content">
-
             <div class="match-heading">
                 <h1>MAÇ MERKEZİ</h1>
-
                 <span class="live-label">
                     <i></i>
                     CANLI TAKİP
                 </span>
             </div>
-
             <!-- MAÇ PROGRAMI -->
             <div class="match-toolbar">
-
                 <div class="toolbar-title">
                     MAÇ PROGRAMI
                 </div>
-
                 <select id="statusFilter" aria-label="Maç durumu">
                     <option value="all">Tüm maçlar</option>
                     <option value="live">Canlı</option>
                     <option value="upcoming">Yaklaşan</option>
                     <option value="finished">Tamamlanan</option>
                 </select>
-
             </div>
-
             <!-- MAÇ ARAMA VE FAVORİLER -->
             <div class="match-actions">
-
                 <div class="match-search-box">
                     <span class="search-icon">⌕</span>
-
                     <input
                         type="search"
                         id="homeMatchSearch"
                         placeholder="Takım veya maç ara..."
                         autocomplete="off"
                         aria-label="Maç ara">
-
                     <button
                         type="button"
                         id="clearMatchSearch"
@@ -270,63 +211,44 @@
                         ×
                     </button>
                 </div>
-
                 <button
                     type="button"
                     id="favoriteMatchesButton"
                     class="favorite-matches-button"
                     aria-pressed="false">
-
                     ⭐ Favorilerim
                     <span id="favoriteMatchCount">0</span>
-
                 </button>
-
             </div>
-
             <!-- TARİH SEÇİMİ -->
             <div class="date-strip" id="dateStrip">
                 <!-- Tarihler home.js tarafından oluşturulacak -->
             </div>
-
             <!-- MAÇ ÖZETİ -->
             <div class="match-summary">
-
                 <strong id="selectedDateLabel">
                     Maçlar yükleniyor...
                 </strong>
-
                 <span id="matchCount">
                     0 maç
                 </span>
-
             </div>
-
             <!-- GERÇEK API MAÇLARI -->
             <div id="matchList" class="match-list">
-
                 <div class="loading-state">
                     <div class="loader"></div>
                     <span>Maçlar yükleniyor...</span>
                 </div>
-
             </div>
-
         </section>
-
     </main>
-
     <!-- FOOTER -->
     <footer class="footer">
-
         <div class="container footer-inner">
-
             <div class="footer-brand">
                 SPOR<span>IX</span>
             </div>
-
             <p>SPORUN NABZI BURADA ATAR</p>
-
             <div class="footer-links">
                 <a href="/hakkimizda/">Hakkımızda</a>
                 <a href="/iletisim/">İletişim</a>
@@ -336,14 +258,10 @@
                 <a href="/kunye/">Künye</a>
                 <a href="/duzeltme-politikasi/">Düzeltme Politikası</a>
             </div>
-
             <small>
                 © <span id="year"></span> SPORIX. Tüm hakları saklıdır.
             </small>
-
         </div>
-
     </footer>
-
 </body>
 </html>
