@@ -18,12 +18,10 @@
   const dateLabel = $("selectedDateLabel");
   const matchCount = $("matchCount");
   const statusFilter = $("statusFilter");
-
   const searchInput = $("homeMatchSearch");
   const clearSearchButton = $("clearMatchSearch");
   const favoriteButton = $("favoriteMatchesButton");
   const favoriteCount = $("favoriteMatchCount");
-
   const standingsLeague = $("standingsLeague");
   const standingsTable = $("standingsTable");
 
@@ -32,10 +30,8 @@
   let selectedLeague = "";
   let loading = false;
   let standingsRequestId = 0;
-
   let searchQuery = "";
   let favoriteMode = false;
-
   let favorites = loadFavorites();
 
   // ==========================================
@@ -117,10 +113,7 @@
     }
 
     if (favoriteButton) {
-      favoriteButton.classList.toggle(
-        "active",
-        favoriteMode
-      );
+      favoriteButton.classList.toggle("active", favoriteMode);
 
       favoriteButton.setAttribute(
         "aria-pressed",
@@ -134,12 +127,57 @@
   // ==========================================
 
   const TURKISH_LEAGUES = [
-    { name: "Süper Lig", aliases: ["turkish super league"] },
-    { name: "1. Lig", aliases: ["turkish first league", "1st league"] },
-    { name: "2. Lig", aliases: ["turkish second league", "2nd league"] },
-    { name: "3. Lig", aliases: ["turkish third league", "3rd league"] },
-    { name: "Türkiye Kupası", aliases: ["turkish cup", "turkiye cup"] },
-    { name: "Süper Kupa", aliases: ["turkish super cup", "super cup"] }
+    {
+      name: "Süper Lig",
+      aliases: [
+        "turkish super league",
+        "turkish-super-league",
+        "super league"
+      ]
+    },
+    {
+      name: "1. Lig",
+      aliases: [
+        "turkish first league",
+        "turkish-first-league",
+        "1st league",
+        "first league"
+      ]
+    },
+    {
+      name: "2. Lig",
+      aliases: [
+        "turkish second league",
+        "turkish-second-league",
+        "2nd league",
+        "second league"
+      ]
+    },
+    {
+      name: "3. Lig",
+      aliases: [
+        "turkish third league",
+        "turkish-third-league",
+        "3rd league",
+        "third league"
+      ]
+    },
+    {
+      name: "Türkiye Kupası",
+      aliases: [
+        "turkish cup",
+        "turkiye cup",
+        "turkish-cup"
+      ]
+    },
+    {
+      name: "Süper Kupa",
+      aliases: [
+        "turkish super cup",
+        "turkish-super-cup",
+        "super cup"
+      ]
+    }
   ];
 
   // ==========================================
@@ -501,7 +539,11 @@
     );
 
     if (!league) {
-      return leagueName.includes(selected);
+      return (
+        leagueName.includes(selected) ||
+        normalizeLeague(slugify(getLeague(match))) ===
+          normalizeLeague(slugify(selectedLeague))
+      );
     }
 
     return league.aliases.some(alias =>
@@ -640,6 +682,7 @@
       if (!button) return;
 
       selectedDate = button.dataset.date;
+
       renderDates();
       loadMatches();
     });
@@ -668,9 +711,19 @@
       const button = event.target.closest("[data-league]");
       if (!button) return;
 
-      selectedLeague = button.dataset.league;
+      const value = String(button.dataset.league || "").trim();
+
+      selectedLeague =
+        !value ||
+        normalizeSearch(value) === "tum ligler" ||
+        normalizeSearch(value) === "all"
+          ? ""
+          : value;
+
       updateLeagueButtons();
-      renderMatches();
+
+      // Lig seçildiğinde API'den yeni maçları getir.
+      loadMatches();
     });
 
     updateLeagueButtons();
@@ -680,9 +733,18 @@
     document.querySelectorAll(
       "#leagueSidebar [data-league]"
     ).forEach(button => {
+      const value = String(button.dataset.league || "").trim();
+
+      const isAll =
+        !value ||
+        normalizeSearch(value) === "tum ligler" ||
+        normalizeSearch(value) === "all";
+
       button.classList.toggle(
         "active",
-        button.dataset.league === selectedLeague
+        selectedLeague
+          ? value === selectedLeague
+          : isAll
       );
     });
   }
@@ -848,7 +910,6 @@
       }
 
       const teamLink = event.target.closest("[data-team-link]");
-
       if (teamLink) return;
 
       const card = event.target.closest("[data-match-card]");
@@ -1017,7 +1078,9 @@
         ? "Bu filtrelerde favori maç bulunamadı."
         : searchQuery
           ? "Aradığın maç bulunamadı."
-          : "Bu tarihte gösterilecek maç bulunamadı.";
+          : selectedLeague
+            ? "Bu ligde seçilen tarihte maç bulunamadı."
+            : "Bu tarihte gösterilecek maç bulunamadı.";
 
       matchList.innerHTML = `
         <div class="match-empty-search">
@@ -1030,6 +1093,7 @@
     }
 
     const favoriteMatches = matches.filter(isFavorite);
+
     const otherMatches = matches.filter(
       match => !isFavorite(match)
     );
@@ -1130,6 +1194,14 @@
       url.searchParams.set("date", selectedDate);
       url.searchParams.set("limit", "200");
 
+      // Seçilen ligi API'ye gönder.
+      if (selectedLeague) {
+        url.searchParams.set(
+          "competition",
+          selectedLeague
+        );
+      }
+
       const response = await fetch(url, {
         cache: "no-store"
       });
@@ -1157,9 +1229,10 @@
 
       console.log("SPORIX ana sayfa API:", {
         tarih: selectedDate,
-        macSayisi: allMatches.length,
+        seçilenLig: selectedLeague || "Tüm Ligler",
+        maçSayısı: allMatches.length,
         ligler: [...new Set(allMatches.map(getLeague))],
-        maclar: allMatches
+        maçlar: allMatches
       });
 
       renderMatches();
