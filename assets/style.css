@@ -1398,3 +1398,24 @@ button {
     width: 100%;
   }
 }
+/* SPORIX LOGO */
+.header .brand {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    text-decoration: none;
+}
+
+.header .brand img {
+    width: 175px;
+    height: 65px;
+    object-fit: contain;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .header .brand img {
+        width: 135px;
+        height: 52px;
+    }
+}
