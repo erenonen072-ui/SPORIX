@@ -29,12 +29,7 @@
     <priority>0.9</priority>
   </url>
 
-  <!-- Spor Haberleri -->
-  <url>
-    <loc>https://sporix.vercel.app/haberler/</loc>
-    <changefreq>hourly</changefreq>
-    <priority>0.9</priority>
-  </url>
+  
 
   <!-- Spor Kategorileri -->
   <url>
